@@ -29,20 +29,6 @@ export interface NodeConfig<Options = any, Storage = any>
   topNode?: boolean
 
   /**
-   * Enable automatic blockId generation for this node
-   * @default true
-   * @example false
-   */
-  moniEnableBlockId?: boolean
-
-  /**
-   * Enable automatic parentId tracking for this node
-   * @default true
-   * @example false
-   */
-  moniEnableParentId?: boolean
-
-  /**
    * Custom blockId generator function
    * @default undefined
    * @example () => `block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
@@ -359,7 +345,7 @@ export interface NodeConfig<Options = any, Storage = any>
  * Generates a unique blockId using timestamp and random string
  */
 export const moniDefaultBlockIdGenerator = (): string => {
-  return `moni-block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+  return `block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
 }
 
 /**
@@ -380,78 +366,53 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
   }
 
   /**
-   * Override the parent's addAttributes to include blockId and parentId automatically
+   * Enhanced addAttributes that includes core blockId and parentId attributes
    */
-  override configure(options?: Partial<Options>) {
+  private enhanceAddAttributes() {
     const originalAddAttributes = this.config.addAttributes
 
-    // Enhanced addAttributes that includes blockId and parentId
-    this.config.addAttributes = function (this: any) {
+    this.config.addAttributes = function () {
       // Get user-defined attributes
       const userAttributes = originalAddAttributes ? originalAddAttributes.call(this) : {}
 
-      // Get the node instance through closure
-      const nodeInstance = this as any
-
-      // Get blockId configuration (defaulting to enabled)
-      const enableBlockId = nodeInstance.moniEnableBlockId !== false
-      const enableParentId = nodeInstance.moniEnableParentId !== false
-
-      // Prepare enhanced attributes
-      const enhancedAttributes: Attributes = { ...userAttributes }
-
-      // Add blockId attribute if enabled
-      if (enableBlockId) {
-        enhancedAttributes.moniBlockId = {
+      // Always include core moni attributes
+      const enhancedAttributes: Attributes = {
+        ...userAttributes,
+        // Core moni-block-id attribute - follows TipTap attribute pattern
+        'moni-block-id': {
           default: null,
-          validate: (value: any) => {
-            if (value !== null && typeof value !== 'string') {
-              throw new Error('moniBlockId must be a string or null')
+          parseHTML: element => element.getAttribute('moni-block-id'),
+          renderHTML: attributes => {
+            if (attributes['moni-block-id']) {
+              return { 'moni-block-id': attributes['moni-block-id'] }
             }
+            return {}
           },
-          rendered: true, // Render as data attribute for DOM queries
-          parseHTML: (element: HTMLElement) => {
-            return element.getAttribute('data-moni-block-id') || null
-          },
-          renderHTML: (attributes: Record<string, any>) => {
-            if (attributes.moniBlockId) {
-              return { 'data-moni-block-id': attributes.moniBlockId }
-            }
-            return null
-          },
-          keepOnSplit: false, // Generate new blockId on split
-          isRequired: false,
-        }
-      }
-
-      // Add parentId attribute if enabled
-      if (enableParentId) {
-        enhancedAttributes.moniParentId = {
+        },
+        // Core moni-parent-id attribute - follows TipTap attribute pattern
+        'moni-parent-id': {
           default: null,
-          validate: (value: any) => {
-            if (value !== null && typeof value !== 'string') {
-              throw new Error('moniParentId must be a string or null')
+          parseHTML: element => element.getAttribute('moni-parent-id'),
+          renderHTML: attributes => {
+            if (attributes['moni-parent-id']) {
+              return { 'moni-parent-id': attributes['moni-parent-id'] }
             }
+            return {}
           },
-          rendered: true, // Render as data attribute for DOM queries
-          parseHTML: (element: HTMLElement) => {
-            return element.getAttribute('data-moni-parent-id') || null
-          },
-          renderHTML: (attributes: Record<string, any>) => {
-            if (attributes.moniParentId) {
-              return { 'data-moni-parent-id': attributes.moniParentId }
-            }
-            return null
-          },
-          keepOnSplit: true, // Keep parentId on split
-          isRequired: false,
-        }
+        },
       }
 
       return enhancedAttributes
     }
+  }
 
-    return super.configure(options) as Node<Options, Storage>
+  /**
+   * Override the parent's configure method to enhance addAttributes
+   */
+  override configure(options?: Partial<Options>) {
+    const configured = super.configure(options) as Node<Options, Storage>
+    configured.enhanceAddAttributes()
+    return configured
   }
 
   extend<
@@ -461,6 +422,11 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
   >(extendedConfig?: Partial<ExtendedConfig> | (() => Partial<ExtendedConfig>)) {
     // If the extended config is a function, execute it to get the configuration object
     const resolvedConfig = typeof extendedConfig === 'function' ? extendedConfig() : extendedConfig
-    return super.extend(resolvedConfig) as Node<ExtendedOptions, ExtendedStorage>
+    const extended = super.extend(resolvedConfig) as Node<ExtendedOptions, ExtendedStorage>
+
+    // Always enhance addAttributes
+    extended.enhanceAddAttributes()
+
+    return extended
   }
 }
