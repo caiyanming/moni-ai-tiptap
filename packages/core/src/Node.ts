@@ -29,6 +29,27 @@ export interface NodeConfig<Options = any, Storage = any>
   topNode?: boolean
 
   /**
+   * Enable automatic blockId generation for this node
+   * @default true
+   * @example false
+   */
+  moniEnableBlockId?: boolean
+
+  /**
+   * Enable automatic parentId tracking for this node
+   * @default true
+   * @example false
+   */
+  moniEnableParentId?: boolean
+
+  /**
+   * Custom blockId generator function
+   * @default undefined
+   * @example () => `block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+   */
+  moniBlockIdGenerator?: () => string
+
+  /**
    * The content expression for this node, as described in the [schema
    * guide](/docs/guide/#schema.content_expressions). When not given,
    * the node does not allow any content.
@@ -274,7 +295,7 @@ export interface NodeConfig<Options = any, Storage = any>
    * object) are interpreted as children of the DOM elements, and must
    * either be valid `DOMOutputSpec` values, or the number zero.
    *
-   * The number zero (pronounced “hole”) is used to indicate the place
+   * The number zero (pronounced "hole") is used to indicate the place
    * where a node's child nodes should be inserted. If it occurs in an
    * output spec, it should be the only child element in its parent
    * node.
@@ -334,6 +355,14 @@ export interface NodeConfig<Options = any, Storage = any>
 }
 
 /**
+ * Default blockId generator function for Moni enhancement
+ * Generates a unique blockId using timestamp and random string
+ */
+export const moniDefaultBlockIdGenerator = (): string => {
+  return `moni-block-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+}
+
+/**
  * The Node class is used to create custom node extensions.
  * @see https://tiptap.dev/api/extensions#create-a-new-extension
  */
@@ -350,7 +379,78 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
     return new Node<O, S>(resolvedConfig)
   }
 
-  configure(options?: Partial<Options>) {
+  /**
+   * Override the parent's addAttributes to include blockId and parentId automatically
+   */
+  override configure(options?: Partial<Options>) {
+    const originalAddAttributes = this.config.addAttributes
+
+    // Enhanced addAttributes that includes blockId and parentId
+    this.config.addAttributes = function (this: any) {
+      // Get user-defined attributes
+      const userAttributes = originalAddAttributes ? originalAddAttributes.call(this) : {}
+
+      // Get the node instance through closure
+      const nodeInstance = this as any
+
+      // Get blockId configuration (defaulting to enabled)
+      const enableBlockId = nodeInstance.moniEnableBlockId !== false
+      const enableParentId = nodeInstance.moniEnableParentId !== false
+
+      // Prepare enhanced attributes
+      const enhancedAttributes: Attributes = { ...userAttributes }
+
+      // Add blockId attribute if enabled
+      if (enableBlockId) {
+        enhancedAttributes.moniBlockId = {
+          default: null,
+          validate: (value: any) => {
+            if (value !== null && typeof value !== 'string') {
+              throw new Error('moniBlockId must be a string or null')
+            }
+          },
+          rendered: true, // Render as data attribute for DOM queries
+          parseHTML: (element: HTMLElement) => {
+            return element.getAttribute('data-moni-block-id') || null
+          },
+          renderHTML: (attributes: Record<string, any>) => {
+            if (attributes.moniBlockId) {
+              return { 'data-moni-block-id': attributes.moniBlockId }
+            }
+            return null
+          },
+          keepOnSplit: false, // Generate new blockId on split
+          isRequired: false,
+        }
+      }
+
+      // Add parentId attribute if enabled
+      if (enableParentId) {
+        enhancedAttributes.moniParentId = {
+          default: null,
+          validate: (value: any) => {
+            if (value !== null && typeof value !== 'string') {
+              throw new Error('moniParentId must be a string or null')
+            }
+          },
+          rendered: true, // Render as data attribute for DOM queries
+          parseHTML: (element: HTMLElement) => {
+            return element.getAttribute('data-moni-parent-id') || null
+          },
+          renderHTML: (attributes: Record<string, any>) => {
+            if (attributes.moniParentId) {
+              return { 'data-moni-parent-id': attributes.moniParentId }
+            }
+            return null
+          },
+          keepOnSplit: true, // Keep parentId on split
+          isRequired: false,
+        }
+      }
+
+      return enhancedAttributes
+    }
+
     return super.configure(options) as Node<Options, Storage>
   }
 
