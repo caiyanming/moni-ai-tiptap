@@ -10,3 +10,7 @@ export * from './useEditor.js'
 export * from './useEditorState.js'
 export * from './useReactNodeView.js'
 export * from '@tiptap/core'
+
+// 🚀 Phase 4 Enhancement: React Menu Components
+export * from './menus/BubbleMenu.js'
+export * from './menus/FloatingMenu.js'

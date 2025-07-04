@@ -372,6 +372,11 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
     const originalAddAttributes = this.config.addAttributes
 
     this.config.addAttributes = function () {
+      // 🚨 修复：Text 节点不能有任何属性，直接返回原始属性
+      if (this.name === 'text') {
+        return originalAddAttributes ? originalAddAttributes.call(this) : {}
+      }
+
       // Get user-defined attributes
       const userAttributes = originalAddAttributes ? originalAddAttributes.call(this) : {}
 
