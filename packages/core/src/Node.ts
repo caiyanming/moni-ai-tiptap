@@ -400,6 +400,127 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
             return {}
           },
         },
+        // Hierarchical structure capabilities
+        'moni-level': {
+          default: 0,
+          parseHTML: element => {
+            const level = element.getAttribute('moni-level')
+            return level ? parseInt(level, 10) : 0
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-level'] !== undefined && attributes['moni-level'] !== 0) {
+              return { 'moni-level': attributes['moni-level'].toString() }
+            }
+            return {}
+          },
+        },
+        'moni-depth': {
+          default: 0,
+          parseHTML: element => {
+            const depth = element.getAttribute('moni-depth')
+            return depth ? parseInt(depth, 10) : 0
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-depth'] !== undefined && attributes['moni-depth'] !== 0) {
+              return { 'moni-depth': attributes['moni-depth'].toString() }
+            }
+            return {}
+          },
+        },
+        'moni-index': {
+          default: 0,
+          parseHTML: element => {
+            const index = element.getAttribute('moni-index')
+            return index ? parseInt(index, 10) : 0
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-index'] !== undefined && attributes['moni-index'] !== 0) {
+              return { 'moni-index': attributes['moni-index'].toString() }
+            }
+            return {}
+          },
+        },
+        // Drag behavior capabilities
+        'moni-drag-enabled': {
+          default: true,
+          parseHTML: element => element.getAttribute('moni-drag-enabled') === 'true',
+          renderHTML: attributes => {
+            if (attributes['moni-drag-enabled'] === false) {
+              return { 'moni-drag-enabled': 'false' }
+            }
+            return {}
+          },
+        },
+        'moni-drag-handle': {
+          default: true,
+          parseHTML: element => element.getAttribute('moni-drag-handle') !== 'false',
+          renderHTML: attributes => {
+            if (attributes['moni-drag-handle'] === false) {
+              return { 'moni-drag-handle': 'false' }
+            }
+            return {}
+          },
+        },
+        'moni-nestable': {
+          default: false,
+          parseHTML: element => element.getAttribute('moni-nestable') === 'true',
+          renderHTML: attributes => {
+            if (attributes['moni-nestable'] === true) {
+              return { 'moni-nestable': 'true' }
+            }
+            return {}
+          },
+        },
+        'moni-drag-type': {
+          default: 'block',
+          parseHTML: element => element.getAttribute('moni-drag-type') || 'block',
+          renderHTML: attributes => {
+            if (attributes['moni-drag-type'] && attributes['moni-drag-type'] !== 'block') {
+              return { 'moni-drag-type': attributes['moni-drag-type'] }
+            }
+            return {}
+          },
+        },
+        // Drag constraints capabilities
+        'moni-drop-targets': {
+          default: null,
+          parseHTML: element => {
+            const targets = element.getAttribute('moni-drop-targets')
+            return targets ? targets.split(',').map(t => t.trim()) : null
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-drop-targets'] && Array.isArray(attributes['moni-drop-targets'])) {
+              return { 'moni-drop-targets': attributes['moni-drop-targets'].join(',') }
+            }
+            return {}
+          },
+        },
+        'moni-max-nest-level': {
+          default: null,
+          parseHTML: element => {
+            const maxLevel = element.getAttribute('moni-max-nest-level')
+            return maxLevel ? parseInt(maxLevel, 10) : null
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-max-nest-level'] !== null && attributes['moni-max-nest-level'] !== undefined) {
+              return { 'moni-max-nest-level': attributes['moni-max-nest-level'].toString() }
+            }
+            return {}
+          },
+        },
+        'moni-can-nest-in': {
+          default: null,
+          parseHTML: element => {
+            const canNestIn = element.getAttribute('moni-can-nest-in')
+            return canNestIn ? canNestIn.split(',').map(t => t.trim()) : null
+          },
+          renderHTML: attributes => {
+            if (attributes['moni-can-nest-in'] && Array.isArray(attributes['moni-can-nest-in'])) {
+              return { 'moni-can-nest-in': attributes['moni-can-nest-in'].join(',') }
+            }
+            return {}
+          },
+        },
       }
 
       return enhancedAttributes
