@@ -234,6 +234,27 @@ export const Youtube = Node.create<YoutubeOptions>({
       height: {
         default: this.options.height,
       },
+      // 🔥 Moni block attributes - manual override for YouTube
+      moniBlockId: {
+        default: null,
+        parseHTML: element => element.getAttribute('moni-block-id'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockId) {
+            return { 'moni-block-id': attributes.moniBlockId }
+          }
+          return {}
+        },
+      },
+      moniParentId: {
+        default: null,
+        parseHTML: element => element.getAttribute('moni-parent-id'),
+        renderHTML: attributes => {
+          if (attributes.moniParentId) {
+            return { 'moni-parent-id': attributes.moniParentId }
+          }
+          return {}
+        },
+      },
     }
   },
 

@@ -96,6 +96,9 @@ describe('Moni Direct Attributes - TipTap Standard Pattern', () => {
       addAttributes() {
         return {
           level: { default: 1 },
+          // Add moni attributes - same as other nodes
+          'moni-block-id': { default: null },
+          'moni-parent-id': { default: null },
         }
       },
       parseHTML() {
@@ -120,11 +123,16 @@ describe('Moni Direct Attributes - TipTap Standard Pattern', () => {
     expect(schema.nodes.moniHeading.spec.attrs?.['moni-block-id']).toBeDefined()
 
     // Test setting attributes on different node types
+    // Select the first node (heading) and update its attributes
+    editor.commands.setTextSelection(1) // Position at start of first node
     editor.commands.updateAttributes('moniHeading', {
       'moni-block-id': 'heading-123',
       level: 2,
     })
 
+    // Select the second node (paragraph) and update its attributes
+    const paragraphPos = editor.state.doc.content.firstChild?.nodeSize || 0
+    editor.commands.setTextSelection(paragraphPos + 1) // Position at paragraph
     editor.commands.updateAttributes('moniParagraph', {
       'moni-block-id': 'paragraph-456',
     })

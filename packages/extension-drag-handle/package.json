@@ -51,10 +51,25 @@
     "@tiptap/core": "workspace:*",
     "@tiptap/extension-collaboration": "workspace:*",
     "@tiptap/pm": "workspace:*",
-    "@tiptap/y-tiptap": "^3.0.0-beta.3"
+    "@tiptap/y-tiptap": "^3.0.0-beta.3",
+    "@tiptap/extension-document": "workspace:*",
+    "@tiptap/extension-paragraph": "workspace:*",
+    "@tiptap/extension-text": "workspace:*",
+    "@tiptap/extension-heading": "workspace:*",
+    "@tiptap/extension-bullet-list": "workspace:*",
+    "@tiptap/extension-list-item": "workspace:*",
+    "@types/jest": "^29.5.5",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "jsdom": "^23.0.0"
   },
   "scripts": {
     "build": "tsup",
-    "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/"
+    "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --passWithNoTests"
   }
 }

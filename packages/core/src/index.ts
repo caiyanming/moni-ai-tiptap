@@ -22,6 +22,7 @@ export * from './DragHandleManager.js'
 export * from './DragIndicatorManager.js'
 export * from './DragOperationManager.js'
 export * from './MoniDragPlugin.js'
+export * from './SmartDragCalculator.js'
 
 // eslint-disable-next-line
 export interface Commands<ReturnType = any> {}

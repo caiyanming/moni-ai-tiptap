@@ -383,145 +383,224 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
       // Always include core moni attributes
       const enhancedAttributes: Attributes = {
         ...userAttributes,
-        // Core moni-block-id attribute - follows TipTap attribute pattern
-        'moni-block-id': {
+        // Core block identification - JavaScript camelCase, HTML kebab-case
+        moniBlockId: {
           default: null,
           parseHTML: element => element.getAttribute('moni-block-id'),
           renderHTML: attributes => {
-            if (attributes['moni-block-id']) {
-              return { 'moni-block-id': attributes['moni-block-id'] }
+            if (attributes.moniBlockId) {
+              return { 'moni-block-id': attributes.moniBlockId }
             }
             return {}
           },
         },
-        // Core moni-parent-id attribute - follows TipTap attribute pattern
-        'moni-parent-id': {
+        // Core parent relationship - JavaScript camelCase, HTML kebab-case
+        moniParentId: {
           default: null,
           parseHTML: element => element.getAttribute('moni-parent-id'),
           renderHTML: attributes => {
-            if (attributes['moni-parent-id']) {
-              return { 'moni-parent-id': attributes['moni-parent-id'] }
+            if (attributes.moniParentId) {
+              return { 'moni-parent-id': attributes.moniParentId }
             }
             return {}
           },
         },
         // Hierarchical structure capabilities
-        'moni-level': {
+        moniLevel: {
           default: 0,
           parseHTML: element => {
             const level = element.getAttribute('moni-level')
             return level ? parseInt(level, 10) : 0
           },
           renderHTML: attributes => {
-            if (attributes['moni-level'] !== undefined && attributes['moni-level'] !== 0) {
-              return { 'moni-level': attributes['moni-level'].toString() }
+            if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+              return { 'moni-level': attributes.moniLevel.toString() }
             }
             return {}
           },
         },
-        'moni-depth': {
+        moniDepth: {
           default: 0,
           parseHTML: element => {
             const depth = element.getAttribute('moni-depth')
             return depth ? parseInt(depth, 10) : 0
           },
           renderHTML: attributes => {
-            if (attributes['moni-depth'] !== undefined && attributes['moni-depth'] !== 0) {
-              return { 'moni-depth': attributes['moni-depth'].toString() }
+            if (attributes.moniDepth !== undefined && attributes.moniDepth !== 0) {
+              return { 'moni-depth': attributes.moniDepth.toString() }
             }
             return {}
           },
         },
-        'moni-index': {
+        moniIndex: {
           default: 0,
           parseHTML: element => {
             const index = element.getAttribute('moni-index')
             return index ? parseInt(index, 10) : 0
           },
           renderHTML: attributes => {
-            if (attributes['moni-index'] !== undefined && attributes['moni-index'] !== 0) {
-              return { 'moni-index': attributes['moni-index'].toString() }
+            if (attributes.moniIndex !== undefined && attributes.moniIndex !== 0) {
+              return { 'moni-index': attributes.moniIndex.toString() }
             }
             return {}
           },
         },
         // Drag behavior capabilities
-        'moni-drag-enabled': {
+        moniDragEnabled: {
           default: true,
           parseHTML: element => element.getAttribute('moni-drag-enabled') === 'true',
           renderHTML: attributes => {
-            if (attributes['moni-drag-enabled'] === false) {
+            if (attributes.moniDragEnabled === false) {
               return { 'moni-drag-enabled': 'false' }
             }
             return {}
           },
         },
-        'moni-drag-handle': {
+        moniDragHandle: {
           default: true,
           parseHTML: element => element.getAttribute('moni-drag-handle') !== 'false',
           renderHTML: attributes => {
-            if (attributes['moni-drag-handle'] === false) {
+            if (attributes.moniDragHandle === false) {
               return { 'moni-drag-handle': 'false' }
             }
             return {}
           },
         },
-        'moni-nestable': {
+        moniNestable: {
           default: false,
           parseHTML: element => element.getAttribute('moni-nestable') === 'true',
           renderHTML: attributes => {
-            if (attributes['moni-nestable'] === true) {
+            if (attributes.moniNestable === true) {
               return { 'moni-nestable': 'true' }
             }
             return {}
           },
         },
-        'moni-drag-type': {
+        moniDragType: {
           default: 'block',
           parseHTML: element => element.getAttribute('moni-drag-type') || 'block',
           renderHTML: attributes => {
-            if (attributes['moni-drag-type'] && attributes['moni-drag-type'] !== 'block') {
-              return { 'moni-drag-type': attributes['moni-drag-type'] }
+            if (attributes.moniDragType && attributes.moniDragType !== 'block') {
+              return { 'moni-drag-type': attributes.moniDragType }
             }
             return {}
           },
         },
         // Drag constraints capabilities
-        'moni-drop-targets': {
+        moniDropTargets: {
           default: null,
           parseHTML: element => {
             const targets = element.getAttribute('moni-drop-targets')
             return targets ? targets.split(',').map(t => t.trim()) : null
           },
           renderHTML: attributes => {
-            if (attributes['moni-drop-targets'] && Array.isArray(attributes['moni-drop-targets'])) {
-              return { 'moni-drop-targets': attributes['moni-drop-targets'].join(',') }
+            if (attributes.moniDropTargets && Array.isArray(attributes.moniDropTargets)) {
+              return { 'moni-drop-targets': attributes.moniDropTargets.join(',') }
             }
             return {}
           },
         },
-        'moni-max-nest-level': {
+        moniMaxNestLevel: {
           default: null,
           parseHTML: element => {
             const maxLevel = element.getAttribute('moni-max-nest-level')
             return maxLevel ? parseInt(maxLevel, 10) : null
           },
           renderHTML: attributes => {
-            if (attributes['moni-max-nest-level'] !== null && attributes['moni-max-nest-level'] !== undefined) {
-              return { 'moni-max-nest-level': attributes['moni-max-nest-level'].toString() }
+            if (attributes.moniMaxNestLevel !== null && attributes.moniMaxNestLevel !== undefined) {
+              return { 'moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
             }
             return {}
           },
         },
-        'moni-can-nest-in': {
+        moniCanNestIn: {
           default: null,
           parseHTML: element => {
             const canNestIn = element.getAttribute('moni-can-nest-in')
             return canNestIn ? canNestIn.split(',').map(t => t.trim()) : null
           },
           renderHTML: attributes => {
-            if (attributes['moni-can-nest-in'] && Array.isArray(attributes['moni-can-nest-in'])) {
-              return { 'moni-can-nest-in': attributes['moni-can-nest-in'].join(',') }
+            if (attributes.moniCanNestIn && Array.isArray(attributes.moniCanNestIn)) {
+              return { 'moni-can-nest-in': attributes.moniCanNestIn.join(',') }
+            }
+            return {}
+          },
+        },
+        // Stream identification capabilities - native support without switches
+        moniStreamId: {
+          default: null,
+          parseHTML: element => element.getAttribute('moni-stream-id'),
+          renderHTML: attributes => {
+            if (attributes.moniStreamId) {
+              return { 'moni-stream-id': attributes.moniStreamId }
+            }
+            return {}
+          },
+        },
+        moniStreamTarget: {
+          default: false,
+          parseHTML: element => element.getAttribute('moni-stream-target') === 'true',
+          renderHTML: attributes => {
+            if (attributes.moniStreamTarget === true) {
+              return { 'moni-stream-target': 'true' }
+            }
+            return {}
+          },
+        },
+        // Stream type capabilities
+        moniStreamType: {
+          default: 'text',
+          parseHTML: element => element.getAttribute('moni-stream-type') || 'text',
+          renderHTML: attributes => {
+            if (attributes.moniStreamType && attributes.moniStreamType !== 'text') {
+              return { 'moni-stream-type': attributes.moniStreamType }
+            }
+            return {}
+          },
+        },
+        moniStreamMode: {
+          default: 'replace',
+          parseHTML: element => element.getAttribute('moni-stream-mode') || 'replace',
+          renderHTML: attributes => {
+            if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
+              return { 'moni-stream-mode': attributes.moniStreamMode }
+            }
+            return {}
+          },
+        },
+        // Stream status capabilities
+        moniOperationQueue: {
+          default: null,
+          parseHTML: element => {
+            const queue = element.getAttribute('moni-operation-queue')
+            return queue ? JSON.parse(queue) : null
+          },
+          renderHTML: attributes => {
+            if (attributes.moniOperationQueue && Array.isArray(attributes.moniOperationQueue)) {
+              return { 'moni-operation-queue': JSON.stringify(attributes.moniOperationQueue) }
+            }
+            return {}
+          },
+        },
+        moniStreamProgress: {
+          default: 0,
+          parseHTML: element => {
+            const progress = element.getAttribute('moni-stream-progress')
+            return progress ? parseFloat(progress) : 0
+          },
+          renderHTML: attributes => {
+            if (attributes.moniStreamProgress !== undefined && attributes.moniStreamProgress !== 0) {
+              return { 'moni-stream-progress': attributes.moniStreamProgress.toString() }
+            }
+            return {}
+          },
+        },
+        moniStreamStatus: {
+          default: 'idle',
+          parseHTML: element => element.getAttribute('moni-stream-status') || 'idle',
+          renderHTML: attributes => {
+            if (attributes.moniStreamStatus && attributes.moniStreamStatus !== 'idle') {
+              return { 'moni-stream-status': attributes.moniStreamStatus }
             }
             return {}
           },

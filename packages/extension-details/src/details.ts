@@ -62,7 +62,29 @@ export const Details = Node.create<DetailsOptions>({
 
   addAttributes() {
     if (!this.options.persist) {
-      return []
+      return {
+        // 🔥 Moni block attributes - for non-persistent details
+        moniBlockId: {
+          default: null,
+          parseHTML: element => element.getAttribute('moni-block-id'),
+          renderHTML: attributes => {
+            if (attributes.moniBlockId) {
+              return { 'moni-block-id': attributes.moniBlockId }
+            }
+            return {}
+          },
+        },
+        moniParentId: {
+          default: null,
+          parseHTML: element => element.getAttribute('moni-parent-id'),
+          renderHTML: attributes => {
+            if (attributes.moniParentId) {
+              return { 'moni-parent-id': attributes.moniParentId }
+            }
+            return {}
+          },
+        },
+      }
     }
 
     return {
@@ -75,6 +97,27 @@ export const Details = Node.create<DetailsOptions>({
           }
 
           return { open: '' }
+        },
+      },
+      // 🔥 Moni block attributes - for persistent details
+      moniBlockId: {
+        default: null,
+        parseHTML: element => element.getAttribute('moni-block-id'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockId) {
+            return { 'moni-block-id': attributes.moniBlockId }
+          }
+          return {}
+        },
+      },
+      moniParentId: {
+        default: null,
+        parseHTML: element => element.getAttribute('moni-parent-id'),
+        renderHTML: attributes => {
+          if (attributes.moniParentId) {
+            return { 'moni-parent-id': attributes.moniParentId }
+          }
+          return {}
         },
       },
     }

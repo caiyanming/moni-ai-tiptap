@@ -42,22 +42,23 @@ export const Paragraph = Node.create<ParagraphOptions>({
 
   addAttributes() {
     return {
-      moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('moni-block-id'),
+      // Override default stream attributes for paragraphs
+      moniStreamType: {
+        default: 'text',
+        parseHTML: element => element.getAttribute('moni-stream-type') || 'text',
         renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'moni-block-id': attributes.moniBlockId }
+          if (attributes.moniStreamType && attributes.moniStreamType !== 'text') {
+            return { 'moni-stream-type': attributes.moniStreamType }
           }
           return {}
         },
       },
-      moniParentId: {
-        default: null,
-        parseHTML: element => element.getAttribute('moni-parent-id'),
+      moniStreamMode: {
+        default: 'replace',
+        parseHTML: element => element.getAttribute('moni-stream-mode') || 'replace',
         renderHTML: attributes => {
-          if (attributes.moniParentId) {
-            return { 'moni-parent-id': attributes.moniParentId }
+          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
+            return { 'moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },
