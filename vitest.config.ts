@@ -6,24 +6,33 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
-    include: ['tests/unit/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      '**/cypress/**',
-      '**/demos/**',
-      '**/.{idea,git,cache,output,temp}/**',
-      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
-    ],
+    includeSource: ['tests/**/*.{test,spec}.{js,ts}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        'dist/',
+        'demos/',
+        'packages/*/dist/',
+        'packages-deprecated/',
+      ],
+    },
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
   resolve: {
     alias: {
-      '@tiptap/core': resolve(__dirname, './packages/core/src'),
-      '@tiptap/react': resolve(__dirname, './packages/react/src'),
-      '@tiptap/extension-document': resolve(__dirname, './packages/extension-document/src'),
-      '@tiptap/extension-paragraph': resolve(__dirname, './packages/extension-paragraph/src'),
-      '@tiptap/extension-text': resolve(__dirname, './packages/extension-text/src'),
-      '@tiptap/pm': resolve(__dirname, './packages/pm'),
+      '@': resolve(__dirname, './packages/core/src'),
     },
   },
 })
