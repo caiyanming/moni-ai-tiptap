@@ -53,6 +53,7 @@ const PACKAGES = [
   'packages/extension-text-style',
   'packages/extension-typography',
   'packages/extension-underline',
+  'packages/extension-unique-id',
 ]
 
 console.log('🚀 开始打包所有 TipTap 包...\n')
