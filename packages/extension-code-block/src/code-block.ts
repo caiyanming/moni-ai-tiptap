@@ -89,6 +89,7 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
 
   addAttributes() {
     return {
+      // 🔥 CodeBlock 特有属性
       language: {
         default: this.options.defaultLanguage,
         parseHTML: element => {
@@ -107,7 +108,82 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
         },
         rendered: false,
       },
-      // Override default stream attributes for code blocks
+      // 🔥 核心块标识属性
+      moniBlockId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockId) {
+            return { 'data-moni-block-id': attributes.moniBlockId }
+          }
+          return {}
+        },
+      },
+      moniParentId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-parent-id'),
+        renderHTML: attributes => {
+          if (attributes.moniParentId) {
+            return { 'data-moni-parent-id': attributes.moniParentId }
+          }
+          return {}
+        },
+      },
+      moniLevel: {
+        default: 0,
+        parseHTML: element => {
+          const level = element.getAttribute('data-moni-level')
+          return level ? parseInt(level, 10) : 0
+        },
+        renderHTML: attributes => {
+          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+            return { 'data-moni-level': attributes.moniLevel.toString() }
+          }
+          return {}
+        },
+      },
+      // 🔥 拖拽行为属性
+      moniDragEnabled: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragEnabled === false) {
+            return { 'data-moni-drag-enabled': 'false' }
+          }
+          return {}
+        },
+      },
+      moniDragHandle: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragHandle === false) {
+            return { 'data-moni-drag-handle': 'false' }
+          }
+          return {}
+        },
+      },
+      moniNestable: {
+        default: false, // 🔥 代码块通常不可嵌套
+        parseHTML: element => element.getAttribute('data-moni-nestable') === 'true',
+        renderHTML: attributes => {
+          if (attributes.moniNestable === true) {
+            return { 'data-moni-nestable': 'true' }
+          }
+          return {}
+        },
+      },
+      moniDragType: {
+        default: 'block',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
+        renderHTML: attributes => {
+          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
+            return { 'data-moni-drag-type': attributes.moniDragType }
+          }
+          return {}
+        },
+      },
+      // 🔥 Stream 属性 - 代码块特定配置
       moniStreamType: {
         default: 'code',
         parseHTML: element => element.getAttribute('data-moni-stream-type') || 'code',
@@ -119,7 +195,7 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
         },
       },
       moniStreamMode: {
-        default: 'append',
+        default: 'append', // 🔥 代码块默认使用 append 模式
         parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'append',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'append') {

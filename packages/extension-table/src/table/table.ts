@@ -253,7 +253,82 @@ export const Table = Node.create<TableOptions>({
 
   addAttributes() {
     return {
-      // Override default stream attributes for tables
+      // 🔥 核心块标识属性 - 对应 Notion 的 table block
+      moniBlockId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockId) {
+            return { 'data-moni-block-id': attributes.moniBlockId }
+          }
+          return {}
+        },
+      },
+      moniParentId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-parent-id'),
+        renderHTML: attributes => {
+          if (attributes.moniParentId) {
+            return { 'data-moni-parent-id': attributes.moniParentId }
+          }
+          return {}
+        },
+      },
+      moniLevel: {
+        default: 0,
+        parseHTML: element => {
+          const level = element.getAttribute('data-moni-level')
+          return level ? parseInt(level, 10) : 0
+        },
+        renderHTML: attributes => {
+          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+            return { 'data-moni-level': attributes.moniLevel.toString() }
+          }
+          return {}
+        },
+      },
+      // 🔥 拖拽行为属性
+      moniDragEnabled: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragEnabled === false) {
+            return { 'data-moni-drag-enabled': 'false' }
+          }
+          return {}
+        },
+      },
+      moniDragHandle: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragHandle === false) {
+            return { 'data-moni-drag-handle': 'false' }
+          }
+          return {}
+        },
+      },
+      moniNestable: {
+        default: false, // 🔥 表格通常不可嵌套
+        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniNestable === true) {
+            return { 'data-moni-nestable': 'true' }
+          }
+          return {}
+        },
+      },
+      moniDragType: {
+        default: 'block',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
+        renderHTML: attributes => {
+          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
+            return { 'data-moni-drag-type': attributes.moniDragType }
+          }
+          return {}
+        },
+      },
+      // 🔥 Stream 属性 - 表格特定配置
       moniStreamType: {
         default: 'table',
         parseHTML: element => element.getAttribute('data-moni-stream-type') || 'table',
@@ -265,7 +340,7 @@ export const Table = Node.create<TableOptions>({
         },
       },
       moniStreamMode: {
-        default: 'replace',
+        default: 'replace', // 🔥 表格默认使用 replace 模式
         parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {

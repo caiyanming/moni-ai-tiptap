@@ -289,7 +289,8 @@ export class DragHandleManager {
     let foundNode: ProseMirrorNode | null = null
 
     this.editor.state.doc.descendants(node => {
-      if (node.attrs['data-moni-block-id'] === blockId) {
+      // 🔥 修复：与其他TipTap Fork插件保持一致，查找moniBlockId
+      if (node.attrs?.moniBlockId === blockId) {
         foundNode = node
         return false // Stop traversal
       }
@@ -303,7 +304,8 @@ export class DragHandleManager {
     let foundPos: number | null = null
 
     this.editor.state.doc.descendants((node, pos) => {
-      if (node.attrs['data-moni-block-id'] === blockId) {
+      // 🔥 修复：与其他TipTap Fork插件保持一致，查找moniBlockId
+      if (node.attrs?.moniBlockId === blockId) {
         foundPos = pos
         return false // Stop traversal
       }

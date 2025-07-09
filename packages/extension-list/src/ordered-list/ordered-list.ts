@@ -86,6 +86,7 @@ export const OrderedList = Node.create<OrderedListOptions>({
         default: null,
         parseHTML: element => element.getAttribute('type'),
       },
+      // 🔥 核心块标识属性 - 对应 Notion 的 numbered list
       moniBlockId: {
         default: null,
         parseHTML: element => element.getAttribute('data-moni-block-id'),
@@ -102,6 +103,81 @@ export const OrderedList = Node.create<OrderedListOptions>({
         renderHTML: attributes => {
           if (attributes.moniParentId) {
             return { 'data-moni-parent-id': attributes.moniParentId }
+          }
+          return {}
+        },
+      },
+      moniLevel: {
+        default: 0,
+        parseHTML: element => {
+          const level = element.getAttribute('data-moni-level')
+          return level ? parseInt(level, 10) : 0
+        },
+        renderHTML: attributes => {
+          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+            return { 'data-moni-level': attributes.moniLevel.toString() }
+          }
+          return {}
+        },
+      },
+      // 🔥 拖拽行为属性
+      moniDragEnabled: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragEnabled === false) {
+            return { 'data-moni-drag-enabled': 'false' }
+          }
+          return {}
+        },
+      },
+      moniDragHandle: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragHandle === false) {
+            return { 'data-moni-drag-handle': 'false' }
+          }
+          return {}
+        },
+      },
+      moniNestable: {
+        default: true, // 🔥 有序列表默认可嵌套
+        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniNestable === false) {
+            return { 'data-moni-nestable': 'false' }
+          }
+          return {}
+        },
+      },
+      moniDragType: {
+        default: 'block',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
+        renderHTML: attributes => {
+          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
+            return { 'data-moni-drag-type': attributes.moniDragType }
+          }
+          return {}
+        },
+      },
+      // 🔥 Stream 属性 - 有序列表特定配置
+      moniStreamType: {
+        default: 'list',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'list',
+        renderHTML: attributes => {
+          if (attributes.moniStreamType && attributes.moniStreamType !== 'list') {
+            return { 'data-moni-stream-type': attributes.moniStreamType }
+          }
+          return {}
+        },
+      },
+      moniStreamMode: {
+        default: 'append', // 🔥 有序列表默认使用 append 模式
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'append',
+        renderHTML: attributes => {
+          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'append') {
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },

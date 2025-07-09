@@ -26,30 +26,8 @@ export const DetailsContent = Node.create<DetailsContentOptions>({
     }
   },
 
-  // 🔥 Add moni attributes support for DetailsContent
   addAttributes() {
-    return {
-      moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
-        renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'data-moni-block-id': attributes.moniBlockId }
-          }
-          return {}
-        },
-      },
-      moniParentId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-parent-id'),
-        renderHTML: attributes => {
-          if (attributes.moniParentId) {
-            return { 'data-moni-parent-id': attributes.moniParentId }
-          }
-          return {}
-        },
-      },
-    }
+    return {}
   },
 
   parseHTML() {

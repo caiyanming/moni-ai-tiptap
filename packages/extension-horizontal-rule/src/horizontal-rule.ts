@@ -37,9 +37,9 @@ export const HorizontalRule = Node.create<HorizontalRuleOptions>({
 
   group: 'block',
 
-  // 🔥 Add moni attributes support for HorizontalRule
   addAttributes() {
     return {
+      // 🔥 核心块标识属性 - 对应 Notion 的 divider block
       moniBlockId: {
         default: null,
         parseHTML: element => element.getAttribute('data-moni-block-id'),
@@ -56,6 +56,81 @@ export const HorizontalRule = Node.create<HorizontalRuleOptions>({
         renderHTML: attributes => {
           if (attributes.moniParentId) {
             return { 'data-moni-parent-id': attributes.moniParentId }
+          }
+          return {}
+        },
+      },
+      moniLevel: {
+        default: 0,
+        parseHTML: element => {
+          const level = element.getAttribute('data-moni-level')
+          return level ? parseInt(level, 10) : 0
+        },
+        renderHTML: attributes => {
+          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+            return { 'data-moni-level': attributes.moniLevel.toString() }
+          }
+          return {}
+        },
+      },
+      // 🔥 拖拽行为属性
+      moniDragEnabled: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragEnabled === false) {
+            return { 'data-moni-drag-enabled': 'false' }
+          }
+          return {}
+        },
+      },
+      moniDragHandle: {
+        default: true,
+        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniDragHandle === false) {
+            return { 'data-moni-drag-handle': 'false' }
+          }
+          return {}
+        },
+      },
+      moniNestable: {
+        default: false, // 🔥 分割线通常不可嵌套
+        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
+        renderHTML: attributes => {
+          if (attributes.moniNestable === true) {
+            return { 'data-moni-nestable': 'true' }
+          }
+          return {}
+        },
+      },
+      moniDragType: {
+        default: 'block',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
+        renderHTML: attributes => {
+          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
+            return { 'data-moni-drag-type': attributes.moniDragType }
+          }
+          return {}
+        },
+      },
+      // 🔥 Stream 属性 - 分割线特定配置
+      moniStreamType: {
+        default: 'divider',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'divider',
+        renderHTML: attributes => {
+          if (attributes.moniStreamType && attributes.moniStreamType !== 'divider') {
+            return { 'data-moni-stream-type': attributes.moniStreamType }
+          }
+          return {}
+        },
+      },
+      moniStreamMode: {
+        default: 'replace', // 🔥 分割线默认使用 replace 模式
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
+        renderHTML: attributes => {
+          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },
