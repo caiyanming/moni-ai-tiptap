@@ -219,9 +219,9 @@ export class MoniDragPlugin {
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
       blockId,
-      dragType: node.attrs['moni-drag-type'] || 'block',
-      level: node.attrs['moni-level'] || 0,
-      parentId: node.attrs['moni-parent-id'] || null,
+      dragType: node.attrs['data-moni-drag-type'] || 'block',
+      level: node.attrs['data-moni-level'] || 0,
+      parentId: node.attrs['data-moni-parent-id'] || null,
     })
 
     this.editor.view.dispatch(tr)
@@ -274,7 +274,7 @@ export class MoniDragPlugin {
       return false
     }
 
-    const targetBlockId = targetBlockElement.getAttribute('moni-block-id')
+    const targetBlockId = targetBlockElement.getAttribute('data-moni-block-id')
     if (!targetBlockId) {
       return false
     }
@@ -321,7 +321,7 @@ export class MoniDragPlugin {
   private findBlockElement(element: HTMLElement): HTMLElement | null {
     let current = element
     while (current && current !== this.editor.view.dom) {
-      if (current.hasAttribute('moni-block-id')) {
+      if (current.hasAttribute('data-moni-block-id')) {
         return current
       }
       current = current.parentElement as HTMLElement

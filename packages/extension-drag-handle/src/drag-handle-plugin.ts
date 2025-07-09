@@ -174,7 +174,7 @@ export class DragIndicatorManager {
     const x = event.clientX
 
     // 检查是否在可嵌套元素上拖拽
-    const nestable = targetElement.getAttribute('moni-nestable') === 'true'
+    const nestable = targetElement.getAttribute('data-moni-nestable') === 'true'
     const leftIndentZone = rect.left + 40 // 左侧40px为缩进区域
 
     if (nestable && x < leftIndentZone) {
@@ -520,7 +520,7 @@ export const DragHandlePlugin = ({
               dragSourceElement: dragSourceElement?.tagName,
             })
 
-            // 查找最近的有moni-block-id的元素
+            // 查找最近的有data-moni-block-id的元素
             let blockElement: HTMLElement | null = target
             let searchDepth = 0
             const maxDepth = 10 // 防止无限循环
@@ -528,16 +528,16 @@ export const DragHandlePlugin = ({
             while (blockElement && blockElement !== document.body && searchDepth < maxDepth) {
               console.log(`🔍 搜索层级 ${searchDepth}:`, {
                 tagName: blockElement.tagName,
-                hasMoniBlockId: blockElement.hasAttribute('moni-block-id'),
-                moniBlockIdValue: blockElement.getAttribute('moni-block-id') || 'N/A',
+                hasMoniBlockId: blockElement.hasAttribute('data-moni-block-id'),
+                moniBlockIdValue: blockElement.getAttribute('data-moni-block-id') || 'N/A',
                 className: blockElement.className || 'No class',
                 isSourceElement: blockElement === dragSourceElement,
               })
 
-              if (blockElement.hasAttribute('moni-block-id')) {
-                console.log('✅ 找到有 moni-block-id 的元素:', {
+              if (blockElement.hasAttribute('data-moni-block-id')) {
+                console.log('✅ 找到有 data-moni-block-id 的元素:', {
                   tagName: blockElement.tagName,
-                  blockId: blockElement.getAttribute('moni-block-id'),
+                  blockId: blockElement.getAttribute('data-moni-block-id'),
                   isSourceElement: blockElement === dragSourceElement,
                 })
                 break
@@ -546,12 +546,12 @@ export const DragHandlePlugin = ({
               searchDepth += 1
             }
 
-            if (blockElement && blockElement.hasAttribute('moni-block-id') && blockElement !== dragSourceElement) {
+            if (blockElement && blockElement.hasAttribute('data-moni-block-id') && blockElement !== dragSourceElement) {
               console.log('🎯 准备显示拖拽指示器:', {
                 targetElement: blockElement.tagName,
-                targetBlockId: blockElement.getAttribute('moni-block-id'),
+                targetBlockId: blockElement.getAttribute('data-moni-block-id'),
                 sourceElement: dragSourceElement?.tagName,
-                sourceBlockId: dragSourceElement?.getAttribute('moni-block-id') || 'N/A',
+                sourceBlockId: dragSourceElement?.getAttribute('data-moni-block-id') || 'N/A',
               })
 
               const dropPosition = indicatorManager?.calculateDropPosition(event, blockElement)
@@ -571,7 +571,7 @@ export const DragHandlePlugin = ({
             } else {
               console.log('❌ 未找到合适的拖拽目标:', {
                 blockElementFound: !!blockElement,
-                hasBlockId: blockElement?.hasAttribute('moni-block-id'),
+                hasBlockId: blockElement?.hasAttribute('data-moni-block-id'),
                 isSameAsSource: blockElement === dragSourceElement,
                 searchDepth,
               })
@@ -593,16 +593,16 @@ export const DragHandlePlugin = ({
 
             const target = event.target as HTMLElement
 
-            // 查找最近的有moni-block-id的元素
+            // 查找最近的有data-moni-block-id的元素
             let blockElement: HTMLElement | null = target
             while (blockElement && blockElement !== document.body) {
-              if (blockElement.hasAttribute('moni-block-id')) {
+              if (blockElement.hasAttribute('data-moni-block-id')) {
                 break
               }
               blockElement = blockElement.parentElement
             }
 
-            if (blockElement && blockElement.hasAttribute('moni-block-id')) {
+            if (blockElement && blockElement.hasAttribute('data-moni-block-id')) {
               const dropPosition = indicatorManager?.calculateDropPosition(event, blockElement)
               if (dropPosition) {
                 console.log('🎯 处理拖拽放置:', { position: dropPosition.position, target: blockElement.tagName })

@@ -61,24 +61,24 @@ describe('Moni Drag System', () => {
       const attributes = paragraphNodeType.spec.attrs || {}
 
       // Basic attributes
-      expect(attributes).to.have.property('moni-block-id')
-      expect(attributes).to.have.property('moni-parent-id')
+      expect(attributes).to.have.property('data-moni-block-id')
+      expect(attributes).to.have.property('data-moni-parent-id')
 
       // Hierarchical structure attributes
-      expect(attributes).to.have.property('moni-level')
-      expect(attributes).to.have.property('moni-depth')
-      expect(attributes).to.have.property('moni-index')
+      expect(attributes).to.have.property('data-moni-level')
+      expect(attributes).to.have.property('data-moni-depth')
+      expect(attributes).to.have.property('data-moni-index')
 
       // Drag behavior attributes
-      expect(attributes).to.have.property('moni-drag-enabled')
-      expect(attributes).to.have.property('moni-drag-handle')
-      expect(attributes).to.have.property('moni-nestable')
-      expect(attributes).to.have.property('moni-drag-type')
+      expect(attributes).to.have.property('data-moni-drag-enabled')
+      expect(attributes).to.have.property('data-moni-drag-handle')
+      expect(attributes).to.have.property('data-moni-nestable')
+      expect(attributes).to.have.property('data-moni-drag-type')
 
       // Drag constraints attributes
-      expect(attributes).to.have.property('moni-drop-targets')
-      expect(attributes).to.have.property('moni-max-nest-level')
-      expect(attributes).to.have.property('moni-can-nest-in')
+      expect(attributes).to.have.property('data-moni-drop-targets')
+      expect(attributes).to.have.property('data-moni-max-nest-level')
+      expect(attributes).to.have.property('data-moni-can-nest-in')
 
       testEditor.destroy()
     })

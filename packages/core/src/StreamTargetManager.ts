@@ -277,7 +277,7 @@ export class StreamTargetManager {
    * 查找块元素
    */
   private findBlockElement(blockId: string): HTMLElement | null {
-    return this.editor.view.dom.querySelector(`[moni-block-id="${blockId}"]`) as HTMLElement
+    return this.editor.view.dom.querySelector(`[data-moni-block-id="${blockId}"]`) as HTMLElement
   }
 
   /**

@@ -85,7 +85,7 @@ export class StreamOperationManager {
    * 添加流式操作到队列
    */
   public queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp'>): boolean {
-    if (this.operationQueue.length >= this.options.maxQueueSize) {
+    if (this.operationQueue.length >= this.options.maxQueueSize!) {
       this.debug(`Queue full, discarding operation for block: ${operation.blockId}`)
       return false
     }
@@ -109,7 +109,7 @@ export class StreamOperationManager {
    * 批量添加操作
    */
   public queueOperations(operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>): boolean {
-    const remainingCapacity = this.options.maxQueueSize - this.operationQueue.length
+    const remainingCapacity = this.options.maxQueueSize! - this.operationQueue.length
 
     if (operations.length > remainingCapacity) {
       this.debug(`Not enough queue capacity: ${operations.length} operations, ${remainingCapacity} available`)
@@ -386,7 +386,7 @@ export class StreamOperationManager {
       queueSize: this.operationQueue.length,
       isProcessing: this.isProcessing,
       isPaused: this.isPaused,
-      maxQueueSize: this.options.maxQueueSize,
+      maxQueueSize: this.options.maxQueueSize!,
     }
   }
 
@@ -451,7 +451,7 @@ export class StreamOperationManager {
    * 生成操作ID
    */
   private generateOperationId(): string {
-    return `op_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    return `op_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
   }
 
   /**

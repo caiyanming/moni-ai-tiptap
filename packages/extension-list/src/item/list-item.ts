@@ -47,20 +47,20 @@ export const ListItem = Node.create<ListItemOptions>({
       // Override default moni attributes for list items
       moniDragType: {
         default: 'list-item',
-        parseHTML: element => element.getAttribute('moni-drag-type') || 'list-item',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'list-item',
         renderHTML: attributes => {
           if (attributes.moniDragType && attributes.moniDragType !== 'list-item') {
-            return { 'moni-drag-type': attributes.moniDragType }
+            return { 'data-moni-drag-type': attributes.moniDragType }
           }
           return {}
         },
       },
       moniNestable: {
         default: true,
-        parseHTML: element => element.getAttribute('moni-nestable') !== 'false',
+        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
         renderHTML: attributes => {
           if (attributes.moniNestable === false) {
-            return { 'moni-nestable': 'false' }
+            return { 'data-moni-nestable': 'false' }
           }
           return {}
         },
@@ -68,12 +68,12 @@ export const ListItem = Node.create<ListItemOptions>({
       moniCanNestIn: {
         default: ['bulletList', 'orderedList', 'listItem'],
         parseHTML: element => {
-          const canNestIn = element.getAttribute('moni-can-nest-in')
+          const canNestIn = element.getAttribute('data-moni-can-nest-in')
           return canNestIn ? canNestIn.split(',').map(t => t.trim()) : ['bulletList', 'orderedList', 'listItem']
         },
         renderHTML: attributes => {
           if (attributes.moniCanNestIn && Array.isArray(attributes.moniCanNestIn)) {
-            return { 'moni-can-nest-in': attributes.moniCanNestIn.join(',') }
+            return { 'data-moni-can-nest-in': attributes.moniCanNestIn.join(',') }
           }
           return {}
         },
@@ -81,12 +81,12 @@ export const ListItem = Node.create<ListItemOptions>({
       moniDropTargets: {
         default: ['listItem', 'bulletList', 'orderedList'],
         parseHTML: element => {
-          const targets = element.getAttribute('moni-drop-targets')
+          const targets = element.getAttribute('data-moni-drop-targets')
           return targets ? targets.split(',').map(t => t.trim()) : ['listItem', 'bulletList', 'orderedList']
         },
         renderHTML: attributes => {
           if (attributes.moniDropTargets && Array.isArray(attributes.moniDropTargets)) {
-            return { 'moni-drop-targets': attributes.moniDropTargets.join(',') }
+            return { 'data-moni-drop-targets': attributes.moniDropTargets.join(',') }
           }
           return {}
         },
@@ -94,7 +94,7 @@ export const ListItem = Node.create<ListItemOptions>({
       moniMaxNestLevel: {
         default: 6,
         parseHTML: element => {
-          const maxLevel = element.getAttribute('moni-max-nest-level')
+          const maxLevel = element.getAttribute('data-moni-max-nest-level')
           return maxLevel ? parseInt(maxLevel, 10) : 6
         },
         renderHTML: attributes => {
@@ -103,7 +103,7 @@ export const ListItem = Node.create<ListItemOptions>({
             attributes.moniMaxNestLevel !== undefined &&
             attributes.moniMaxNestLevel !== 6
           ) {
-            return { 'moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
+            return { 'data-moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
           }
           return {}
         },
@@ -111,20 +111,20 @@ export const ListItem = Node.create<ListItemOptions>({
       // Override default stream attributes for list items
       moniStreamType: {
         default: 'list',
-        parseHTML: element => element.getAttribute('moni-stream-type') || 'list',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'list',
         renderHTML: attributes => {
           if (attributes.moniStreamType && attributes.moniStreamType !== 'list') {
-            return { 'moni-stream-type': attributes.moniStreamType }
+            return { 'data-moni-stream-type': attributes.moniStreamType }
           }
           return {}
         },
       },
       moniStreamMode: {
         default: 'insert',
-        parseHTML: element => element.getAttribute('moni-stream-mode') || 'insert',
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'insert',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'insert') {
-            return { 'moni-stream-mode': attributes.moniStreamMode }
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },

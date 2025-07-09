@@ -293,7 +293,7 @@ export class StreamProgressManager {
       top: 0;
       left: 0;
       right: 0;
-      height: ${progressBarStyle.height};
+      height: ${progressBarStyle?.height || '4px'};
       pointer-events: none;
       z-index: 1000;
     `
@@ -303,8 +303,8 @@ export class StreamProgressManager {
       track.style.cssText = `
         width: 100%;
         height: 100%;
-        background-color: ${progressBarStyle.backgroundColor};
-        border-radius: ${progressBarStyle.borderRadius};
+        background-color: ${progressBarStyle?.backgroundColor || '#f0f0f0'};
+        border-radius: ${progressBarStyle?.borderRadius || '2px'};
         overflow: hidden;
       `
     }
@@ -314,7 +314,7 @@ export class StreamProgressManager {
       fill.style.cssText = `
         width: 0%;
         height: 100%;
-        background-color: ${progressBarStyle.progressColor};
+        background-color: ${progressBarStyle?.progressColor || '#007bff'};
         transition: width 0.2s ease;
       `
     }
@@ -477,7 +477,7 @@ export class StreamProgressManager {
    * 查找块元素
    */
   private findBlockElement(blockId: string): HTMLElement | null {
-    return this.editor.view.dom.querySelector(`[moni-block-id="${blockId}"]`) as HTMLElement
+    return this.editor.view.dom.querySelector(`[data-moni-block-id="${blockId}"]`) as HTMLElement
   }
 
   /**

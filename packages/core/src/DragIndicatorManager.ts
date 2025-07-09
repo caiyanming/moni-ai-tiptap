@@ -140,7 +140,7 @@ export class DragIndicatorManager {
     const x = event.clientX
 
     // Check if we're dragging over a nestable element
-    const nestable = targetElement.getAttribute('moni-nestable') === 'true'
+    const nestable = targetElement.getAttribute('data-moni-nestable') === 'true'
     const leftIndentZone = rect.left + 40 // 40px indent zone on the left
 
     if (nestable && x < leftIndentZone) {
@@ -166,7 +166,7 @@ export class DragIndicatorManager {
     // Find the nearest block element
     let current = target
     while (current && current !== this.containerElement) {
-      if (current.hasAttribute('moni-block-id')) {
+      if (current.hasAttribute('data-moni-block-id')) {
         return current
       }
       current = current.parentElement as HTMLElement
@@ -176,7 +176,7 @@ export class DragIndicatorManager {
   }
 
   private findBlockElement(blockId: string): HTMLElement | null {
-    return this.editor.view.dom.querySelector(`[moni-block-id="${blockId}"]`)
+    return this.editor.view.dom.querySelector(`[data-moni-block-id="${blockId}"]`)
   }
 
   public destroy() {

@@ -45,20 +45,20 @@ export const Paragraph = Node.create<ParagraphOptions>({
       // Override default stream attributes for paragraphs
       moniStreamType: {
         default: 'text',
-        parseHTML: element => element.getAttribute('moni-stream-type') || 'text',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'text',
         renderHTML: attributes => {
           if (attributes.moniStreamType && attributes.moniStreamType !== 'text') {
-            return { 'moni-stream-type': attributes.moniStreamType }
+            return { 'data-moni-stream-type': attributes.moniStreamType }
           }
           return {}
         },
       },
       moniStreamMode: {
         default: 'replace',
-        parseHTML: element => element.getAttribute('moni-stream-mode') || 'replace',
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'moni-stream-mode': attributes.moniStreamMode }
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },

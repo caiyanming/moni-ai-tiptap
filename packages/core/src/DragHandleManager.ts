@@ -34,9 +34,9 @@ export interface DragHandleManagerOptions {
 }
 
 export class DragHandleManager {
-  private editor: Editor
-  private options: DragHandleManagerOptions
-  private handleElement: HTMLElement
+  private readonly editor: Editor
+  private readonly options: DragHandleManagerOptions
+  private readonly handleElement: HTMLElement
   private currentBlockId: string | null = null
   private currentNode: ProseMirrorNode | null = null
   private isDragging = false
@@ -87,15 +87,15 @@ export class DragHandleManager {
       return
     }
 
-    const blockId = blockElement.getAttribute('moni-block-id')
+    const blockId = blockElement.getAttribute('data-moni-block-id')
     if (!blockId) {
       this.hideHandle()
       return
     }
 
     // Check if drag is enabled for this block
-    const dragEnabled = blockElement.getAttribute('moni-drag-enabled') !== 'false'
-    const dragHandle = blockElement.getAttribute('moni-drag-handle') !== 'false'
+    const dragEnabled = blockElement.getAttribute('data-moni-drag-enabled') !== 'false'
+    const dragHandle = blockElement.getAttribute('data-moni-drag-handle') !== 'false'
 
     if (!dragEnabled || !dragHandle) {
       this.hideHandle()
@@ -144,9 +144,9 @@ export class DragHandleManager {
         'application/moni-block',
         JSON.stringify({
           blockId: this.currentBlockId,
-          dragType: this.currentNode.attrs['moni-drag-type'] || 'block',
-          level: this.currentNode.attrs['moni-level'] || 0,
-          parentId: this.currentNode.attrs['moni-parent-id'] || null,
+          dragType: this.currentNode.attrs['data-moni-drag-type'] || 'block',
+          level: this.currentNode.attrs['data-moni-level'] || 0,
+          parentId: this.currentNode.attrs['data-moni-parent-id'] || null,
         }),
       )
     }
@@ -273,7 +273,7 @@ export class DragHandleManager {
   private findBlockElement(element: HTMLElement): HTMLElement | null {
     let current = element
     while (current && current !== this.editor.view.dom) {
-      if (current.hasAttribute('moni-block-id')) {
+      if (current.hasAttribute('data-moni-block-id')) {
         return current
       }
       current = current.parentElement!
@@ -282,14 +282,14 @@ export class DragHandleManager {
   }
 
   private findBlockElementByBlockId(blockId: string): HTMLElement | null {
-    return this.editor.view.dom.querySelector(`[moni-block-id="${blockId}"]`)
+    return this.editor.view.dom.querySelector(`[data-moni-block-id="${blockId}"]`)
   }
 
-  private findNodeByBlockId(blockId: string): ProseMirrorNode | null {
+  public findNodeByBlockId(blockId: string): ProseMirrorNode | null {
     let foundNode: ProseMirrorNode | null = null
 
     this.editor.state.doc.descendants(node => {
-      if (node.attrs['moni-block-id'] === blockId) {
+      if (node.attrs['data-moni-block-id'] === blockId) {
         foundNode = node
         return false // Stop traversal
       }
@@ -303,7 +303,7 @@ export class DragHandleManager {
     let foundPos: number | null = null
 
     this.editor.state.doc.descendants((node, pos) => {
-      if (node.attrs['moni-block-id'] === blockId) {
+      if (node.attrs['data-moni-block-id'] === blockId) {
         foundPos = pos
         return false // Stop traversal
       }

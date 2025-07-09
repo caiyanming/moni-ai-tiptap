@@ -256,20 +256,20 @@ export const Table = Node.create<TableOptions>({
       // Override default stream attributes for tables
       moniStreamType: {
         default: 'table',
-        parseHTML: element => element.getAttribute('moni-stream-type') || 'table',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'table',
         renderHTML: attributes => {
           if (attributes.moniStreamType && attributes.moniStreamType !== 'table') {
-            return { 'moni-stream-type': attributes.moniStreamType }
+            return { 'data-moni-stream-type': attributes.moniStreamType }
           }
           return {}
         },
       },
       moniStreamMode: {
         default: 'replace',
-        parseHTML: element => element.getAttribute('moni-stream-mode') || 'replace',
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'moni-stream-mode': attributes.moniStreamMode }
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },

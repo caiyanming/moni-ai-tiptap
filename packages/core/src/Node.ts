@@ -383,38 +383,38 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
       // Always include core moni attributes
       const enhancedAttributes: Attributes = {
         ...userAttributes,
-        // Core block identification - JavaScript camelCase, HTML kebab-case
+        // Core block identification - JavaScript camelCase, HTML data-kebab-case (符合HTML规范)
         moniBlockId: {
           default: null,
-          parseHTML: element => element.getAttribute('moni-block-id'),
+          parseHTML: element => element.getAttribute('data-moni-block-id'),
           renderHTML: attributes => {
             if (attributes.moniBlockId) {
-              return { 'moni-block-id': attributes.moniBlockId }
+              return { 'data-moni-block-id': attributes.moniBlockId }
             }
             return {}
           },
         },
-        // Core parent relationship - JavaScript camelCase, HTML kebab-case
+        // Core parent relationship - JavaScript camelCase, HTML data-kebab-case (符合HTML规范)
         moniParentId: {
           default: null,
-          parseHTML: element => element.getAttribute('moni-parent-id'),
+          parseHTML: element => element.getAttribute('data-moni-parent-id'),
           renderHTML: attributes => {
             if (attributes.moniParentId) {
-              return { 'moni-parent-id': attributes.moniParentId }
+              return { 'data-moni-parent-id': attributes.moniParentId }
             }
             return {}
           },
         },
-        // Hierarchical structure capabilities
+        // Hierarchical structure capabilities - 符合HTML规范
         moniLevel: {
           default: 0,
           parseHTML: element => {
-            const level = element.getAttribute('moni-level')
+            const level = element.getAttribute('data-moni-level')
             return level ? parseInt(level, 10) : 0
           },
           renderHTML: attributes => {
             if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
-              return { 'moni-level': attributes.moniLevel.toString() }
+              return { 'data-moni-level': attributes.moniLevel.toString() }
             }
             return {}
           },
@@ -422,12 +422,12 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniDepth: {
           default: 0,
           parseHTML: element => {
-            const depth = element.getAttribute('moni-depth')
+            const depth = element.getAttribute('data-moni-depth')
             return depth ? parseInt(depth, 10) : 0
           },
           renderHTML: attributes => {
             if (attributes.moniDepth !== undefined && attributes.moniDepth !== 0) {
-              return { 'moni-depth': attributes.moniDepth.toString() }
+              return { 'data-moni-depth': attributes.moniDepth.toString() }
             }
             return {}
           },
@@ -435,53 +435,53 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniIndex: {
           default: 0,
           parseHTML: element => {
-            const index = element.getAttribute('moni-index')
+            const index = element.getAttribute('data-moni-index')
             return index ? parseInt(index, 10) : 0
           },
           renderHTML: attributes => {
             if (attributes.moniIndex !== undefined && attributes.moniIndex !== 0) {
-              return { 'moni-index': attributes.moniIndex.toString() }
+              return { 'data-moni-index': attributes.moniIndex.toString() }
             }
             return {}
           },
         },
-        // Drag behavior capabilities
+        // Drag behavior capabilities - 符合HTML规范
         moniDragEnabled: {
           default: true,
-          parseHTML: element => element.getAttribute('moni-drag-enabled') === 'true',
+          parseHTML: element => element.getAttribute('data-moni-drag-enabled') === 'true',
           renderHTML: attributes => {
             if (attributes.moniDragEnabled === false) {
-              return { 'moni-drag-enabled': 'false' }
+              return { 'data-moni-drag-enabled': 'false' }
             }
             return {}
           },
         },
         moniDragHandle: {
           default: true,
-          parseHTML: element => element.getAttribute('moni-drag-handle') !== 'false',
+          parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
           renderHTML: attributes => {
             if (attributes.moniDragHandle === false) {
-              return { 'moni-drag-handle': 'false' }
+              return { 'data-moni-drag-handle': 'false' }
             }
             return {}
           },
         },
         moniNestable: {
           default: false,
-          parseHTML: element => element.getAttribute('moni-nestable') === 'true',
+          parseHTML: element => element.getAttribute('data-moni-nestable') === 'true',
           renderHTML: attributes => {
             if (attributes.moniNestable === true) {
-              return { 'moni-nestable': 'true' }
+              return { 'data-moni-nestable': 'true' }
             }
             return {}
           },
         },
         moniDragType: {
           default: 'block',
-          parseHTML: element => element.getAttribute('moni-drag-type') || 'block',
+          parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
           renderHTML: attributes => {
             if (attributes.moniDragType && attributes.moniDragType !== 'block') {
-              return { 'moni-drag-type': attributes.moniDragType }
+              return { 'data-moni-drag-type': attributes.moniDragType }
             }
             return {}
           },
@@ -490,12 +490,12 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniDropTargets: {
           default: null,
           parseHTML: element => {
-            const targets = element.getAttribute('moni-drop-targets')
+            const targets = element.getAttribute('data-moni-drop-targets')
             return targets ? targets.split(',').map(t => t.trim()) : null
           },
           renderHTML: attributes => {
             if (attributes.moniDropTargets && Array.isArray(attributes.moniDropTargets)) {
-              return { 'moni-drop-targets': attributes.moniDropTargets.join(',') }
+              return { 'data-moni-drop-targets': attributes.moniDropTargets.join(',') }
             }
             return {}
           },
@@ -503,12 +503,12 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniMaxNestLevel: {
           default: null,
           parseHTML: element => {
-            const maxLevel = element.getAttribute('moni-max-nest-level')
+            const maxLevel = element.getAttribute('data-moni-max-nest-level')
             return maxLevel ? parseInt(maxLevel, 10) : null
           },
           renderHTML: attributes => {
             if (attributes.moniMaxNestLevel !== null && attributes.moniMaxNestLevel !== undefined) {
-              return { 'moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
+              return { 'data-moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
             }
             return {}
           },
@@ -516,54 +516,54 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniCanNestIn: {
           default: null,
           parseHTML: element => {
-            const canNestIn = element.getAttribute('moni-can-nest-in')
+            const canNestIn = element.getAttribute('data-moni-can-nest-in')
             return canNestIn ? canNestIn.split(',').map(t => t.trim()) : null
           },
           renderHTML: attributes => {
             if (attributes.moniCanNestIn && Array.isArray(attributes.moniCanNestIn)) {
-              return { 'moni-can-nest-in': attributes.moniCanNestIn.join(',') }
+              return { 'data-moni-can-nest-in': attributes.moniCanNestIn.join(',') }
             }
             return {}
           },
         },
-        // Stream identification capabilities - native support without switches
+        // Stream identification capabilities - native support without switches, 符合HTML规范
         moniStreamId: {
           default: null,
-          parseHTML: element => element.getAttribute('moni-stream-id'),
+          parseHTML: element => element.getAttribute('data-moni-stream-id'),
           renderHTML: attributes => {
             if (attributes.moniStreamId) {
-              return { 'moni-stream-id': attributes.moniStreamId }
+              return { 'data-moni-stream-id': attributes.moniStreamId }
             }
             return {}
           },
         },
         moniStreamTarget: {
           default: false,
-          parseHTML: element => element.getAttribute('moni-stream-target') === 'true',
+          parseHTML: element => element.getAttribute('data-moni-stream-target') === 'true',
           renderHTML: attributes => {
             if (attributes.moniStreamTarget === true) {
-              return { 'moni-stream-target': 'true' }
+              return { 'data-moni-stream-target': 'true' }
             }
             return {}
           },
         },
-        // Stream type capabilities
+        // Stream type capabilities - 符合HTML规范
         moniStreamType: {
           default: 'text',
-          parseHTML: element => element.getAttribute('moni-stream-type') || 'text',
+          parseHTML: element => element.getAttribute('data-moni-stream-type') || 'text',
           renderHTML: attributes => {
             if (attributes.moniStreamType && attributes.moniStreamType !== 'text') {
-              return { 'moni-stream-type': attributes.moniStreamType }
+              return { 'data-moni-stream-type': attributes.moniStreamType }
             }
             return {}
           },
         },
         moniStreamMode: {
           default: 'replace',
-          parseHTML: element => element.getAttribute('moni-stream-mode') || 'replace',
+          parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
           renderHTML: attributes => {
             if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-              return { 'moni-stream-mode': attributes.moniStreamMode }
+              return { 'data-moni-stream-mode': attributes.moniStreamMode }
             }
             return {}
           },
@@ -572,12 +572,12 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniOperationQueue: {
           default: null,
           parseHTML: element => {
-            const queue = element.getAttribute('moni-operation-queue')
+            const queue = element.getAttribute('data-moni-operation-queue')
             return queue ? JSON.parse(queue) : null
           },
           renderHTML: attributes => {
             if (attributes.moniOperationQueue && Array.isArray(attributes.moniOperationQueue)) {
-              return { 'moni-operation-queue': JSON.stringify(attributes.moniOperationQueue) }
+              return { 'data-moni-operation-queue': JSON.stringify(attributes.moniOperationQueue) }
             }
             return {}
           },
@@ -585,22 +585,22 @@ export class Node<Options = any, Storage = any> extends Extendable<Options, Stor
         moniStreamProgress: {
           default: 0,
           parseHTML: element => {
-            const progress = element.getAttribute('moni-stream-progress')
+            const progress = element.getAttribute('data-moni-stream-progress')
             return progress ? parseFloat(progress) : 0
           },
           renderHTML: attributes => {
             if (attributes.moniStreamProgress !== undefined && attributes.moniStreamProgress !== 0) {
-              return { 'moni-stream-progress': attributes.moniStreamProgress.toString() }
+              return { 'data-moni-stream-progress': attributes.moniStreamProgress.toString() }
             }
             return {}
           },
         },
         moniStreamStatus: {
           default: 'idle',
-          parseHTML: element => element.getAttribute('moni-stream-status') || 'idle',
+          parseHTML: element => element.getAttribute('data-moni-stream-status') || 'idle',
           renderHTML: attributes => {
             if (attributes.moniStreamStatus && attributes.moniStreamStatus !== 'idle') {
-              return { 'moni-stream-status': attributes.moniStreamStatus }
+              return { 'data-moni-stream-status': attributes.moniStreamStatus }
             }
             return {}
           },

@@ -81,8 +81,8 @@ export interface SmartDragResult {
  */
 export class SmartDragCalculator {
   private config: SmartDragConfig
-  private cache = new Map<string, SmartDragResult>()
-  private editor: Editor
+  private readonly cache = new Map<string, SmartDragResult>()
+  private readonly editor: Editor
 
   constructor(editor: Editor, config: Partial<SmartDragConfig> = {}) {
     this.editor = editor
@@ -135,11 +135,11 @@ export class SmartDragCalculator {
       }
     }
 
-    const editorElement = this.editor.view.dom as HTMLElement
+    const editorElement = this.editor.view.dom
 
     // 获取所有块元素
-    const blockElements = Array.from(editorElement.querySelectorAll('[moni-block-id]')) as HTMLElement[]
-    const filteredElements = blockElements.filter(el => el.getAttribute('moni-block-id') !== draggedId)
+    const blockElements = Array.from(editorElement.querySelectorAll('[data-moni-block-id]'))
+    const filteredElements = blockElements.filter(el => el.getAttribute('data-moni-block-id') !== draggedId)
 
     const candidates: CandidatePosition[] = []
 
@@ -163,9 +163,9 @@ export class SmartDragCalculator {
           return
         }
 
-        const blockId = element.getAttribute('moni-block-id') || `block-${index}`
-        const nestingLevel = parseInt(element.getAttribute('moni-level') || '0', 10) || 0
-        const nestable = element.getAttribute('moni-nestable') === 'true'
+        const blockId = element.getAttribute('data-moni-block-id') || `block-${index}`
+        const nestingLevel = parseInt(element.getAttribute('data-moni-level') || '0', 10) || 0
+        const nestable = element.getAttribute('data-moni-nestable') === 'true'
 
         // 计算相对位置
         const relativeY = (clientY - rect.top) / rect.height
@@ -184,7 +184,7 @@ export class SmartDragCalculator {
             confidence: Math.max(0.1, Math.min(1.0, 1 - relativeY / 0.25)),
             priority: 80 + (1 - distance / this.config.searchRadius) * 20,
             metadata: {
-              targetElement: element,
+              targetElement: element as HTMLElement,
               originalLevel: nestingLevel,
               targetLevel: nestingLevel,
               distanceFromMouse: distance,
@@ -204,7 +204,7 @@ export class SmartDragCalculator {
             confidence: Math.max(0.1, Math.min(1.0, (relativeY - 0.75) / 0.25)),
             priority: 80 + (1 - distance / this.config.searchRadius) * 20,
             metadata: {
-              targetElement: element,
+              targetElement: element as HTMLElement,
               originalLevel: nestingLevel,
               targetLevel: nestingLevel,
               distanceFromMouse: distance,
@@ -229,7 +229,7 @@ export class SmartDragCalculator {
             confidence: Math.max(0.1, Math.min(1.0, relativeX)),
             priority: 70 + (1 - distance / this.config.searchRadius) * 30,
             metadata: {
-              targetElement: element,
+              targetElement: element as HTMLElement,
               isValidNesting: true,
               nestingDirection: 'increase',
               originalLevel: nestingLevel,
@@ -254,7 +254,7 @@ export class SmartDragCalculator {
               confidence: Math.max(0.1, Math.min(1.0, 1 - relativeX / 0.2)),
               priority: 85 + (1 - distance / this.config.searchRadius) * 15,
               metadata: {
-                targetElement: element,
+                targetElement: element as HTMLElement,
                 originalLevel: nestingLevel,
                 targetLevel: nestingLevel,
                 distanceFromMouse: distance,
@@ -274,7 +274,7 @@ export class SmartDragCalculator {
               confidence: Math.max(0.1, Math.min(1.0, (relativeX - 0.8) / 0.2)),
               priority: 85 + (1 - distance / this.config.searchRadius) * 15,
               metadata: {
-                targetElement: element,
+                targetElement: element as HTMLElement,
                 originalLevel: nestingLevel,
                 targetLevel: nestingLevel,
                 distanceFromMouse: distance,
@@ -320,7 +320,7 @@ export class SmartDragCalculator {
     if (this.config.enableDebug) {
       result.debugInfo = {
         mousePosition: { x: clientX, y: clientY },
-        blockElements: filteredElements,
+        blockElements: filteredElements as HTMLElement[],
       }
     }
 

@@ -66,20 +66,20 @@ export const Details = Node.create<DetailsOptions>({
         // 🔥 Moni block attributes - for non-persistent details
         moniBlockId: {
           default: null,
-          parseHTML: element => element.getAttribute('moni-block-id'),
+          parseHTML: element => element.getAttribute('data-moni-block-id'),
           renderHTML: attributes => {
             if (attributes.moniBlockId) {
-              return { 'moni-block-id': attributes.moniBlockId }
+              return { 'data-moni-block-id': attributes.moniBlockId }
             }
             return {}
           },
         },
         moniParentId: {
           default: null,
-          parseHTML: element => element.getAttribute('moni-parent-id'),
+          parseHTML: element => element.getAttribute('data-moni-parent-id'),
           renderHTML: attributes => {
             if (attributes.moniParentId) {
-              return { 'moni-parent-id': attributes.moniParentId }
+              return { 'data-moni-parent-id': attributes.moniParentId }
             }
             return {}
           },
@@ -102,20 +102,20 @@ export const Details = Node.create<DetailsOptions>({
       // 🔥 Moni block attributes - for persistent details
       moniBlockId: {
         default: null,
-        parseHTML: element => element.getAttribute('moni-block-id'),
+        parseHTML: element => element.getAttribute('data-moni-block-id'),
         renderHTML: attributes => {
           if (attributes.moniBlockId) {
-            return { 'moni-block-id': attributes.moniBlockId }
+            return { 'data-moni-block-id': attributes.moniBlockId }
           }
           return {}
         },
       },
       moniParentId: {
         default: null,
-        parseHTML: element => element.getAttribute('moni-parent-id'),
+        parseHTML: element => element.getAttribute('data-moni-parent-id'),
         renderHTML: attributes => {
           if (attributes.moniParentId) {
-            return { 'moni-parent-id': attributes.moniParentId }
+            return { 'data-moni-parent-id': attributes.moniParentId }
           }
           return {}
         },

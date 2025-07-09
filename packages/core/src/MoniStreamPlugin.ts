@@ -119,8 +119,8 @@ export class MoniStreamPlugin {
   private readonly operationManager: StreamOperationManager
   private readonly progressManager: StreamProgressManager
   private readonly sessions: Map<string, StreamSession> = new Map()
-  private pluginKey: PluginKey
-  private plugin: Plugin
+  private readonly pluginKey: PluginKey
+  private readonly plugin: Plugin
 
   constructor(editor: Editor, options: MoniStreamPluginOptions = {}) {
     this.editor = editor
@@ -135,9 +135,9 @@ export class MoniStreamPlugin {
 
     // 传播调试配置
     if (this.options.debug) {
-      this.options.targetManager.debug = true
-      this.options.operationManager.debug = true
-      this.options.progressManager.debug = true
+      this.options.targetManager!.debug = true
+      this.options.operationManager!.debug = true
+      this.options.progressManager!.debug = true
     }
 
     // 初始化管理器

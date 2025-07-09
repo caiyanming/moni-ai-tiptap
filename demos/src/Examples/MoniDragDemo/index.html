@@ -306,16 +306,16 @@
         MoniParagraph,
       ],
       content: `
-        <p moni-block-id="demo-block-1" moni-drag-enabled="true" moni-level="0">
+        <p data-moni-block-id="demo-block-1" data-moni-drag-enabled="true" data-moni-level="0">
           Welcome to Moni Drag System! This block has native drag support.
         </p>
-        <p moni-block-id="demo-block-2" moni-drag-enabled="true" moni-level="0">
-          Each block has a unique moni-block-id and supports drag operations.
+        <p data-moni-block-id="demo-block-2" data-moni-drag-enabled="true" data-moni-level="0">
+          Each block has a unique data-moni-block-id and supports drag operations.
         </p>
-        <p moni-block-id="demo-block-3" moni-parent-id="demo-block-2" moni-level="1" moni-nestable="true">
+        <p data-moni-block-id="demo-block-3" data-moni-parent-id="demo-block-2" data-moni-level="1" data-moni-nestable="true">
           This is a nested block with level 1. Notice the parent-child relationship.
         </p>
-        <p moni-block-id="demo-block-4" moni-drag-enabled="false" moni-level="0">
+        <p data-moni-block-id="demo-block-4" data-moni-drag-enabled="false" data-moni-level="0">
           This block has drag disabled. Try the controls above to experiment!
         </p>
       `,
@@ -334,7 +334,7 @@
     window.addBlock = () => {
       const blockId = `demo-block-${blockCounter++}`
       editor.commands.insertContent(
-        `<p moni-block-id="${blockId}" moni-drag-enabled="true" moni-level="0">New block ${blockId}</p>`
+        `<p data-moni-block-id="${blockId}" data-moni-drag-enabled="true" data-moni-level="0">New block ${blockId}</p>`
       )
       updateStats()
     }

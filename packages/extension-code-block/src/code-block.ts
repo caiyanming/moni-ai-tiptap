@@ -110,20 +110,20 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
       // Override default stream attributes for code blocks
       moniStreamType: {
         default: 'code',
-        parseHTML: element => element.getAttribute('moni-stream-type') || 'code',
+        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'code',
         renderHTML: attributes => {
           if (attributes.moniStreamType && attributes.moniStreamType !== 'code') {
-            return { 'moni-stream-type': attributes.moniStreamType }
+            return { 'data-moni-stream-type': attributes.moniStreamType }
           }
           return {}
         },
       },
       moniStreamMode: {
         default: 'append',
-        parseHTML: element => element.getAttribute('moni-stream-mode') || 'append',
+        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'append',
         renderHTML: attributes => {
           if (attributes.moniStreamMode && attributes.moniStreamMode !== 'append') {
-            return { 'moni-stream-mode': attributes.moniStreamMode }
+            return { 'data-moni-stream-mode': attributes.moniStreamMode }
           }
           return {}
         },

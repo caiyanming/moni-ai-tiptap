@@ -36,20 +36,20 @@ export class DragOperationManager {
 
     // Check nesting constraints
     if (operation.position === 'inside') {
-      const targetNestable = operation.targetNode.attrs?.['moni-nestable'] ?? false
+      const targetNestable = operation.targetNode.attrs?.['data-moni-nestable'] ?? false
       if (!targetNestable) {
         return { valid: false, reason: 'Target does not support nesting' }
       }
 
-      const sourceCanNestIn = operation.sourceNode.attrs?.['moni-can-nest-in'] ?? []
-      const targetDragType = operation.targetNode.attrs?.['moni-drag-type'] ?? 'block'
+      const sourceCanNestIn = operation.sourceNode.attrs?.['data-moni-can-nest-in'] ?? []
+      const targetDragType = operation.targetNode.attrs?.['data-moni-drag-type'] ?? 'block'
 
       if (sourceCanNestIn.length > 0 && !sourceCanNestIn.includes(targetDragType)) {
         return { valid: false, reason: 'Source cannot nest in target type' }
       }
 
-      const targetMaxLevel = operation.targetNode.attrs?.['moni-max-nest-level'] ?? 0
-      const currentLevel = operation.targetNode.attrs?.['moni-level'] ?? 0
+      const targetMaxLevel = operation.targetNode.attrs?.['data-moni-max-nest-level'] ?? 0
+      const currentLevel = operation.targetNode.attrs?.['data-moni-level'] ?? 0
 
       if (currentLevel >= targetMaxLevel) {
         return { valid: false, reason: 'Maximum nesting level reached' }
@@ -121,8 +121,8 @@ export class DragOperationManager {
 
     // Update node attributes
     this.updateNodeAttributes(tr, adjustedTargetPos, {
-      'moni-parent-id': operation.targetNode.attrs?.['moni-parent-id'] ?? null,
-      'moni-level': operation.targetNode.attrs?.['moni-level'] ?? 0,
+      'data-moni-parent-id': operation.targetNode.attrs?.['data-moni-parent-id'] ?? null,
+      'data-moni-level': operation.targetNode.attrs?.['data-moni-level'] ?? 0,
     })
   }
 
@@ -148,8 +148,8 @@ export class DragOperationManager {
 
     // Update node attributes
     this.updateNodeAttributes(tr, insertPos, {
-      'moni-parent-id': operation.targetNode.attrs?.['moni-parent-id'] ?? null,
-      'moni-level': operation.targetNode.attrs?.['moni-level'] ?? 0,
+      'data-moni-parent-id': operation.targetNode.attrs?.['data-moni-parent-id'] ?? null,
+      'data-moni-level': operation.targetNode.attrs?.['data-moni-level'] ?? 0,
     })
   }
 
@@ -174,10 +174,10 @@ export class DragOperationManager {
     tr.insert(insertPos, sourceNode)
 
     // Update node attributes for nesting
-    const newLevel = (operation.targetNode.attrs?.['moni-level'] ?? 0) + 1
+    const newLevel = (operation.targetNode.attrs?.['data-moni-level'] ?? 0) + 1
     this.updateNodeAttributes(tr, insertPos, {
-      'moni-parent-id': operation.targetBlockId,
-      'moni-level': newLevel,
+      'data-moni-parent-id': operation.targetBlockId,
+      'data-moni-level': newLevel,
     })
   }
 
