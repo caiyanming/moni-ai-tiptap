@@ -5,6 +5,7 @@ import {
   type StreamOperation,
   type StreamOperationOptions,
   type StreamOperationResult,
+  BlockOperationType,
   StreamOperationManager,
 } from './StreamOperationManager.js'
 import {
@@ -364,7 +365,7 @@ export class MoniStreamPlugin {
     const operations = chunks.map(chunk => ({
       sessionId,
       blockId,
-      type: 'append' as const,
+      type: BlockOperationType.APPEND,
       content: chunk,
     }))
 
@@ -379,7 +380,7 @@ export class MoniStreamPlugin {
     const operations = chunks.map(chunk => ({
       sessionId,
       blockId,
-      type: 'append' as const,
+      type: BlockOperationType.APPEND,
       content: chunk,
     }))
 
@@ -401,7 +402,7 @@ export class MoniStreamPlugin {
     const operations = chunks.map(chunk => ({
       sessionId,
       blockId,
-      type: 'append' as const,
+      type: BlockOperationType.APPEND,
       content: chunk,
     }))
 

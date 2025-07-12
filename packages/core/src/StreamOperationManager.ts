@@ -28,15 +28,60 @@ export interface StreamOperationOptions {
   onOperationComplete?: (operation: StreamOperation, result: StreamOperationResult) => void
 }
 
+/**
+ * 统一的 Block 操作类型枚举
+ * 🔥 权威类型定义 - 前端和后端都应该使用此枚举
+ * 🎯 零映射架构 - 减少类型转换开销
+ */
+export enum BlockOperationType {
+  INSERT = 'insert',
+  REPLACE = 'replace',
+  APPEND = 'append',
+  DELETE = 'delete',
+}
+
+/**
+ * Block 操作状态枚举
+ */
+export enum BlockOperationStatus {
+  PENDING = 'pending',
+  USER_APPROVED = 'user_approved',
+  EXECUTED = 'executed',
+  REJECTED = 'rejected',
+  FAILED = 'failed',
+}
+
 export interface StreamOperation {
   id: string
   sessionId: string
   blockId: string
-  type: 'insert' | 'replace' | 'append' | 'delete'
+  type: BlockOperationType
   content: string
   position?: number
   timestamp: number
   metadata?: Record<string, any>
+}
+
+/**
+ * 完整的 Block 操作接口
+ * 🔥 与前端 BlockOperation 完全兼容
+ */
+export interface BlockOperation {
+  id: string
+  type: BlockOperationType
+  targetId: string
+  content: Record<string, any>
+  position?: number
+  canExecute: boolean
+  status: BlockOperationStatus
+  progress?: number
+  timestamp?: string
+  metadata?: {
+    userIntent?: string
+    sessionId?: string
+    originalType?: string
+    [key: string]: unknown
+  }
 }
 
 export interface StreamOperationResult {
