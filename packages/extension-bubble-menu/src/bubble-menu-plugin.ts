@@ -313,8 +313,10 @@ export class BubbleMenuView implements PluginView {
 
   updatePosition() {
     const { selection } = this.editor.state
+    const domRect = posToDOMRect(this.view, selection.from, selection.to)
     let virtualElement = {
-      getBoundingClientRect: () => posToDOMRect(this.view, selection.from, selection.to),
+      getBoundingClientRect: () => domRect,
+      getClientRects: () => [domRect],
     }
 
     // this is a special case for cell selections
@@ -341,6 +343,7 @@ export class BubbleMenuView implements PluginView {
 
       virtualElement = {
         getBoundingClientRect: () => clientRect,
+        getClientRects: () => [clientRect],
       }
     }
 
