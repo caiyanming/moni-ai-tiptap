@@ -726,6 +726,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/extension-hierarchy-node:
+    devDependencies:
+      '@tiptap/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/extension-highlight:
     devDependencies:
       '@tiptap/core':
