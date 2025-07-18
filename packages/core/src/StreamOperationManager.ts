@@ -75,7 +75,7 @@ export interface BlockOperation {
   canExecute: boolean
   status: BlockOperationStatus
   progress?: number
-  timestamp?: string
+  timestamp?: number
   metadata?: {
     userIntent?: string
     sessionId?: string
