@@ -1,4 +1,5 @@
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import { Fragment } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
 
 import type { Editor } from './Editor.js'
@@ -34,10 +35,10 @@ export interface StreamOperationOptions {
  * 🎯 零映射架构 - 减少类型转换开销
  */
 export enum BlockOperationType {
-  INSERT = 'insert',
-  REPLACE = 'replace',
-  APPEND = 'append',
-  DELETE = 'delete',
+  INSERT = 'insert', // 在block list中插入新block
+  REPLACE = 'replace', // 替换现有block
+  APPEND = 'append', // 在block list末尾添加新block
+  DELETE = 'delete', // 删除现有block
 }
 
 /**
@@ -56,7 +57,7 @@ export interface StreamOperation {
   sessionId: string
   blockId: string
   type: BlockOperationType
-  content: string
+  content: string | Record<string, any> // 支持字符串或JSON对象
   position?: number
   timestamp: number
   metadata?: Record<string, any>
@@ -212,9 +213,14 @@ export class StreamOperationManager {
 
       this.debug(`Operation completed: ${operation.id}`, result)
 
-      // 调用完成回调
+      // 调用完成回调 - 🔧 添加异常处理边界
       if (this.options.onOperationComplete) {
-        this.options.onOperationComplete(operation, result)
+        try {
+          this.options.onOperationComplete(operation, result)
+        } catch (callbackError) {
+          this.debug(`Operation callback error: ${operation.id}`, callbackError)
+          // 回调错误不应影响操作处理流程，仅记录日志
+        }
       }
     } catch (error) {
       const result: StreamOperationResult = {
@@ -226,42 +232,43 @@ export class StreamOperationManager {
 
       this.debug(`Operation failed: ${operation.id}`, error)
 
-      // 调用完成回调（即使失败也要通知）
+      // 调用完成回调（即使失败也要通知） - 🔧 添加异常处理边界
       if (this.options.onOperationComplete) {
-        this.options.onOperationComplete(operation, result)
+        try {
+          this.options.onOperationComplete(operation, result)
+        } catch (callbackError) {
+          this.debug(`Operation callback error: ${operation.id}`, callbackError)
+          // 回调错误不应影响操作处理流程，仅记录日志
+        }
       }
     }
 
-    // 安排下一个操作
-    this.processingTimer = window.setTimeout(() => {
+    // 安排下一个操作 - 🔧 跨环境兼容性修复
+    const globalSetTimeout = typeof window !== 'undefined' ? window.setTimeout : setTimeout
+    this.processingTimer = globalSetTimeout(() => {
       this.processNextOperation()
-    }, this.options.operationInterval)
+    }, this.options.operationInterval) as number
   }
 
   /**
    * 执行单个操作
    */
   private executeOperation(operation: StreamOperation): StreamOperationResult {
-    const nodeInfo = this.findNodeByBlockId(operation.blockId)
-    if (!nodeInfo) {
-      throw new Error(`Target node not found: ${operation.blockId}`)
-    }
-
     const { tr } = this.editor.view.state
     let result: StreamOperationResult
 
     switch (operation.type) {
       case 'replace':
-        result = this.executeReplaceOperation(tr, nodeInfo, operation)
+        result = this.executeReplaceOperation(tr, operation)
         break
       case 'append':
-        result = this.executeAppendOperation(tr, nodeInfo, operation)
+        result = this.executeAppendOperation(tr, operation)
         break
       case 'insert':
-        result = this.executeInsertOperation(tr, nodeInfo, operation)
+        result = this.executeInsertOperation(tr, operation)
         break
       case 'delete':
-        result = this.executeDeleteOperation(tr, nodeInfo, operation)
+        result = this.executeDeleteOperation(tr, operation)
         break
       default:
         throw new Error(`Unsupported operation type: ${(operation as any).type}`)
@@ -274,111 +281,198 @@ export class StreamOperationManager {
   }
 
   /**
-   * 执行替换操作
+   * 执行替换操作 - 替换现有block
    */
-  private executeReplaceOperation(
-    tr: Transaction,
-    nodeInfo: { node: ProseMirrorNode; position: number },
-    operation: StreamOperation,
-  ): StreamOperationResult {
+  private executeReplaceOperation(tr: Transaction, operation: StreamOperation): StreamOperationResult {
+    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    if (!nodeInfo) {
+      throw new Error(`Target block not found: ${operation.blockId}`)
+    }
+
     const { node, position } = nodeInfo
     const nodeSize = node.nodeSize
 
-    // 创建新内容
-    const newContent = this.editor.schema.text(operation.content)
-    const newNode = node.type.create(node.attrs, newContent)
+    // 创建新block
+    const newBlock = this.createBlockFromContent(operation.content)
+    if (!newBlock) {
+      throw new Error('Failed to create block from content')
+    }
 
-    // 替换节点
-    tr.replaceWith(position, position + nodeSize, newNode)
+    // 替换block
+    tr.replaceWith(position, position + nodeSize, newBlock)
 
     return {
       success: true,
       operation,
       newPosition: position,
-      affectedRange: { from: position, to: position + newNode.nodeSize },
+      affectedRange: { from: position, to: position + newBlock.nodeSize },
     }
   }
 
   /**
-   * 执行追加操作
+   * 执行追加操作 - 在block list末尾添加新block
    */
-  private executeAppendOperation(
-    tr: Transaction,
-    nodeInfo: { node: ProseMirrorNode; position: number },
-    operation: StreamOperation,
-  ): StreamOperationResult {
-    const { node, position } = nodeInfo
-    const nodeSize = node.nodeSize
+  private executeAppendOperation(tr: Transaction, operation: StreamOperation): StreamOperationResult {
+    const { doc } = this.editor.view.state
+    const appendPosition = doc.content.size
 
-    // 获取当前内容
-    const currentContent = node.textContent || ''
-    const newContent = currentContent + operation.content
+    // 创建新block
+    const newBlock = this.createBlockFromContent(operation.content)
+    if (!newBlock) {
+      throw new Error('Failed to create block from content')
+    }
 
-    // 创建新节点
-    const newTextNode = this.editor.schema.text(newContent)
-    const newNode = node.type.create(node.attrs, newTextNode)
-
-    // 替换节点
-    tr.replaceWith(position, position + nodeSize, newNode)
+    // 在文档末尾插入新block
+    tr.insert(appendPosition, newBlock)
 
     return {
       success: true,
       operation,
-      newPosition: position,
-      affectedRange: { from: position, to: position + newNode.nodeSize },
+      newPosition: appendPosition,
+      affectedRange: { from: appendPosition, to: appendPosition + newBlock.nodeSize },
     }
   }
 
   /**
-   * 执行插入操作
+   * 执行插入操作 - 在block list中插入新block
    */
-  private executeInsertOperation(
-    tr: Transaction,
-    nodeInfo: { node: ProseMirrorNode; position: number },
-    operation: StreamOperation,
-  ): StreamOperationResult {
-    const { node, position } = nodeInfo
-    const insertPos = operation.position || 0
+  private executeInsertOperation(tr: Transaction, operation: StreamOperation): StreamOperationResult {
+    let insertPosition: number
 
-    // 获取当前内容
-    const currentContent = node.textContent || ''
-    const beforeContent = currentContent.slice(0, insertPos)
-    const afterContent = currentContent.slice(insertPos)
-    const newContent = beforeContent + operation.content + afterContent
+    if (operation.blockId === 'document-root' || operation.blockId === '') {
+      // 在文档开头插入
+      insertPosition = 0
+    } else {
+      // 在指定block前插入
+      const nodeInfo = this.findNodeByBlockId(operation.blockId)
+      if (!nodeInfo) {
+        throw new Error(`Target block not found: ${operation.blockId}`)
+      }
+      insertPosition = nodeInfo.position
+    }
 
-    // 创建新节点
-    const newTextNode = this.editor.schema.text(newContent)
-    const newNode = node.type.create(node.attrs, newTextNode)
+    // 创建新block
+    const newBlock = this.createBlockFromContent(operation.content)
+    if (!newBlock) {
+      throw new Error('Failed to create block from content')
+    }
 
-    // 替换节点
-    tr.replaceWith(position, position + node.nodeSize, newNode)
+    // 插入新block
+    tr.insert(insertPosition, newBlock)
 
     return {
       success: true,
       operation,
-      newPosition: position,
-      affectedRange: { from: position, to: position + newNode.nodeSize },
+      newPosition: insertPosition,
+      affectedRange: { from: insertPosition, to: insertPosition + newBlock.nodeSize },
     }
   }
 
   /**
-   * 执行删除操作
+   * 执行删除操作 - 删除现有block
    */
-  private executeDeleteOperation(
-    tr: Transaction,
-    nodeInfo: { node: ProseMirrorNode; position: number },
-    operation: StreamOperation,
-  ): StreamOperationResult {
+  private executeDeleteOperation(tr: Transaction, operation: StreamOperation): StreamOperationResult {
+    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    if (!nodeInfo) {
+      throw new Error(`Target block not found: ${operation.blockId}`)
+    }
+
     const { node, position } = nodeInfo
     const nodeSize = node.nodeSize
 
-    // 删除节点
+    // 删除block
     tr.delete(position, position + nodeSize)
 
     return {
       success: true,
       operation,
       affectedRange: { from: position, to: position + nodeSize },
+    }
+  }
+
+  /**
+   * 从内容创建block节点
+   */
+  private createBlockFromContent(content: string | Record<string, any>): ProseMirrorNode | null {
+    try {
+      if (typeof content === 'string') {
+        // 简单文本内容，创建段落block
+        return this.editor.schema.nodes.paragraph.create(
+          {
+            moniBlockId: `block_${crypto.randomUUID()}`,
+            moniParentId: null,
+            moniLevel: 0,
+          },
+          this.editor.schema.text(content),
+        )
+      }
+
+      if (typeof content === 'object' && content !== null) {
+        // JSON对象内容，尝试解析为TipTap节点
+        return this.createBlockFromJSON(content)
+      }
+
+      return null
+    } catch (error) {
+      this.debug('Failed to create block from content:', error)
+      return null
+    }
+  }
+
+  /**
+   * 从JSON对象创建block节点
+   */
+  private createBlockFromJSON(jsonContent: Record<string, any>): ProseMirrorNode | null {
+    try {
+      const { type, attrs = {}, content = [] } = jsonContent
+
+      // 确保有moniBlockId
+      const blockAttrs = {
+        moniBlockId: attrs.moniBlockId || `block_${crypto.randomUUID()}`,
+        moniParentId: attrs.moniParentId || null,
+        moniLevel: attrs.moniLevel || 0,
+        ...attrs,
+      }
+
+      // 根据类型创建节点
+      const nodeType = this.editor.schema.nodes[type]
+      if (!nodeType) {
+        this.debug(`Unknown node type: ${type}`)
+        // 降级为段落
+        return this.editor.schema.nodes.paragraph.create(
+          blockAttrs,
+          this.editor.schema.text(JSON.stringify(jsonContent)),
+        )
+      }
+
+      // 处理内容
+      let nodeContent: Fragment | null = null
+      if (Array.isArray(content) && content.length > 0) {
+        const contentNodes = content
+          .map(item => {
+            if (typeof item === 'string') {
+              return this.editor.schema.text(item)
+            }
+
+            if (typeof item === 'object' && item.type) {
+              return this.createBlockFromJSON(item)
+            }
+
+            return null
+          })
+          .filter(Boolean) as ProseMirrorNode[]
+
+        if (contentNodes.length > 0) {
+          nodeContent = Fragment.fromArray(contentNodes)
+        }
+      } else if (typeof jsonContent.text === 'string') {
+        nodeContent = Fragment.fromArray([this.editor.schema.text(jsonContent.text)])
+      }
+
+      return nodeType.create(blockAttrs, nodeContent)
+    } catch (error) {
+      this.debug('Failed to create block from JSON:', error)
+      return null
     }
   }
 
@@ -458,7 +552,8 @@ export class StreamOperationManager {
     this.isPaused = true
     this.isProcessing = false
     if (this.processingTimer) {
-      clearTimeout(this.processingTimer)
+      const globalClearTimeout = typeof window !== 'undefined' ? window.clearTimeout : clearTimeout
+      globalClearTimeout(this.processingTimer)
       this.processingTimer = null
     }
     this.debug('Processing paused')

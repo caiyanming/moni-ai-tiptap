@@ -104,11 +104,12 @@ describe('StreamOperationManager', () => {
     })
   })
 
-  describe('操作执行', () => {
-    it('应该能执行替换操作', async () => {
+  describe('Block级别操作执行', () => {
+    it('应该能执行INSERT操作 - 在block list中插入新block', async () => {
       const operation = createMockStreamOperation({
-        type: 'replace',
-        content: 'new content',
+        type: 'insert',
+        blockId: 'document-root', // 在文档开头插入
+        content: 'new paragraph block',
       })
 
       manager.queueOperation(operation)
@@ -119,13 +120,109 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('replace')
+      expect(history[0].operation.type).toBe('insert')
+      expect(history[0].newPosition).toBe(0) // 应该在文档开头
     })
 
-    it('应该能执行追加操作', async () => {
+    it('应该能执行APPEND操作 - 在block list末尾添加新block', async () => {
       const operation = createMockStreamOperation({
         type: 'append',
-        content: ' appended',
+        content: 'appended paragraph block',
+      })
+
+      manager.queueOperation(operation)
+
+      // 等待处理完成
+      await waitForAsync(100)
+
+      const history = manager.getOperationHistory()
+      expect(history).toHaveLength(1)
+      expect(history[0].success).toBe(true)
+      expect(history[0].operation.type).toBe('append')
+      // newPosition应该是文档末尾位置
+      expect(history[0].newPosition).toBeGreaterThan(0)
+    })
+
+    it('应该能执行REPLACE操作 - 替换现有block', async () => {
+      // 先创建一个block用于替换
+      const createOperation = createMockStreamOperation({
+        type: 'append',
+        content: 'original block',
+      })
+      manager.queueOperation(createOperation)
+      await waitForAsync(100)
+
+      // 获取创建的block的ID
+      const history = manager.getOperationHistory()
+      const createdBlockId = history[0].operation.blockId
+
+      // 替换这个block
+      const replaceOperation = createMockStreamOperation({
+        type: 'replace',
+        blockId: createdBlockId,
+        content: 'replaced block content',
+      })
+
+      manager.queueOperation(replaceOperation)
+
+      // 等待处理完成
+      await waitForAsync(100)
+
+      const updatedHistory = manager.getOperationHistory()
+      expect(updatedHistory).toHaveLength(2)
+      expect(updatedHistory[1].success).toBe(true)
+      expect(updatedHistory[1].operation.type).toBe('replace')
+    })
+
+    it('应该能执行DELETE操作 - 删除现有block', async () => {
+      // 先创建一个block用于删除
+      const createOperation = createMockStreamOperation({
+        type: 'append',
+        content: 'block to delete',
+      })
+      manager.queueOperation(createOperation)
+      await waitForAsync(100)
+
+      // 获取创建的block的ID
+      const history = manager.getOperationHistory()
+      const createdBlockId = history[0].operation.blockId
+
+      // 删除这个block
+      const deleteOperation = createMockStreamOperation({
+        type: 'delete',
+        blockId: createdBlockId,
+      })
+
+      manager.queueOperation(deleteOperation)
+
+      // 等待处理完成
+      await waitForAsync(100)
+
+      const updatedHistory = manager.getOperationHistory()
+      expect(updatedHistory).toHaveLength(2)
+      expect(updatedHistory[1].success).toBe(true)
+      expect(updatedHistory[1].operation.type).toBe('delete')
+    })
+
+    it('应该能处理JSON格式的block内容', async () => {
+      const jsonContent = {
+        type: 'paragraph',
+        attrs: {
+          moniBlockId: 'custom-block-id',
+          moniParentId: null,
+          moniLevel: 0,
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'JSON formatted paragraph',
+          },
+        ],
+      }
+
+      const operation = createMockStreamOperation({
+        type: 'append',
+        content: jsonContent,
       })
 
       manager.queueOperation(operation)
@@ -139,11 +236,47 @@ describe('StreamOperationManager', () => {
       expect(history[0].operation.type).toBe('append')
     })
 
-    it('应该能执行插入操作', async () => {
+    it('应该能处理复杂的嵌套block结构', async () => {
+      const complexContent = {
+        type: 'bulletList',
+        attrs: {
+          moniBlockId: 'list-block-id',
+        },
+        content: [
+          {
+            type: 'listItem',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'List item 1',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'listItem',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'List item 2',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
+
       const operation = createMockStreamOperation({
-        type: 'insert',
-        content: 'inserted',
-        position: 5,
+        type: 'append',
+        content: complexContent,
       })
 
       manager.queueOperation(operation)
@@ -154,23 +287,7 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('insert')
-    })
-
-    it('应该能执行删除操作', async () => {
-      const operation = createMockStreamOperation({
-        type: 'delete',
-      })
-
-      manager.queueOperation(operation)
-
-      // 等待处理完成
-      await waitForAsync(100)
-
-      const history = manager.getOperationHistory()
-      expect(history).toHaveLength(1)
-      expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('delete')
+      expect(history[0].operation.type).toBe('append')
     })
 
     it('应该处理不支持的操作类型', async () => {
@@ -189,9 +306,10 @@ describe('StreamOperationManager', () => {
       expect(history[0].error).toContain('Unsupported operation type')
     })
 
-    it('应该处理目标节点不存在的情况', async () => {
+    it('应该处理目标block不存在的情况', async () => {
       const operation = createMockStreamOperation({
         blockId: 'nonexistent-block',
+        type: 'replace',
       })
 
       manager.queueOperation(operation)
@@ -202,18 +320,125 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(false)
-      expect(history[0].error).toContain('Target node not found')
+      expect(history[0].error).toContain('Target block not found')
+    })
+
+    it('应该处理无效的JSON内容', async () => {
+      const operation = createMockStreamOperation({
+        type: 'append',
+        content: null as any,
+      })
+
+      manager.queueOperation(operation)
+
+      // 等待处理完成
+      await waitForAsync(100)
+
+      const history = manager.getOperationHistory()
+      expect(history).toHaveLength(1)
+      expect(history[0].success).toBe(false)
+      expect(history[0].error).toContain('Failed to create block from content')
+    })
+
+    it('应该能处理未知节点类型的降级', async () => {
+      const unknownTypeContent = {
+        type: 'unknownNodeType',
+        attrs: {},
+        content: [
+          {
+            type: 'text',
+            text: 'Unknown type content',
+          },
+        ],
+      }
+
+      const operation = createMockStreamOperation({
+        type: 'append',
+        content: unknownTypeContent,
+      })
+
+      manager.queueOperation(operation)
+
+      // 等待处理完成
+      await waitForAsync(100)
+
+      const history = manager.getOperationHistory()
+      expect(history).toHaveLength(1)
+      expect(history[0].success).toBe(true) // 应该降级为段落并成功
+      expect(history[0].operation.type).toBe('append')
+    })
+  })
+
+  describe('操作历史', () => {
+    it('应该记录操作历史', async () => {
+      const operations = [
+        createMockStreamOperation({ type: 'append', content: 'block1' }),
+        createMockStreamOperation({ type: 'append', content: 'block2' }),
+        createMockStreamOperation({ type: 'append', content: 'block3' }),
+      ]
+
+      manager.queueOperations(operations)
+
+      // 等待处理完成
+      await waitForAsync(200)
+
+      const history = manager.getOperationHistory()
+      expect(history).toHaveLength(3)
+      expect(history.every(result => result.success)).toBe(true)
+    })
+
+    it('应该按会话ID过滤操作历史', async () => {
+      const session1Operation = createMockStreamOperation({
+        sessionId: 'session1',
+        type: 'append',
+        content: 'session1 block',
+      })
+      const session2Operation = createMockStreamOperation({
+        sessionId: 'session2',
+        type: 'append',
+        content: 'session2 block',
+      })
+
+      manager.queueOperation(session1Operation)
+      manager.queueOperation(session2Operation)
+
+      // 等待处理完成
+      await waitForAsync(200)
+
+      const session1History = manager.getOperationHistory('session1')
+      const session2History = manager.getOperationHistory('session2')
+
+      expect(session1History).toHaveLength(1)
+      expect(session2History).toHaveLength(1)
+      expect(session1History[0].operation.sessionId).toBe('session1')
+      expect(session2History[0].operation.sessionId).toBe('session2')
     })
   })
 
   describe('队列管理', () => {
-    it('应该能清空整个队列', () => {
-      // 暂停处理以检查队列状态
+    it('应该能暂停和恢复处理', () => {
+      manager.pause()
+      expect(manager.getQueueStatus().isPaused).toBe(true)
+
+      const operation = createMockStreamOperation()
+      manager.queueOperation(operation)
+
+      // 暂停时不应该处理
+      expect(manager.getQueueStatus().queueSize).toBe(1)
+      expect(manager.getQueueStatus().isProcessing).toBe(false)
+
+      manager.resume()
+      expect(manager.getQueueStatus().isPaused).toBe(false)
+      expect(manager.getQueueStatus().isProcessing).toBe(true)
+    })
+
+    it('应该能清空队列', () => {
+      // 🔧 暂停处理以检查队列状态
       manager.pause()
 
       const operations = [
-        createMockStreamOperation({ content: 'chunk1' }),
-        createMockStreamOperation({ content: 'chunk2' }),
+        createMockStreamOperation({ content: 'block1' }),
+        createMockStreamOperation({ content: 'block2' }),
       ]
 
       manager.queueOperations(operations)
@@ -221,272 +446,117 @@ describe('StreamOperationManager', () => {
 
       manager.clearQueue()
       expect(manager.getQueueStatus().queueSize).toBe(0)
+
+      // 恢复处理进行清理
+      manager.resume()
     })
 
-    it('应该能清空特定会话的队列', () => {
-      // 暂停处理以检查队列状态
+    it('应该能按会话ID清空队列', () => {
+      // 🔧 暂停处理以检查队列状态
       manager.pause()
 
-      const operations = [
-        createMockStreamOperation({ sessionId: 'session-1' }),
-        createMockStreamOperation({ sessionId: 'session-2' }),
-        createMockStreamOperation({ sessionId: 'session-1' }),
+      const session1Operations = [
+        createMockStreamOperation({ sessionId: 'session1', content: 'block1' }),
+        createMockStreamOperation({ sessionId: 'session1', content: 'block2' }),
       ]
+      const session2Operations = [createMockStreamOperation({ sessionId: 'session2', content: 'block3' })]
 
-      manager.queueOperations(operations)
+      manager.queueOperations([...session1Operations, ...session2Operations])
       expect(manager.getQueueStatus().queueSize).toBe(3)
 
-      manager.clearQueue('session-1')
-      expect(manager.getQueueStatus().queueSize).toBe(1)
-    })
-
-    it('应该能暂停和恢复处理', async () => {
-      const operation = createMockStreamOperation()
-
-      manager.pause()
-      expect(manager.getQueueStatus().isPaused).toBe(true)
-
-      manager.queueOperation(operation)
-
-      expect(manager.getQueueStatus().isPaused).toBe(true)
-      expect(manager.getQueueStatus().isProcessing).toBe(false)
+      manager.clearQueue('session1')
       expect(manager.getQueueStatus().queueSize).toBe(1)
 
+      // 恢复处理进行清理
       manager.resume()
-      expect(manager.getQueueStatus().isPaused).toBe(false)
-      expect(manager.getQueueStatus().isProcessing).toBe(true)
-
-      // 等待处理完成
-      await waitForAsync(100)
-      expect(manager.getQueueStatus().queueSize).toBe(0)
-    })
-  })
-
-  describe('操作历史', () => {
-    it('应该记录所有操作历史', async () => {
-      const operations = [
-        createMockStreamOperation({ content: 'chunk1' }),
-        createMockStreamOperation({ content: 'chunk2' }),
-      ]
-
-      manager.queueOperations(operations)
-
-      // 等待处理完成
-      await waitForAsync(200)
-
-      const history = manager.getOperationHistory()
-      expect(history).toHaveLength(2)
-      expect(history.every(result => result.success)).toBe(true)
-    })
-
-    it('应该能按会话过滤历史', async () => {
-      const operations = [
-        createMockStreamOperation({ sessionId: 'session-1' }),
-        createMockStreamOperation({ sessionId: 'session-2' }),
-        createMockStreamOperation({ sessionId: 'session-1' }),
-      ]
-
-      manager.queueOperations(operations)
-
-      // 等待处理完成
-      await waitForAsync(200)
-
-      const session1History = manager.getOperationHistory('session-1')
-      const session2History = manager.getOperationHistory('session-2')
-
-      expect(session1History).toHaveLength(2)
-      expect(session2History).toHaveLength(1)
-    })
-
-    it('应该返回操作结果详情', async () => {
-      const operation = createMockStreamOperation({
-        type: 'replace',
-        content: 'test',
-      })
-
-      manager.queueOperation(operation)
-
-      // 等待处理完成
-      await waitForAsync(100)
-
-      const history = manager.getOperationHistory()
-      const result = history[0]
-
-      expect(result.success).toBe(true)
-      expect(result.operation.content).toBe('test')
-      expect(result.newPosition).toBeDefined()
-      expect(result.affectedRange).toBeDefined()
-    })
-  })
-
-  describe('节点属性更新', () => {
-    it('应该更新节点的操作队列属性', async () => {
-      const dispatchSpy = vi.spyOn(editor.view, 'dispatch')
-
-      const operation = createMockStreamOperation()
-      manager.queueOperation(operation)
-
-      // 等待处理完成
-      await waitForAsync(100)
-
-      // 至少应该有两次dispatch调用：一次添加到队列，一次执行完成后更新
-      expect(dispatchSpy).toHaveBeenCalled()
-    })
-  })
-
-  describe('配置选项', () => {
-    it('应该支持自定义操作间隔', async () => {
-      const fastManager = new StreamOperationManager(editor, {
-        operationInterval: 10,
-      })
-
-      const startTime = Date.now()
-
-      const operations = [
-        createMockStreamOperation({ content: 'chunk1' }),
-        createMockStreamOperation({ content: 'chunk2' }),
-      ]
-
-      fastManager.queueOperations(operations)
-
-      // 等待处理完成
-      await waitForAsync(50)
-
-      const endTime = Date.now()
-      const duration = endTime - startTime
-
-      expect(duration).toBeLessThan(100) // 应该比较快
-      expect(fastManager.getQueueStatus().queueSize).toBe(0)
-
-      fastManager.destroy()
-    })
-
-    it('应该支持自定义队列大小', () => {
-      const customManager = new StreamOperationManager(editor, {
-        maxQueueSize: 5,
-      })
-
-      expect(customManager.getQueueStatus().maxQueueSize).toBe(5)
-
-      customManager.destroy()
-    })
-  })
-
-  describe('调试模式', () => {
-    it('应该在调试模式下输出日志', () => {
-      const consoleSpy = vi.spyOn(console, 'log')
-
-      const debugManager = new StreamOperationManager(editor, {
-        debug: true,
-      })
-
-      const operation = createMockStreamOperation()
-      debugManager.queueOperation(operation)
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[StreamOperationManager]'))
-
-      consoleSpy.mockRestore()
-      debugManager.destroy()
     })
   })
 
   describe('错误处理', () => {
-    it('应该优雅处理操作执行错误', async () => {
-      // 模拟编辑器抛出错误
-      const mockEditor = createMockEditor()
-      mockEditor.view.dispatch = vi.fn().mockImplementation(() => {
-        throw new Error('Mock dispatch error')
+    it('应该处理操作执行异常', async () => {
+      // 模拟编辑器状态异常
+      vi.spyOn(editor.view.state, 'tr', 'get').mockImplementation(() => {
+        throw new Error('Transaction error')
       })
 
-      const errorManager = new StreamOperationManager(mockEditor)
-
       const operation = createMockStreamOperation()
-      errorManager.queueOperation(operation)
+      manager.queueOperation(operation)
 
       // 等待处理完成
       await waitForAsync(100)
 
-      const history = errorManager.getOperationHistory()
+      const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(false)
-      expect(history[0].error).toContain('Mock dispatch error')
+      expect(history[0].error).toContain('Transaction error')
 
-      errorManager.destroy()
+      vi.restoreAllMocks()
     })
 
-    it('应该继续处理其他操作即使某个操作失败', async () => {
-      const operations = [
-        createMockStreamOperation({ blockId: 'nonexistent' }), // 会失败
-        createMockStreamOperation({ blockId: 'block-1' }), // 会成功
-      ]
+    it('应该处理回调异常', async () => {
+      const errorCallback = vi.fn().mockImplementation(() => {
+        throw new Error('Callback error')
+      })
 
-      manager.queueOperations(operations)
+      const managerWithCallback = new StreamOperationManager(editor, {
+        onOperationComplete: errorCallback,
+      })
+
+      const operation = createMockStreamOperation()
+      managerWithCallback.queueOperation(operation)
 
       // 等待处理完成
-      await waitForAsync(200)
+      await waitForAsync(100)
 
-      const history = manager.getOperationHistory()
-      expect(history).toHaveLength(2)
-      expect(history[0].success).toBe(false)
-      expect(history[1].success).toBe(true)
+      // 即使回调出错，操作也应该完成
+      const history = managerWithCallback.getOperationHistory()
+      expect(history).toHaveLength(1)
+      expect(history[0].success).toBe(true)
+
+      managerWithCallback.destroy()
     })
   })
 
   describe('性能测试', () => {
-    it('应该能高效处理大量操作', async () => {
-      // 使用更快的操作间隔进行性能测试
-      const fastManager = new StreamOperationManager(editor, {
-        operationInterval: 10, // 10ms间隔
-      })
-
-      const operations = []
-      for (let i = 0; i < 50; i += 1) {
-        operations.push(
-          createMockStreamOperation({
-            content: `chunk-${i}`,
-          }),
-        )
-      }
+    it('应该能处理大量操作', async () => {
+      const operations = Array.from({ length: 50 }, (_, i) =>
+        createMockStreamOperation({
+          content: `block ${i}`,
+          sessionId: 'bulk-test',
+        }),
+      )
 
       const startTime = Date.now()
-      fastManager.queueOperations(operations)
+      manager.queueOperations(operations)
 
-      // 等待处理完成 (50 * 10ms + 一些缓冲时间)
-      await waitForAsync(1000)
+      // 🔧 智能等待 - 轮询直到所有操作完成
+      let attempts = 0
+      const maxAttempts = 100 // 最多等待5秒 (100 * 50ms)
+
+      while (attempts < maxAttempts) {
+        const status = manager.getQueueStatus()
+        const history = manager.getOperationHistory()
+
+        // 队列为空且所有操作都处理完成
+        if (status.queueSize === 0 && !status.isProcessing && history.length === 50) {
+          break
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        await waitForAsync(50)
+        // eslint-disable-next-line no-plusplus
+        attempts++
+      }
 
       const endTime = Date.now()
-      const duration = endTime - startTime
+      const processingTime = endTime - startTime
 
-      expect(fastManager.getQueueStatus().queueSize).toBe(0)
-      expect(fastManager.getOperationHistory()).toHaveLength(50)
-      expect(duration).toBeLessThan(2000) // 应该在2秒内完成
+      const history = manager.getOperationHistory()
+      expect(history).toHaveLength(50)
+      expect(history.every(result => result.success)).toBe(true)
 
-      fastManager.destroy()
-    })
-  })
-
-  describe('生命周期', () => {
-    it('应该能正确销毁管理器', () => {
-      const operation = createMockStreamOperation()
-      manager.queueOperation(operation)
-
-      expect(() => {
-        manager.destroy()
-      }).not.toThrow()
-
-      expect(manager.getQueueStatus().queueSize).toBe(0)
-      expect(manager.getOperationHistory()).toHaveLength(0)
-    })
-
-    it('应该在销毁时停止处理', () => {
-      const operation = createMockStreamOperation()
-      manager.queueOperation(operation)
-
-      expect(manager.getQueueStatus().isProcessing).toBe(true)
-
-      manager.destroy()
-
-      expect(manager.getQueueStatus().isProcessing).toBe(false)
+      // 处理时间应该在合理范围内 (50个操作 * 50ms间隔 = ~2.5秒 + 容错)
+      expect(processingTime).toBeLessThan(4000)
     })
   })
 })

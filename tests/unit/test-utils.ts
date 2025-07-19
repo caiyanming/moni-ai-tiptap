@@ -49,25 +49,50 @@ export interface EditorView {
 /**
  * 创建Mock节点
  */
-function createMockNode(typeName: string, attrs: Record<string, any> = {}): ProseMirrorNode {
+function createMockNode(typeName: string, attrs?: Record<string, any>, content?: any): ProseMirrorNode {
+  // 🔧 动态计算nodeSize - 根据内容长度
+  const nodeAttrs = attrs || {}
+  const calculateNodeSize = (nodeType: string, nodeContent?: any): number => {
+    if (nodeType === 'text') {
+      const textContent = nodeAttrs.text || nodeAttrs.textContent || ''
+      return textContent.length + 1 // text节点大小 = 文本长度 + 1
+    }
+
+    // 块级节点大小 = 2(开始+结束标记) + 内容大小
+    if (nodeContent && typeof nodeContent === 'object' && nodeContent.textContent) {
+      return nodeContent.textContent.length + 2
+    }
+
+    // 默认块级节点大小
+    return 2
+  }
+
+  const nodeSize = calculateNodeSize(typeName, content)
+  const textContent =
+    typeName === 'text' ? nodeAttrs.text || nodeAttrs.textContent || '' : content?.textContent || 'Mock Content'
+
   const mockNode = {
     type: {
       name: typeName,
-      create: vi.fn().mockImplementation((newAttrs?: any, content?: any) => {
-        // 创建新节点时返回相同结构
+      create: vi.fn().mockImplementation((newAttrs?: any, newContent?: any) => {
+        // 创建新节点时返回相同结构，但重新计算size
+        const newSize = calculateNodeSize(typeName, newContent)
+        const newTextContent = typeName === 'text' ? newAttrs?.text || '' : newContent?.textContent || 'Mock Content'
+
         return {
           ...mockNode,
-          attrs: newAttrs || attrs,
-          content: content || null,
-          textContent: content?.textContent || (typeName === 'text' ? newAttrs?.text || '' : 'Mock Content'),
+          attrs: newAttrs || nodeAttrs,
+          content: newContent || null,
+          nodeSize: newSize,
+          textContent: newTextContent,
         }
       }),
       createAndFill: vi.fn(),
     },
-    attrs,
-    content: null,
-    nodeSize: 1,
-    textContent: typeName === 'text' ? attrs.text || attrs.textContent || '' : 'Mock Content',
+    attrs: nodeAttrs,
+    content: content || null,
+    nodeSize,
+    textContent,
     marks: [],
   } as ProseMirrorNode
 
@@ -86,8 +111,67 @@ function createMockSchema(): Schema {
         group: 'block',
         parseDOM: [{ tag: 'p' }],
         toDOM: () => ['p', 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('paragraph', attrs, content)),
       },
-      text: { group: 'inline' },
+      heading: {
+        content: 'inline*',
+        group: 'block',
+        defining: true,
+        parseDOM: [{ tag: 'h1' }, { tag: 'h2' }, { tag: 'h3' }, { tag: 'h4' }, { tag: 'h5' }, { tag: 'h6' }],
+        toDOM: (node: any) => [`h${node.attrs.level}`, 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('heading', attrs, content)),
+      },
+      codeBlock: {
+        content: 'text*',
+        marks: '',
+        group: 'block',
+        code: true,
+        defining: true,
+        parseDOM: [{ tag: 'pre', preserveWhitespace: 'full' }],
+        toDOM: () => ['pre', ['code', 0]],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('codeBlock', attrs, content)),
+      },
+      bulletList: {
+        content: 'listItem+',
+        group: 'block list',
+        parseDOM: [{ tag: 'ul' }],
+        toDOM: () => ['ul', 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('bulletList', attrs, content)),
+      },
+      orderedList: {
+        content: 'listItem+',
+        group: 'block list',
+        parseDOM: [{ tag: 'ol' }],
+        toDOM: () => ['ol', 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('orderedList', attrs, content)),
+      },
+      listItem: {
+        content: 'paragraph block*',
+        defining: true,
+        parseDOM: [{ tag: 'li' }],
+        toDOM: () => ['li', 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('listItem', attrs, content)),
+      },
+      blockquote: {
+        content: 'block+',
+        group: 'block',
+        defining: true,
+        parseDOM: [{ tag: 'blockquote' }],
+        toDOM: () => ['blockquote', 0],
+        create: vi.fn().mockImplementation((attrs: any, content: any) => createMockNode('blockquote', attrs, content)),
+      },
+      horizontalRule: {
+        group: 'block',
+        parseDOM: [{ tag: 'hr' }],
+        toDOM: () => ['hr'],
+        create: vi
+          .fn()
+          .mockImplementation((attrs: any, content: any) => createMockNode('horizontalRule', attrs, content)),
+      },
+      text: {
+        group: 'inline',
+        create: vi.fn().mockImplementation((attrs: any) => createMockNode('text', attrs)),
+      },
     },
     marks: {},
     text: (text: string) => createMockNode('text', { text }),
@@ -120,10 +204,45 @@ function createMockDocument(schema: Schema): ProseMirrorNode {
     moniOperationQueue: [],
   })
 
+  const heading = createMockNode('heading', {
+    moniBlockId: 'block-3',
+    level: 1,
+    moniStreamType: 'text',
+    moniStreamMode: 'replace',
+    moniStreamId: null,
+    moniStreamTarget: false,
+    moniStreamStatus: 'idle',
+    moniStreamProgress: 0,
+    moniOperationQueue: [],
+  })
+
+  const codeBlock = createMockNode('codeBlock', {
+    moniBlockId: 'block-4',
+    language: 'javascript',
+    moniStreamType: 'text',
+    moniStreamMode: 'replace',
+    moniStreamId: null,
+    moniStreamTarget: false,
+    moniStreamStatus: 'idle',
+    moniStreamProgress: 0,
+    moniOperationQueue: [],
+  })
+
+  // 🔧 动态计算文档大小 - 根据子节点实际大小
+  const childNodes = [paragraph1, paragraph2, heading, codeBlock]
+  const totalContentSize = childNodes.reduce((sum, node) => sum + node.nodeSize, 0)
+  const docSize = totalContentSize + 2 // 文档节点 = 内容大小 + 开始结束标记
+
   const doc = {
     type: { name: 'doc', schema },
-    content: [paragraph1, paragraph2],
-    nodeSize: 4,
+    content: {
+      size: totalContentSize, // 🔥 添加content.size属性 - APPEND操作需要此属性
+      // 模拟Fragment的基本方法
+      forEach: vi.fn(callback => {
+        childNodes.forEach((node, index) => callback(node, index))
+      }),
+    },
+    nodeSize: docSize,
     textContent: 'Mock Document Content',
     attrs: {},
     marks: [],
@@ -134,12 +253,12 @@ function createMockDocument(schema: Schema): ProseMirrorNode {
         return
       }
 
-      // 遍历子节点（position 1, 2）
-      const nodes = [paragraph1, paragraph2]
-      nodes.forEach((node, index) => {
+      // 遍历子节点（position 1, 2, 3, 4）
+      childNodes.forEach((node, index) => {
         const result = callback(node, index + 1) // 子节点的position从1开始
         if (result === false) {
           // 提前退出遍历
+          
         }
       })
     }),
@@ -163,6 +282,7 @@ function createMockTransaction(doc: ProseMirrorNode): Transaction {
   ;(transaction as any).replaceWith = vi.fn().mockReturnValue(transaction)
   ;(transaction as any).delete = vi.fn().mockReturnValue(transaction)
   ;(transaction as any).insertText = vi.fn().mockReturnValue(transaction)
+  ;(transaction as any).insert = vi.fn().mockReturnValue(transaction) // 添加insert方法支持
 
   return transaction
 }
@@ -277,11 +397,81 @@ export function createMockStreamOperation(overrides: Partial<any> = {}) {
     id: `operation-${Date.now()}`,
     sessionId: 'session-1',
     blockId: 'block-1',
-    type: 'replace',
-    content: 'Mock content',
+    type: 'append', // 默认使用append操作
+    content: 'Mock paragraph content', // 默认内容
     timestamp: Date.now(),
     ...overrides,
   }
+}
+
+/**
+ * 创建Mock block内容（JSON格式）
+ */
+export function createMockBlockContent(
+  type: string = 'paragraph',
+  text: string = 'Mock content',
+  attrs: Record<string, any> = {},
+) {
+  return {
+    type,
+    attrs: {
+      moniBlockId: `block_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`,
+      moniParentId: null,
+      moniLevel: 0,
+      ...attrs,
+    },
+    content: [
+      {
+        type: 'text',
+        text,
+      },
+    ],
+  }
+}
+
+/**
+ * 创建Mock复杂block内容（如列表）
+ */
+export function createMockComplexBlockContent(type: string = 'bulletList', items: string[] = ['Item 1', 'Item 2']) {
+  return {
+    type,
+    attrs: {
+      moniBlockId: `list_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`,
+      moniParentId: null,
+      moniLevel: 0,
+    },
+    content: items.map(item => ({
+      type: 'listItem',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: item,
+            },
+          ],
+        },
+      ],
+    })),
+  }
+}
+
+/**
+ * 创建Mock标题block内容
+ */
+export function createMockHeadingContent(level: number = 1, text: string = 'Mock heading') {
+  return createMockBlockContent('heading', text, { level })
+}
+
+/**
+ * 创建Mock代码块内容
+ */
+export function createMockCodeBlockContent(
+  language: string = 'javascript',
+  code: string = 'console.log("Hello World");',
+) {
+  return createMockBlockContent('codeBlock', code, { language })
 }
 
 /**
