@@ -29,6 +29,7 @@ const PACKAGES = [
   'packages/extension-font-family',
   'packages-deprecated/extension-gapcursor',
   'packages/extension-heading',
+  'packages/extension-hidden-block',
   'packages/extension-highlight',
   'packages-deprecated/extension-history',
   'packages/extension-image',
