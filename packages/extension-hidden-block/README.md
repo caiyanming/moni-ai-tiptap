@@ -168,10 +168,10 @@ const nullBlocks = editor.storage.hiddenBlock.getNullUUIDBlocks()
 ### Block Stream Integration
 
 ```typescript
-// AI can target NULL_UUID blocks for operations
-const blockOperation = {
+// AI can target NULL_UUID blocks for operations  
+const streamOperation = {
   type: 'insert_after',
-  targetId: '00000000-0000-0000-0000-000000000000', // NULL_UUID
+  blockId: '00000000-0000-0000-0000-000000000000', // NULL_UUID - 零映射架构
   content: { type: 'paragraph', content: [{ type: 'text', text: 'New content' }] }
 }
 ```
