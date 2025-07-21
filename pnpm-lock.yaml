@@ -537,6 +537,25 @@ importers:
         specifier: workspace:*
         version: link:../pm
 
+  packages/extension-diff-block:
+    dependencies:
+      '@tiptap/core':
+        specifier: workspace:*
+        version: link:../core
+      '@tiptap/pm':
+        specifier: workspace:*
+        version: link:../pm
+    devDependencies:
+      '@vitest/ui':
+        specifier: ^2.0.0
+        version: 2.1.9(vitest@2.1.9)
+      jsdom:
+        specifier: ^23.0.0
+        version: 23.2.0
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@22.10.3)(@vitest/ui@2.1.9)(happy-dom@18.0.1)(jsdom@23.2.0)(sass@1.83.4)(terser@5.37.0)
+
   packages/extension-document:
     devDependencies:
       '@tiptap/core':

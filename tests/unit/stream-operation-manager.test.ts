@@ -517,6 +517,292 @@ describe('StreamOperationManager', () => {
     })
   })
 
+  describe('🔥 Diff操作支持', () => {
+    it('应该能创建diff预览操作', () => {
+      // 暂停处理以检查diff状态
+      manager.pause()
+
+      const operation = createMockStreamOperation({
+        type: 'replace',
+        blockId: 'test-block',
+        content: 'updated content',
+      })
+
+      const operationId = manager.queueOperationWithDiff(operation)
+
+      expect(operationId).toBeDefined()
+      expect(typeof operationId).toBe('string')
+
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(1)
+      expect(pendingOps[0].id).toBe(operationId)
+      expect(pendingOps[0].diffMode).toBe(true)
+      expect(pendingOps[0].requiresConfirmation).toBe(true)
+
+      manager.resume()
+    })
+
+    it('应该能确认diff操作', async () => {
+      // 先创建一个block用于diff替换
+      const createOperation = createMockStreamOperation({
+        type: 'append',
+        content: 'original content',
+      })
+      manager.queueOperation(createOperation)
+      await waitForAsync(100)
+
+      // 获取创建的block的ID
+      const history = manager.getOperationHistory()
+      const createdBlockId = history[0].operation.blockId
+
+      // 创建diff操作
+      const diffOperation = createMockStreamOperation({
+        type: 'replace',
+        blockId: createdBlockId,
+        content: 'updated content',
+      })
+
+      const operationId = manager.queueOperationWithDiff(diffOperation)
+
+      // 确认操作应该为pending状态
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(1)
+
+      // 确认diff操作
+      const approveResult = manager.approveDiffOperation(operationId)
+      expect(approveResult).toBe(true)
+
+      // 等待处理完成
+      await waitForAsync(1200) // 考虑到1秒的延迟清理
+
+      // 应该没有pending操作了
+      const remainingPendingOps = manager.getPendingDiffOperations()
+      expect(remainingPendingOps).toHaveLength(0)
+
+      // 检查操作历史
+      const updatedHistory = manager.getOperationHistory()
+      const diffOperationResult = updatedHistory.find(h => h.operation.id === operationId)
+      expect(diffOperationResult).toBeDefined()
+      expect(diffOperationResult!.success).toBe(true)
+    })
+
+    it('应该能拒绝diff操作', async () => {
+      const operation = createMockStreamOperation({
+        type: 'replace',
+        blockId: 'test-block',
+        content: 'rejected content',
+      })
+
+      const operationId = manager.queueOperationWithDiff(operation)
+
+      // 确认操作应该为pending状态
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(1)
+
+      // 拒绝diff操作
+      const rejectResult = manager.rejectDiffOperation(operationId)
+      expect(rejectResult).toBe(true)
+
+      // 等待清理完成
+      await waitForAsync(1200)
+
+      // 应该没有pending操作了
+      const remainingPendingOps = manager.getPendingDiffOperations()
+      expect(remainingPendingOps).toHaveLength(0)
+
+      // 操作不应该被执行（不在最终历史中）
+      const history = manager.getOperationHistory()
+      const rejectedOperationResult = history.find(h => h.operation.id === operationId)
+      expect(rejectedOperationResult).toBeUndefined()
+    })
+
+    it('应该能批量确认所有diff操作', async () => {
+      // 暂停处理创建多个diff操作
+      manager.pause()
+
+      const operations = [
+        createMockStreamOperation({
+          type: 'append',
+          content: 'content 1',
+        }),
+        createMockStreamOperation({
+          type: 'append',
+          content: 'content 2',
+        }),
+        createMockStreamOperation({
+          type: 'append',
+          content: 'content 3',
+        }),
+      ]
+
+      // 创建diff操作
+      const operationIds = operations.map(op => manager.queueOperationWithDiff(op))
+
+      expect(manager.getPendingDiffOperations()).toHaveLength(3)
+
+      // 批量确认
+      const batchApproveResult = manager.approveAllDiffOperations()
+      expect(batchApproveResult).toBe(true)
+
+      // 恢复处理
+      manager.resume()
+
+      // 等待所有操作完成
+      await waitForAsync(1500)
+
+      // 所有pending操作都应该被清理
+      expect(manager.getPendingDiffOperations()).toHaveLength(0)
+
+      // 检查历史记录
+      const history = manager.getOperationHistory()
+      const diffResults = history.filter(h => operationIds.includes(h.operation.id))
+      expect(diffResults).toHaveLength(3)
+      expect(diffResults.every(r => r.success)).toBe(true)
+    })
+
+    it('应该能批量拒绝所有diff操作', async () => {
+      // 暂停处理创建多个diff操作
+      manager.pause()
+
+      const operations = [
+        createMockStreamOperation({
+          type: 'append',
+          content: 'content 1',
+        }),
+        createMockStreamOperation({
+          type: 'append',
+          content: 'content 2',
+        }),
+      ]
+
+      // 创建diff操作
+      const operationIds = operations.map(op => manager.queueOperationWithDiff(op))
+
+      expect(manager.getPendingDiffOperations()).toHaveLength(2)
+
+      // 批量拒绝
+      const batchRejectResult = manager.rejectAllDiffOperations()
+      expect(batchRejectResult).toBe(true)
+
+      manager.resume()
+
+      // 等待清理完成
+      await waitForAsync(1200)
+
+      // 所有pending操作都应该被清理
+      expect(manager.getPendingDiffOperations()).toHaveLength(0)
+
+      // 操作不应该被执行
+      const history = manager.getOperationHistory()
+      const rejectedResults = history.filter(h => operationIds.includes(h.operation.id))
+      expect(rejectedResults).toHaveLength(0)
+    })
+
+    it('应该处理不存在的操作ID', () => {
+      const nonExistentId = 'non-existent-operation-id'
+
+      const approveResult = manager.approveDiffOperation(nonExistentId)
+      expect(approveResult).toBe(false)
+
+      const rejectResult = manager.rejectDiffOperation(nonExistentId)
+      expect(rejectResult).toBe(false)
+    })
+
+    it('应该正确设置diff属性', () => {
+      // 暂停处理以检查diff状态
+      manager.pause()
+
+      const operation = createMockStreamOperation({
+        type: 'replace',
+        blockId: 'test-block',
+        content: 'diff content',
+      })
+
+      manager.queueOperationWithDiff(operation)
+
+      // 检查操作的diff相关属性
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(1)
+
+      const diffOp = pendingOps[0]
+      expect(diffOp.diffMode).toBe(true)
+      expect(diffOp.requiresConfirmation).toBe(true)
+      expect(diffOp.metadata?.diffEnabled).toBe(true)
+      expect(diffOp.metadata?.diffStatus).toBe('pending')
+
+      manager.resume()
+    })
+
+    it('应该处理diff操作的目标block不存在情况', async () => {
+      const operation = createMockStreamOperation({
+        type: 'replace',
+        blockId: 'nonexistent-block',
+        content: 'diff content',
+      })
+
+      const operationId = manager.queueOperationWithDiff(operation)
+
+      // 确认操作应该创建成功
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(1)
+
+      // 尝试确认操作
+      const approveResult = manager.approveDiffOperation(operationId)
+      expect(approveResult).toBe(false) // 应该失败，因为目标block不存在
+
+      // 等待清理
+      await waitForAsync(100)
+
+      // 操作应该已经从队列中移除（因为执行失败但仍然被移除）
+      const remainingPendingOps = manager.getPendingDiffOperations()
+      expect(remainingPendingOps).toHaveLength(0)
+    })
+
+    it('应该支持不同类型的diff操作', () => {
+      manager.pause()
+
+      manager.queueOperationWithDiff(
+        createMockStreamOperation({
+          type: 'insert',
+          content: 'insert diff',
+        }),
+      )
+
+      manager.queueOperationWithDiff(
+        createMockStreamOperation({
+          type: 'append',
+          content: 'append diff',
+        }),
+      )
+
+      manager.queueOperationWithDiff(
+        createMockStreamOperation({
+          type: 'replace',
+          blockId: 'test-block',
+          content: 'replace diff',
+        }),
+      )
+
+      manager.queueOperationWithDiff(
+        createMockStreamOperation({
+          type: 'delete',
+          blockId: 'test-block-2',
+        }),
+      )
+
+      const pendingOps = manager.getPendingDiffOperations()
+      expect(pendingOps).toHaveLength(4)
+
+      const opTypes = pendingOps.map(op => op.type)
+      expect(opTypes).toContain('insert')
+      expect(opTypes).toContain('append')
+      expect(opTypes).toContain('replace')
+      expect(opTypes).toContain('delete')
+
+      manager.resume()
+    })
+  })
+
   describe('性能测试', () => {
     it('应该能处理大量操作', async () => {
       const operations = Array.from({ length: 50 }, (_, i) =>
@@ -557,6 +843,64 @@ describe('StreamOperationManager', () => {
 
       // 处理时间应该在合理范围内 (50个操作 * 50ms间隔 = ~2.5秒 + 容错)
       expect(processingTime).toBeLessThan(4000)
+    })
+
+    it('应该能处理大量diff操作', async () => {
+      manager.pause()
+
+      const operations = Array.from({ length: 20 }, (_, i) =>
+        createMockStreamOperation({
+          type: 'append',
+          content: `diff block ${i}`,
+          sessionId: 'diff-bulk-test',
+        }),
+      )
+
+      // 创建diff操作
+      const operationIds = operations.map(op => manager.queueOperationWithDiff(op))
+
+      expect(manager.getPendingDiffOperations()).toHaveLength(20)
+
+      const startTime = Date.now()
+
+      // 批量确认
+      const batchApproveResult = manager.approveAllDiffOperations()
+      expect(batchApproveResult).toBe(true)
+
+      manager.resume()
+
+      // 等待所有操作完成
+      let attempts = 0
+      const maxAttempts = 150 // 最多等待7.5秒
+
+      while (attempts < maxAttempts) {
+        const pendingOps = manager.getPendingDiffOperations()
+        const status = manager.getQueueStatus()
+
+        if (pendingOps.length === 0 && status.queueSize === 0 && !status.isProcessing) {
+          break
+        }
+
+        // eslint-disable-next-line no-await-in-loop
+        await waitForAsync(50)
+        // eslint-disable-next-line no-plusplus
+        attempts++
+      }
+
+      const endTime = Date.now()
+      const processingTime = endTime - startTime
+
+      // 检查所有操作都成功
+      const history = manager.getOperationHistory()
+      const diffResults = history.filter(h => operationIds.includes(h.operation.id))
+      expect(diffResults).toHaveLength(20)
+      expect(diffResults.every(r => r.success)).toBe(true)
+
+      // 没有剩余的pending操作
+      expect(manager.getPendingDiffOperations()).toHaveLength(0)
+
+      // 处理时间应该在合理范围内
+      expect(processingTime).toBeLessThan(6000)
     })
   })
 })

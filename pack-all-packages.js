@@ -20,6 +20,7 @@ const PACKAGES = [
   'packages/extension-collaboration',
   'packages/extension-collaboration-caret',
   'packages/extension-color',
+  'packages/extension-diff-block',
   'packages/extension-document',
   'packages/extension-drag-handle',
   'packages/extension-drag-handle-react',

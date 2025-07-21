@@ -64,9 +64,18 @@ export interface MoniStreamAPI {
   getCurrentTarget(): StreamTargetInfo | null
   isCurrentTarget(blockId: string): boolean
 
-  // 操作管理
-  queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp'>): boolean
-  queueOperations(operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>): boolean
+  // 🔥 Diff Native 操作管理 - 天生需要确认的操作
+  queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp' | 'status'>): string
+  queueOperations(operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>): string[]
+
+  // 操作确认（天然的工作流）
+  approveOperation(operationId: string): boolean
+  rejectOperation(operationId: string): boolean
+  getPendingOperations(): StreamOperation[]
+  approveAllOperations(): boolean
+  rejectAllOperations(): boolean
+
+  // 历史和状态查询
   getOperationHistory(sessionId?: string): StreamOperationResult[]
   getQueueStatus(): { queueSize: number; isProcessing: boolean; isPaused: boolean; maxQueueSize: number }
 
@@ -86,7 +95,7 @@ export interface MoniStreamAPI {
   startStreamSession(
     sessionId: string,
     blockId: string,
-    operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>,
+    operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>,
   ): boolean
   processStreamBatch(sessionId: string, blockId: string, content: string, batchSize?: number): boolean
   streamText(sessionId: string, blockId: string, text: string, chunkSize?: number): boolean
@@ -263,11 +272,20 @@ export class MoniStreamPlugin {
       getCurrentTarget: () => this.targetManager.getCurrentTarget(),
       isCurrentTarget: (blockId: string) => this.targetManager.isCurrentTarget(blockId),
 
-      // 操作管理
-      queueOperation: (operation: Omit<StreamOperation, 'id' | 'timestamp'>) =>
+      // 🔥 Diff Native 操作管理 - 天生需要确认的操作
+      queueOperation: (operation: Omit<StreamOperation, 'id' | 'timestamp' | 'status'>) =>
         this.operationManager.queueOperation(operation),
-      queueOperations: (operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>) =>
+      queueOperations: (operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>) =>
         this.operationManager.queueOperations(operations),
+
+      // 操作确认（天然的工作流）
+      approveOperation: (operationId: string) => this.operationManager.approveDiffOperation(operationId),
+      rejectOperation: (operationId: string) => this.operationManager.rejectDiffOperation(operationId),
+      getPendingOperations: () => this.operationManager.getPendingDiffOperations(),
+      approveAllOperations: () => this.operationManager.approveAllDiffOperations(),
+      rejectAllOperations: () => this.operationManager.rejectAllDiffOperations(),
+
+      // 历史和状态查询
       getOperationHistory: (sessionId?: string) => this.operationManager.getOperationHistory(sessionId),
       getQueueStatus: () => this.operationManager.getQueueStatus(),
 
@@ -319,7 +337,7 @@ export class MoniStreamPlugin {
   private startStreamSession(
     sessionId: string,
     blockId: string,
-    operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>,
+    operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>,
   ): boolean {
     if (this.sessions.has(sessionId)) {
       this.debug(`Session already exists: ${sessionId}`)
@@ -346,9 +364,10 @@ export class MoniStreamPlugin {
     // 启动进度跟踪
     this.progressManager.startSession(sessionId, blockId, operations.length)
 
-    // 队列操作
-    const success = this.operationManager.queueOperations(operations)
-    if (!success) {
+    // 🔥 队列操作 - 天生需要确认的操作
+    try {
+      this.operationManager.queueOperations(operations)
+    } catch {
       this.errorSession(sessionId, 'Failed to queue operations')
       return false
     }

@@ -61,6 +61,9 @@ export interface StreamOperation {
   position?: number
   timestamp: number
   metadata?: Record<string, any>
+
+  // 🔥 Diff Native - 天生需要确认
+  status: 'pending' | 'approved' | 'rejected'
 }
 
 /**
@@ -128,53 +131,66 @@ export class StreamOperationManager {
   }
 
   /**
-   * 添加流式操作到队列
+   * 🔥 Diff Native - 添加需要确认的操作（天生的工作流）
    */
-  public queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp'>): boolean {
+  public queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp' | 'status'>): string {
     if (this.operationQueue.length >= this.options.maxQueueSize!) {
       this.debug(`Queue full, discarding operation for block: ${operation.blockId}`)
-      return false
+      throw new Error('Operation queue is full')
     }
 
     const fullOperation: StreamOperation = {
       ...operation,
       id: this.generateOperationId(),
       timestamp: Date.now(),
+      status: 'pending', // 🔥 天生就是pending状态
+      metadata: {
+        ...operation.metadata,
+        diffEnabled: true,
+      },
     }
 
+    // 添加到队列但不自动处理（需要用户确认）
     this.operationQueue.push(fullOperation)
-    this.debug(`Operation queued: ${fullOperation.id}`)
+    this.debug(`Diff operation queued: ${fullOperation.id}`)
 
-    // 启动处理队列
-    this.startProcessing()
+    // 立即渲染diff预览（而不是执行操作）
+    this.renderDiffPreview(fullOperation)
 
-    return true
+    return fullOperation.id
   }
 
   /**
-   * 批量添加操作
+   * 🔥 Diff Native - 批量添加需要确认的操作
    */
-  public queueOperations(operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>): boolean {
+  public queueOperations(operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>): string[] {
     const remainingCapacity = this.options.maxQueueSize! - this.operationQueue.length
 
     if (operations.length > remainingCapacity) {
       this.debug(`Not enough queue capacity: ${operations.length} operations, ${remainingCapacity} available`)
-      return false
+      throw new Error('Not enough queue capacity for batch operations')
     }
+
+    const operationIds: string[] = []
 
     operations.forEach(operation => {
       const fullOperation: StreamOperation = {
         ...operation,
         id: this.generateOperationId(),
         timestamp: Date.now(),
+        status: 'pending', // 🔥 天生需要确认
+        metadata: {
+          ...operation.metadata,
+          diffEnabled: true,
+        },
       }
       this.operationQueue.push(fullOperation)
+      this.renderDiffPreview(fullOperation)
+      operationIds.push(fullOperation.id)
     })
 
-    this.debug(`${operations.length} operations queued`)
-    this.startProcessing()
-
-    return true
+    this.debug(`${operations.length} diff operations queued`)
+    return operationIds
   }
 
   /**
@@ -192,17 +208,23 @@ export class StreamOperationManager {
   }
 
   /**
-   * 处理下一个操作
+   * 🔥 Diff Native - 处理下一个已确认的操作
    */
   private processNextOperation(): void {
-    if (this.operationQueue.length === 0) {
+    // 🔥 只处理已经被用户确认的操作
+    const approvedOperations = this.operationQueue.filter(op => op.status === 'approved')
+
+    if (approvedOperations.length === 0) {
       this.isProcessing = false
-      this.debug('Finished processing all operations')
+      this.debug('No approved operations to process')
       return
     }
 
-    const operation = this.operationQueue.shift()!
-    this.debug(`Processing operation: ${operation.id}`)
+    const operation = approvedOperations[0]
+    // 从队列中移除已处理的操作
+    this.operationQueue = this.operationQueue.filter(op => op.id !== operation.id)
+
+    this.debug(`Processing approved operation: ${operation.id}`)
 
     try {
       const result = this.executeOperation(operation)
@@ -592,6 +614,185 @@ export class StreamOperationManager {
    */
   private generateOperationId(): string {
     return `op_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  }
+
+  /**
+   * 🔥 新增：渲染diff预览
+   * 将操作转换为可视化的diff预览，等待用户确认
+   */
+  private renderDiffPreview(operation: StreamOperation): boolean {
+    try {
+      const nodeInfo = this.findNodeByBlockId(operation.blockId)
+      if (!nodeInfo) {
+        this.debug(`Target block not found for diff preview: ${operation.blockId}`)
+        return false
+      }
+
+      const { node, position } = nodeInfo
+      const { tr } = this.editor.view.state
+
+      // 获取原始内容
+      const originalContent = this.serializeNode(node)
+
+      // 使用MoniDiffSupport扩展的命令设置diff状态
+      tr.setNodeMarkup(position, undefined, {
+        ...node.attrs,
+        diffMode: true,
+        diffStatus: 'pending',
+        diffOperationId: operation.id,
+        diffOriginalContent: originalContent,
+        diffNewContent: operation.content,
+      })
+
+      // 应用变更
+      this.editor.view.dispatch(tr)
+
+      this.debug(`Diff preview rendered for operation: ${operation.id}`)
+      return true
+    } catch (error) {
+      this.debug('Failed to render diff preview:', error)
+      return false
+    }
+  }
+
+  /**
+   * 🔥 Diff Native - 用户确认操作（天然的工作流）
+   */
+  public approveDiffOperation(operationId: string): boolean {
+    try {
+      const operation = this.operationQueue.find(op => op.id === operationId)
+      if (!operation) {
+        this.debug(`Operation not found: ${operationId}`)
+        return false
+      }
+
+      // 🔥 更新操作状态为已确认
+      operation.status = 'approved'
+
+      // 先更新视觉状态
+      this.updateDiffStatus(operation.blockId, 'approved')
+
+      // 🔥 启动处理队列来执行已确认的操作
+      this.startProcessing()
+
+      this.debug(`Operation approved: ${operationId}`)
+      return true
+    } catch (error) {
+      this.debug('Failed to approve operation:', error)
+      return false
+    }
+  }
+
+  /**
+   * 🔥 Diff Native - 用户拒绝操作
+   */
+  public rejectDiffOperation(operationId: string): boolean {
+    try {
+      const operation = this.operationQueue.find(op => op.id === operationId)
+      if (!operation) {
+        this.debug(`Operation not found: ${operationId}`)
+        return false
+      }
+
+      // 🔥 更新操作状态为已拒绝
+      operation.status = 'rejected'
+
+      // 更新视觉状态为拒绝
+      this.updateDiffStatus(operation.blockId, 'rejected')
+
+      // 延迟清理diff状态和从队列移除（让用户看到拒绝效果）
+      setTimeout(() => {
+        this.clearDiffState(operation.blockId)
+        this.operationQueue = this.operationQueue.filter(op => op.id !== operationId)
+      }, 1000)
+
+      this.debug(`Operation rejected: ${operationId}`)
+      return true
+    } catch (error) {
+      this.debug('Failed to reject operation:', error)
+      return false
+    }
+  }
+
+  /**
+   * 🔥 新增：更新diff状态
+   */
+  private updateDiffStatus(blockId: string, status: 'pending' | 'approved' | 'rejected'): void {
+    const nodeInfo = this.findNodeByBlockId(blockId)
+    if (!nodeInfo) {return}
+
+    const { node, position } = nodeInfo
+    const { tr } = this.editor.view.state
+
+    tr.setNodeMarkup(position, undefined, {
+      ...node.attrs,
+      diffStatus: status,
+    })
+
+    this.editor.view.dispatch(tr)
+  }
+
+  /**
+   * 🔥 新增：清理diff状态，恢复正常显示
+   */
+  private clearDiffState(blockId: string): void {
+    const nodeInfo = this.findNodeByBlockId(blockId)
+    if (!nodeInfo) {return}
+
+    const { node, position } = nodeInfo
+    const { tr } = this.editor.view.state
+
+    tr.setNodeMarkup(position, undefined, {
+      ...node.attrs,
+      diffMode: false,
+      diffStatus: 'normal',
+      diffOperationId: null,
+      diffOriginalContent: null,
+      diffNewContent: null,
+    })
+
+    this.editor.view.dispatch(tr)
+  }
+
+  /**
+   * 🔥 新增：序列化节点内容为字符串
+   */
+  private serializeNode(node: ProseMirrorNode): string {
+    try {
+      // 对于简单文本节点，直接返回文本内容
+      if (node.isText) {
+        return node.text || ''
+      }
+
+      // 对于复杂节点，返回文本内容
+      return node.textContent || ''
+    } catch (error) {
+      this.debug('Failed to serialize node:', error)
+      return ''
+    }
+  }
+
+  /**
+   * 🔥 Diff Native - 获取所有待确认的操作
+   */
+  public getPendingDiffOperations(): StreamOperation[] {
+    return this.operationQueue.filter(op => op.status === 'pending')
+  }
+
+  /**
+   * 🔥 Diff Native - 批量确认所有待确认操作
+   */
+  public approveAllDiffOperations(): boolean {
+    const pendingOps = this.getPendingDiffOperations()
+    return pendingOps.every(op => this.approveDiffOperation(op.id))
+  }
+
+  /**
+   * 🔥 Diff Native - 批量拒绝所有待确认操作
+   */
+  public rejectAllDiffOperations(): boolean {
+    const pendingOps = this.getPendingDiffOperations()
+    return pendingOps.every(op => this.rejectDiffOperation(op.id))
   }
 
   /**

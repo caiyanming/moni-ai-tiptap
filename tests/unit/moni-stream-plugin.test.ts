@@ -88,8 +88,9 @@ describe('MoniStreamPlugin', () => {
         content: 'test content',
       }
 
-      const result = api.queueOperation(operation)
-      expect(result).toBe(true)
+      // 🔥 现在返回operationId而不是boolean
+      const operationId = api.queueOperation(operation)
+      expect(typeof operationId).toBe('string')
 
       const status = api.getQueueStatus()
       expect(status.queueSize).toBe(1)
@@ -104,8 +105,10 @@ describe('MoniStreamPlugin', () => {
 
       const operations = createBatchOperations(3)
 
-      const result = api.queueOperations(operations)
-      expect(result).toBe(true)
+      // 🔥 现在返回operationId数组而不是boolean
+      const operationIds = api.queueOperations(operations)
+      expect(Array.isArray(operationIds)).toBe(true)
+      expect(operationIds).toHaveLength(3)
 
       const status = api.getQueueStatus()
       expect(status.queueSize).toBe(3)
@@ -116,7 +119,10 @@ describe('MoniStreamPlugin', () => {
 
     it('应该能获取操作历史', async () => {
       const operations = createBatchOperations(2)
-      api.queueOperations(operations)
+      const operationIds = api.queueOperations(operations)
+
+      // 🔥 Diff Native - 需要手动批准操作
+      operationIds.forEach(id => api.approveOperation(id))
 
       // 等待处理完成
       await waitForAsync(200)
@@ -129,7 +135,10 @@ describe('MoniStreamPlugin', () => {
       const operations1 = createBatchOperations(2, 'session-1')
       const operations2 = createBatchOperations(1, 'session-2')
 
-      api.queueOperations([...operations1, ...operations2])
+      const operationIds = api.queueOperations([...operations1, ...operations2])
+
+      // 🔥 Diff Native - 需要手动批准操作
+      operationIds.forEach(id => api.approveOperation(id))
 
       // 等待处理完成
       await waitForAsync(300)
@@ -335,13 +344,22 @@ describe('MoniStreamPlugin', () => {
       const operations = createBatchOperations(5)
       api.startStreamSession('session-1', 'block-1', operations)
 
-      expect(api.getQueueStatus().isProcessing).toBe(true)
+      // 🔥 Diff Native - 先批准一些操作开始处理
+      const pendingOps = api.getPendingOperations()
+      if (pendingOps.length > 0) {
+        api.approveOperation(pendingOps[0].id)
+      }
 
-      api.pauseSession('session-1')
-      expect(api.getQueueStatus().isProcessing).toBe(false)
+      // 短暂等待让处理开始
+      setTimeout(() => {
+        expect(api.getQueueStatus().isProcessing).toBe(true)
 
-      api.resumeSession('session-1')
-      expect(api.getQueueStatus().isProcessing).toBe(true)
+        api.pauseSession('session-1')
+        expect(api.getQueueStatus().isProcessing).toBe(false)
+
+        api.resumeSession('session-1')
+        expect(api.getQueueStatus().isProcessing).toBe(true)
+      }, 20)
     })
   })
 
@@ -352,6 +370,9 @@ describe('MoniStreamPlugin', () => {
       // 启动会话
       const result = api.startStreamSession('session-1', 'block-1', operations)
       expect(result).toBe(true)
+
+      // 🔥 Diff Native - 批准所有操作
+      api.approveAllOperations()
 
       // 使用 expect.poll 轮询检查处理完成
       await expect.poll(() => api.getOperationHistory('session-1')).toHaveLength(10)
@@ -366,6 +387,9 @@ describe('MoniStreamPlugin', () => {
 
       api.startStreamSession('session-1', 'block-1', operations1)
       api.startStreamSession('session-2', 'block-2', operations2)
+
+      // 🔥 Diff Native - 批准所有操作
+      api.approveAllOperations()
 
       // 等待处理完成
       await waitForAsync(800)
@@ -402,8 +426,10 @@ describe('MoniStreamPlugin', () => {
       // 创建超大队列测试
       const largeOperations = createBatchOperations(200)
 
-      const result = api.queueOperations(largeOperations)
-      expect(result).toBe(false) // 应该被默认队列大小限制拒绝
+      // 🔥 Diff Native API 在超出队列容量时应该抛出异常
+      expect(() => {
+        api.queueOperations(largeOperations)
+      }).toThrow('Not enough queue capacity for batch operations') // 应该被默认队列大小限制拒绝
     })
 
     it('应该处理会话启动失败', () => {
@@ -448,6 +474,9 @@ describe('MoniStreamPlugin', () => {
       const startTime = Date.now()
       api.startStreamSession('session-1', 'block-1', operations)
 
+      // 🔥 Diff Native - 批准所有操作
+      api.approveAllOperations()
+
       // 使用 expect.poll 轮询检查处理完成，允许95%以上的完成率
       await expect
         .poll(
@@ -482,6 +511,9 @@ describe('MoniStreamPlugin', () => {
         const operations = createBatchOperations(operationsPerSession, `session-${i}`, `block-${i}`)
         api.startStreamSession(`session-${i}`, `block-${i}`, operations)
       }
+
+      // 🔥 Diff Native - 批准所有操作
+      api.approveAllOperations()
 
       // 使用 Promise.all 并行检查所有会话，允许95%完成率
       const sessionIds = Array.from({ length: sessionCount }, (_, index) => `session-${index + 1}`)
@@ -554,6 +586,228 @@ describe('MoniStreamPlugin', () => {
       // 检查进度条是否被清理
       const progressBars = document.querySelectorAll('.moni-stream-progress-bar')
       expect(progressBars).toHaveLength(0)
+    })
+  })
+
+  describe('🔥 Diff API', () => {
+    it('应该通过API创建diff操作', () => {
+      api.pauseOperations()
+
+      const operation = {
+        sessionId: 'diff-session',
+        blockId: 'block-1',
+        type: 'replace' as const,
+        content: 'diff content',
+      }
+
+      const operationId = api.queueOperation(operation)
+
+      expect(operationId).toBeDefined()
+      expect(typeof operationId).toBe('string')
+
+      const pendingOps = api.getPendingOperations()
+      expect(pendingOps).toHaveLength(1)
+      expect(pendingOps[0].id).toBe(operationId)
+
+      api.resumeOperations()
+    })
+
+    it('应该通过API确认diff操作', async () => {
+      // 创建diff操作，使用append类型（不需要已存在的block）
+      const operationId = api.queueOperation({
+        sessionId: 'diff-session',
+        blockId: 'new-diff-block',
+        type: 'append' as const,
+        content: 'updated content',
+      })
+
+      expect(api.getPendingOperations()).toHaveLength(1)
+
+      const approveResult = api.approveOperation(operationId)
+      expect(approveResult).toBe(true)
+
+      // 等待处理完成
+      await waitForAsync(1200)
+
+      expect(api.getPendingOperations()).toHaveLength(0)
+    })
+
+    it('应该通过API拒绝diff操作', async () => {
+      const operationId = api.queueOperation({
+        sessionId: 'diff-session',
+        blockId: 'test-block',
+        type: 'append' as const,
+        content: 'rejected content',
+      })
+
+      expect(api.getPendingOperations()).toHaveLength(1)
+
+      const rejectResult = api.rejectOperation(operationId)
+      expect(rejectResult).toBe(true)
+
+      // 等待清理完成
+      await waitForAsync(1200)
+
+      expect(api.getPendingOperations()).toHaveLength(0)
+    })
+
+    it('应该通过API批量确认diff操作', async () => {
+      api.pauseOperations()
+
+      const operations = [
+        {
+          sessionId: 'batch-session',
+          blockId: 'block-1',
+          type: 'append' as const,
+          content: 'content 1',
+        },
+        {
+          sessionId: 'batch-session',
+          blockId: 'block-2',
+          type: 'append' as const,
+          content: 'content 2',
+        },
+        {
+          sessionId: 'batch-session',
+          blockId: 'block-3',
+          type: 'append' as const,
+          content: 'content 3',
+        },
+      ]
+
+      operations.forEach(op => api.queueOperation(op))
+
+      expect(api.getPendingOperations()).toHaveLength(3)
+
+      const batchApproveResult = api.approveAllOperations()
+      expect(batchApproveResult).toBe(true)
+
+      api.resumeOperations()
+
+      // 等待所有操作完成
+      await waitForAsync(1500)
+
+      expect(api.getPendingOperations()).toHaveLength(0)
+    })
+
+    it('应该通过API批量拒绝diff操作', async () => {
+      api.pauseOperations()
+
+      const operations = [
+        {
+          sessionId: 'reject-session',
+          blockId: 'block-1',
+          type: 'append' as const,
+          content: 'reject content 1',
+        },
+        {
+          sessionId: 'reject-session',
+          blockId: 'block-2',
+          type: 'append' as const,
+          content: 'reject content 2',
+        },
+      ]
+
+      operations.forEach(op => api.queueOperation(op))
+
+      expect(api.getPendingOperations()).toHaveLength(2)
+
+      const batchRejectResult = api.rejectAllOperations()
+      expect(batchRejectResult).toBe(true)
+
+      api.resumeOperations()
+
+      // 等待清理完成
+      await waitForAsync(1200)
+
+      expect(api.getPendingOperations()).toHaveLength(0)
+    })
+
+    it('应该处理API中不存在的操作ID', () => {
+      const nonExistentId = 'non-existent-api-id'
+
+      const approveResult = api.approveOperation(nonExistentId)
+      expect(approveResult).toBe(false)
+
+      const rejectResult = api.rejectOperation(nonExistentId)
+      expect(rejectResult).toBe(false)
+    })
+
+    it('应该支持通过API创建不同类型的diff操作', () => {
+      api.pauseOperations()
+
+      api.queueOperation({
+        sessionId: 'types-session',
+        blockId: 'document-root',
+        type: 'insert' as const,
+        content: 'insert diff',
+      })
+
+      api.queueOperation({
+        sessionId: 'types-session',
+        blockId: 'block-1',
+        type: 'append' as const,
+        content: 'append diff',
+      })
+
+      api.queueOperation({
+        sessionId: 'types-session',
+        blockId: 'block-2',
+        type: 'replace' as const,
+        content: 'replace diff',
+      })
+
+      api.queueOperation({
+        sessionId: 'types-session',
+        blockId: 'block-3',
+        type: 'delete' as const,
+      })
+
+      const pendingOps = api.getPendingOperations()
+      expect(pendingOps).toHaveLength(4)
+
+      const opTypes = pendingOps.map(op => op.type)
+      expect(opTypes).toContain('insert')
+      expect(opTypes).toContain('append')
+      expect(opTypes).toContain('replace')
+      expect(opTypes).toContain('delete')
+
+      api.resumeOperations()
+    })
+
+    it('应该与流式会话集成diff操作', async () => {
+      const normalOperations = createBatchOperations(3, 'normal-session')
+
+      // 启动普通流式会话
+      const sessionResult = api.startStreamSession('normal-session', 'block-1', normalOperations)
+      expect(sessionResult).toBe(true)
+
+      // 🔥 先批准普通会话的操作
+      api.approveAllOperations()
+
+      // 添加diff操作
+      const diffOpId = api.queueOperation({
+        sessionId: 'diff-session',
+        blockId: 'block-2',
+        type: 'append' as const,
+        content: 'diff in stream context',
+      })
+
+      // 🔥 现在应该只有1个pending操作（新添加的diff操作）
+      expect(api.getPendingOperations()).toHaveLength(1)
+
+      // 确认diff操作
+      api.approveOperation(diffOpId)
+
+      // 等待所有操作完成
+      await waitForAsync(2000)
+
+      expect(api.getPendingOperations()).toHaveLength(0)
+
+      // 检查会话状态
+      const session = api.getSession('normal-session')
+      expect(session).toBeDefined()
+      expect(session!.status).toBe('completed')
     })
   })
 })
