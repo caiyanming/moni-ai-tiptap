@@ -37,12 +37,6 @@ export interface MoniStreamPluginOptions {
    * 进度管理器配置
    */
   progressManager?: StreamProgressOptions
-
-  /**
-   * 全局调试模式
-   * @default false
-   */
-  debug?: boolean
 }
 
 export interface StreamSession {
@@ -136,18 +130,10 @@ export class MoniStreamPlugin {
     this.editor = editor
     this.options = {
       enabled: true,
-      debug: false,
       targetManager: {},
       operationManager: {},
       progressManager: {},
       ...options,
-    }
-
-    // 传播调试配置
-    if (this.options.debug) {
-      this.options.targetManager!.debug = true
-      this.options.operationManager!.debug = true
-      this.options.progressManager!.debug = true
     }
 
     // 初始化管理器
@@ -172,8 +158,6 @@ export class MoniStreamPlugin {
     this.progressManager.addEventListener(event => {
       this.handleProgressEvent(event)
     })
-
-    this.debug('MoniStreamPlugin initialized')
   }
 
   /**
@@ -221,10 +205,6 @@ export class MoniStreamPlugin {
     if (session.completedOperations >= session.totalOperations) {
       this.progressManager.completeSession(operation.sessionId)
     }
-
-    this.debug(
-      `Operation completed for session ${operation.sessionId}: ${session.completedOperations}/${session.totalOperations}`,
-    )
   }
 
   /**
@@ -257,8 +237,6 @@ export class MoniStreamPlugin {
         // 其他事件类型的处理
         break
     }
-
-    this.debug(`Session ${event.sessionId} ${event.type}: ${Math.round(event.progress * 100)}%`)
   }
 
   /**
@@ -326,8 +304,8 @@ export class MoniStreamPlugin {
       getSession: (sessionId: string) => this.getSession(sessionId),
       getAllSessions: () => this.getAllSessions(),
       cleanupSession: (sessionId: string) => this.cleanupSession(sessionId),
-      pauseSession: (sessionId: string) => this.pauseSession(sessionId),
-      resumeSession: (sessionId: string) => this.resumeSession(sessionId),
+      pauseSession: () => this.pauseSession(),
+      resumeSession: () => this.resumeSession(),
     }
   }
 
@@ -340,7 +318,6 @@ export class MoniStreamPlugin {
     operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>,
   ): boolean {
     if (this.sessions.has(sessionId)) {
-      this.debug(`Session already exists: ${sessionId}`)
       return false
     }
 
@@ -372,7 +349,6 @@ export class MoniStreamPlugin {
       return false
     }
 
-    this.debug(`Stream session started: ${sessionId}`)
     return true
   }
 
@@ -459,23 +435,20 @@ export class MoniStreamPlugin {
   private cleanupSession(sessionId: string): void {
     this.sessions.delete(sessionId)
     this.operationManager.clearQueue(sessionId)
-    this.debug(`Session cleaned up: ${sessionId}`)
   }
 
   /**
    * 暂停会话
    */
-  private pauseSession(sessionId: string): void {
+  private pauseSession(): void {
     this.operationManager.pause()
-    this.debug(`Session paused: ${sessionId}`)
   }
 
   /**
    * 恢复会话
    */
-  private resumeSession(sessionId: string): void {
+  private resumeSession(): void {
     this.operationManager.resume()
-    this.debug(`Session resumed: ${sessionId}`)
   }
 
   /**
@@ -501,15 +474,6 @@ export class MoniStreamPlugin {
   }
 
   /**
-   * 调试日志
-   */
-  private debug(message: string, ...args: unknown[]): void {
-    if (this.options.debug) {
-      console.log(`[MoniStreamPlugin] ${message}`, ...args)
-    }
-  }
-
-  /**
    * 销毁插件
    */
   public destroy(): void {
@@ -520,8 +484,6 @@ export class MoniStreamPlugin {
     this.targetManager.destroy()
     this.operationManager.destroy()
     this.progressManager.destroy()
-
-    this.debug('MoniStreamPlugin destroyed')
   }
 }
 

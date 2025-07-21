@@ -4,12 +4,6 @@ import type { Editor } from './Editor.js'
 
 export interface StreamProgressOptions {
   /**
-   * 是否启用调试模式
-   * @default false
-   */
-  debug?: boolean
-
-  /**
    * 进度更新间隔（毫秒）
    * @default 100
    */
@@ -75,7 +69,6 @@ export class StreamProgressManager {
   constructor(editor: Editor, options: StreamProgressOptions = {}) {
     this.editor = editor
     this.options = {
-      debug: false,
       updateInterval: 100,
       enableAnimation: true,
       progressBarStyle: {
@@ -86,20 +79,12 @@ export class StreamProgressManager {
       },
       ...options,
     }
-
-    this.initialize()
-  }
-
-  private initialize(): void {
-    this.debug('StreamProgressManager initialized')
   }
 
   /**
    * 开始流式会话
    */
   public startSession(sessionId: string, blockId: string, totalOperations: number): void {
-    this.debug(`Starting session: ${sessionId} for block: ${blockId}`)
-
     const progressInfo: StreamProgressInfo = {
       sessionId,
       blockId,
@@ -127,8 +112,6 @@ export class StreamProgressManager {
       blockId,
       progress: 0,
     })
-
-    this.debug(`Session started: ${sessionId}`)
   }
 
   /**
@@ -137,7 +120,6 @@ export class StreamProgressManager {
   public updateProgress(sessionId: string, completedOperations: number, metadata?: Record<string, any>): void {
     const progressInfo = this.progressMap.get(sessionId)
     if (!progressInfo) {
-      this.debug(`Session not found: ${sessionId}`)
       return
     }
 
@@ -169,8 +151,6 @@ export class StreamProgressManager {
       progress,
       data: { estimatedDuration, metadata },
     })
-
-    this.debug(`Progress updated: ${sessionId}, ${Math.round(progress * 100)}%`)
   }
 
   /**
@@ -179,11 +159,8 @@ export class StreamProgressManager {
   public completeSession(sessionId: string): void {
     const progressInfo = this.progressMap.get(sessionId)
     if (!progressInfo) {
-      this.debug(`Session not found: ${sessionId}`)
       return
     }
-
-    this.debug(`Completing session: ${sessionId}`)
 
     // 更新进度信息
     progressInfo.progress = 1
@@ -208,8 +185,6 @@ export class StreamProgressManager {
       data: { duration: progressInfo.endTime - progressInfo.startTime },
     })
 
-    this.debug(`Session completed: ${sessionId}`)
-
     // 延迟清理
     setTimeout(() => {
       this.cleanupSession(sessionId)
@@ -222,11 +197,8 @@ export class StreamProgressManager {
   public errorSession(sessionId: string, error: string): void {
     const progressInfo = this.progressMap.get(sessionId)
     if (!progressInfo) {
-      this.debug(`Session not found: ${sessionId}`)
       return
     }
-
-    this.debug(`Error in session: ${sessionId}`, error)
 
     // 更新进度信息
     progressInfo.status = 'error'
@@ -376,8 +348,6 @@ export class StreamProgressManager {
    * 清理会话
    */
   private cleanupSession(sessionId: string): void {
-    this.debug(`Cleaning up session: ${sessionId}`)
-
     // 移除进度条
     const progressBar = this.progressBars.get(sessionId)
     if (progressBar) {
@@ -387,8 +357,6 @@ export class StreamProgressManager {
 
     // 移除进度信息
     this.progressMap.delete(sessionId)
-
-    this.debug(`Session cleaned up: ${sessionId}`)
   }
 
   /**
@@ -431,11 +399,7 @@ export class StreamProgressManager {
    */
   private emitEvent(event: StreamProgressEvent): void {
     this.eventListeners.forEach(listener => {
-      try {
-        listener(event)
-      } catch (error) {
-        this.debug('Error in event listener:', error)
-      }
+      listener(event)
     })
   }
 
@@ -481,15 +445,6 @@ export class StreamProgressManager {
   }
 
   /**
-   * 调试日志
-   */
-  private debug(message: string, ...args: any[]): void {
-    if (this.options.debug) {
-      console.log(`[StreamProgressManager] ${message}`, ...args)
-    }
-  }
-
-  /**
    * 销毁管理器
    */
   public destroy(): void {
@@ -506,7 +461,5 @@ export class StreamProgressManager {
       clearTimeout(this.updateTimer)
       this.updateTimer = null
     }
-
-    this.debug('StreamProgressManager destroyed')
   }
 }

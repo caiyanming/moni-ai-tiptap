@@ -4,13 +4,10 @@ import type { Transaction } from '@tiptap/pm/state'
 
 import type { Editor } from './Editor.js'
 
-export interface StreamOperationOptions {
-  /**
-   * 是否启用调试模式
-   * @default false
-   */
-  debug?: boolean
+// 浏览器环境的定时器类型
+type TimerId = number
 
+export interface StreamOperationOptions {
   /**
    * 操作队列最大长度
    * @default 100
@@ -43,13 +40,12 @@ export enum BlockOperationType {
 
 /**
  * Block 操作状态枚举
+ * 🔥 统一状态定义 - 与 StreamOperation.status 保持一致
  */
 export enum BlockOperationStatus {
   PENDING = 'pending',
-  USER_APPROVED = 'user_approved',
-  EXECUTED = 'executed',
+  APPROVED = 'approved',
   REJECTED = 'rejected',
-  FAILED = 'failed',
 }
 
 /**
@@ -77,7 +73,7 @@ export interface StreamOperation {
   metadata?: Record<string, unknown> // 使用unknown而不是any
 
   // 🔥 Diff Native - 天生需要确认
-  status: 'pending' | 'approved' | 'rejected'
+  status: BlockOperationStatus
 }
 
 // 🔥 已移除 BlockOperation - 统一使用 StreamOperation 实现零映射架构
@@ -105,23 +101,16 @@ export class StreamOperationManager {
   private operationQueue: StreamOperation[] = []
   private isProcessing = false
   private isPaused = false
-  private processingTimer: number | null = null
+  private processingTimer: TimerId | null = null
   private operationHistory: StreamOperationResult[] = []
 
   constructor(editor: Editor, options: StreamOperationOptions = {}) {
     this.editor = editor
     this.options = {
-      debug: false,
       maxQueueSize: 100,
       operationInterval: 50,
       ...options,
     }
-
-    this.initialize()
-  }
-
-  private initialize(): void {
-    this.debug('StreamOperationManager initialized')
   }
 
   /**
@@ -129,7 +118,6 @@ export class StreamOperationManager {
    */
   public queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp' | 'status'>): string {
     if (this.operationQueue.length >= this.options.maxQueueSize!) {
-      this.debug(`Queue full, discarding operation for block: ${operation.blockId}`)
       throw new Error('Operation queue is full')
     }
 
@@ -137,7 +125,7 @@ export class StreamOperationManager {
       ...operation,
       id: this.generateOperationId(),
       timestamp: Date.now(),
-      status: 'pending', // 🔥 天生就是pending状态
+      status: BlockOperationStatus.PENDING, // 🔥 天生就是pending状态
       metadata: {
         ...operation.metadata,
         diffEnabled: true,
@@ -146,7 +134,6 @@ export class StreamOperationManager {
 
     // 添加到队列但不自动处理（需要用户确认）
     this.operationQueue.push(fullOperation)
-    this.debug(`Diff operation queued: ${fullOperation.id}`)
 
     // 立即渲染diff预览（而不是执行操作）
     this.renderDiffPreview(fullOperation)
@@ -161,7 +148,6 @@ export class StreamOperationManager {
     const remainingCapacity = this.options.maxQueueSize! - this.operationQueue.length
 
     if (operations.length > remainingCapacity) {
-      this.debug(`Not enough queue capacity: ${operations.length} operations, ${remainingCapacity} available`)
       throw new Error('Not enough queue capacity for batch operations')
     }
 
@@ -172,7 +158,7 @@ export class StreamOperationManager {
         ...operation,
         id: this.generateOperationId(),
         timestamp: Date.now(),
-        status: 'pending', // 🔥 天生需要确认
+        status: BlockOperationStatus.PENDING, // 🔥 天生需要确认
         metadata: {
           ...operation.metadata,
           diffEnabled: true,
@@ -183,7 +169,6 @@ export class StreamOperationManager {
       operationIds.push(fullOperation.id)
     })
 
-    this.debug(`${operations.length} diff operations queued`)
     return operationIds
   }
 
@@ -196,7 +181,6 @@ export class StreamOperationManager {
     }
 
     this.isProcessing = true
-    this.debug('Started processing operations')
 
     this.processNextOperation()
   }
@@ -210,15 +194,12 @@ export class StreamOperationManager {
 
     if (approvedOperations.length === 0) {
       this.isProcessing = false
-      this.debug('No approved operations to process')
       return
     }
 
     const operation = approvedOperations[0]
     // 从队列中移除已处理的操作
     this.operationQueue = this.operationQueue.filter(op => op.id !== operation.id)
-
-    this.debug(`Processing approved operation: ${operation.id}`)
 
     try {
       const result = this.executeOperation(operation)
@@ -227,15 +208,12 @@ export class StreamOperationManager {
       // 更新节点的操作队列属性
       this.updateNodeOperationQueue(operation.blockId)
 
-      this.debug(`Operation completed: ${operation.id}`, result)
-
       // 调用完成回调 - 🔧 添加异常处理边界
       if (this.options.onOperationComplete) {
         try {
           this.options.onOperationComplete(operation, result)
-        } catch (callbackError) {
-          this.debug(`Operation callback error: ${operation.id}`, callbackError)
-          // 回调错误不应影响操作处理流程，仅记录日志
+        } catch {
+          // 回调错误不应影响操作处理流程
         }
       }
     } catch (error) {
@@ -246,24 +224,20 @@ export class StreamOperationManager {
       }
       this.operationHistory.push(result)
 
-      this.debug(`Operation failed: ${operation.id}`, error)
-
       // 调用完成回调（即使失败也要通知） - 🔧 添加异常处理边界
       if (this.options.onOperationComplete) {
         try {
           this.options.onOperationComplete(operation, result)
-        } catch (callbackError) {
-          this.debug(`Operation callback error: ${operation.id}`, callbackError)
-          // 回调错误不应影响操作处理流程，仅记录日志
+        } catch {
+          // 回调错误不应影响操作处理流程
         }
       }
     }
 
-    // 安排下一个操作 - 🔧 跨环境兼容性修复
-    const globalSetTimeout = typeof window !== 'undefined' ? window.setTimeout : setTimeout
-    this.processingTimer = globalSetTimeout(() => {
+    // 安排下一个操作
+    this.processingTimer = setTimeout(() => {
       this.processNextOperation()
-    }, this.options.operationInterval) as number
+    }, this.options.operationInterval) as unknown as TimerId
   }
 
   /**
@@ -429,8 +403,7 @@ export class StreamOperationManager {
       }
 
       return null
-    } catch (error) {
-      this.debug('Failed to create block from content:', error)
+    } catch {
       return null
     }
   }
@@ -452,7 +425,6 @@ export class StreamOperationManager {
 
       // 根据类型创建节点
       if (!type) {
-        this.debug('Missing node type in JSON content')
         return this.editor.schema.nodes.paragraph.create(
           blockAttrs,
           this.editor.schema.text(JSON.stringify(jsonContent)),
@@ -461,7 +433,6 @@ export class StreamOperationManager {
 
       const nodeType = this.editor.schema.nodes[type]
       if (!nodeType) {
-        this.debug(`Unknown node type: ${type}`)
         // 降级为段落
         return this.editor.schema.nodes.paragraph.create(
           blockAttrs,
@@ -494,8 +465,7 @@ export class StreamOperationManager {
       }
 
       return nodeType.create(blockAttrs, nodeContent)
-    } catch (error) {
-      this.debug('Failed to create block from JSON:', error)
+    } catch {
       return null
     }
   }
@@ -559,13 +529,8 @@ export class StreamOperationManager {
   public clearQueue(sessionId?: string): void {
     if (!sessionId) {
       this.operationQueue = []
-      this.debug('Queue cleared')
     } else {
-      const originalLength = this.operationQueue.length
       this.operationQueue = this.operationQueue.filter(op => op.sessionId !== sessionId)
-      this.debug(
-        `Queue cleared for session: ${sessionId}, removed ${originalLength - this.operationQueue.length} operations`,
-      )
     }
   }
 
@@ -580,7 +545,6 @@ export class StreamOperationManager {
       globalClearTimeout(this.processingTimer)
       this.processingTimer = null
     }
-    this.debug('Processing paused')
   }
 
   /**
@@ -590,7 +554,6 @@ export class StreamOperationManager {
     this.isPaused = false
     if (!this.isProcessing && this.operationQueue.length > 0) {
       this.startProcessing()
-      this.debug('Processing resumed')
     }
   }
 
@@ -636,11 +599,9 @@ export class StreamOperationManager {
         case BlockOperationType.DELETE:
           return this.renderDeleteDiffPreview(operation)
         default:
-          this.debug(`Unsupported diff preview type: ${operation.type}`)
           return false
       }
-    } catch (error) {
-      this.debug('Failed to render diff preview:', error)
+    } catch {
       return false
     }
   }
@@ -652,7 +613,6 @@ export class StreamOperationManager {
   private renderUpdateDiffPreview(operation: StreamOperation): boolean {
     const nodeInfo = this.findNodeByBlockId(operation.blockId)
     if (!nodeInfo) {
-      this.debug(`Target block not found for update diff preview: ${operation.blockId}`)
       return false
     }
 
@@ -672,7 +632,6 @@ export class StreamOperationManager {
     // 2. 在原始block后面插入新的临时block（显示修改后的内容）
     const newBlock = this.createBlockFromContent(operation.content)
     if (!newBlock) {
-      this.debug('Failed to create new block for update diff preview')
       return false
     }
 
@@ -697,7 +656,6 @@ export class StreamOperationManager {
     // 应用变更
     this.editor.view.dispatch(tr)
 
-    this.debug(`Update diff preview rendered for operation: ${operation.id}`)
     return true
   }
 
@@ -708,7 +666,6 @@ export class StreamOperationManager {
     // 创建新block并设置为pending状态
     const newBlock = this.createBlockFromContent(operation.content)
     if (!newBlock) {
-      this.debug('Failed to create block for insert diff preview')
       return false
     }
 
@@ -735,7 +692,6 @@ export class StreamOperationManager {
     } else {
       const nodeInfo = this.findNodeByBlockId(operation.blockId)
       if (!nodeInfo) {
-        this.debug(`Target block not found for insert diff preview: ${operation.blockId}`)
         return false
       }
       insertPosition = nodeInfo.position
@@ -744,7 +700,6 @@ export class StreamOperationManager {
     tr.insert(insertPosition, newBlockWithDiff)
     this.editor.view.dispatch(tr)
 
-    this.debug(`Insert diff preview rendered for operation: ${operation.id}`)
     return true
   }
 
@@ -754,7 +709,6 @@ export class StreamOperationManager {
   private renderDeleteDiffPreview(operation: StreamOperation): boolean {
     const nodeInfo = this.findNodeByBlockId(operation.blockId)
     if (!nodeInfo) {
-      this.debug(`Target block not found for delete diff preview: ${operation.blockId}`)
       return false
     }
 
@@ -772,7 +726,6 @@ export class StreamOperationManager {
 
     this.editor.view.dispatch(tr)
 
-    this.debug(`Delete diff preview rendered for operation: ${operation.id}`)
     return true
   }
 
@@ -783,23 +736,20 @@ export class StreamOperationManager {
     try {
       const operation = this.operationQueue.find(op => op.id === operationId)
       if (!operation) {
-        this.debug(`Operation not found: ${operationId}`)
         return false
       }
 
       // 🔥 更新操作状态为已确认
-      operation.status = 'approved'
+      operation.status = BlockOperationStatus.APPROVED
 
       // 先更新视觉状态
-      this.updateDiffStatus(operation.blockId, 'approved')
+      this.updateDiffStatus(operation.blockId, BlockOperationStatus.APPROVED)
 
       // 🔥 启动处理队列来执行已确认的操作
       this.startProcessing()
 
-      this.debug(`Operation approved: ${operationId}`)
       return true
-    } catch (error) {
-      this.debug('Failed to approve operation:', error)
+    } catch {
       return false
     }
   }
@@ -811,15 +761,14 @@ export class StreamOperationManager {
     try {
       const operation = this.operationQueue.find(op => op.id === operationId)
       if (!operation) {
-        this.debug(`Operation not found: ${operationId}`)
         return false
       }
 
       // 🔥 更新操作状态为已拒绝
-      operation.status = 'rejected'
+      operation.status = BlockOperationStatus.REJECTED
 
       // 更新视觉状态为拒绝
-      this.updateDiffStatus(operation.blockId, 'rejected')
+      this.updateDiffStatus(operation.blockId, BlockOperationStatus.REJECTED)
 
       // 延迟清理diff状态和从队列移除（让用户看到拒绝效果）
       setTimeout(() => {
@@ -827,10 +776,8 @@ export class StreamOperationManager {
         this.operationQueue = this.operationQueue.filter(op => op.id !== operationId)
       }, 1000)
 
-      this.debug(`Operation rejected: ${operationId}`)
       return true
-    } catch (error) {
-      this.debug('Failed to reject operation:', error)
+    } catch {
       return false
     }
   }
@@ -838,7 +785,7 @@ export class StreamOperationManager {
   /**
    * 🔥 新增：更新diff状态
    */
-  private updateDiffStatus(blockId: string, status: 'pending' | 'approved' | 'rejected'): void {
+  private updateDiffStatus(blockId: string, status: BlockOperationStatus): void {
     const nodeInfo = this.findNodeByBlockId(blockId)
     if (!nodeInfo) {
       return
@@ -923,8 +870,7 @@ export class StreamOperationManager {
 
       // 对于复杂节点，返回文本内容
       return node.textContent || ''
-    } catch (error) {
-      this.debug('Failed to serialize node:', error)
+    } catch {
       return ''
     }
   }
@@ -933,7 +879,7 @@ export class StreamOperationManager {
    * 🔥 Diff Native - 获取所有待确认的操作
    */
   public getPendingDiffOperations(): StreamOperation[] {
-    return this.operationQueue.filter(op => op.status === 'pending')
+    return this.operationQueue.filter(op => op.status === BlockOperationStatus.PENDING)
   }
 
   /**
@@ -949,15 +895,10 @@ export class StreamOperationManager {
 
     // 首先批量设置所有操作为已确认状态，但不触发处理
     pendingOps.forEach(op => {
-      try {
-        // 直接设置状态而不调用 approveDiffOperation (避免触发 startProcessing)
-        op.status = 'approved'
-        this.updateDiffStatus(op.blockId, 'approved')
-        successCount += 1
-        this.debug(`Operation approved: ${op.id}`)
-      } catch (error) {
-        this.debug(`Failed to approve operation ${op.id}:`, error)
-      }
+      // 直接设置状态而不调用 approveDiffOperation (避免触发 startProcessing)
+      op.status = BlockOperationStatus.APPROVED
+      this.updateDiffStatus(op.blockId, BlockOperationStatus.APPROVED)
+      successCount += 1
     })
 
     // 所有操作确认完成后，统一启动处理
@@ -983,15 +924,10 @@ export class StreamOperationManager {
 
     // 批量设置所有操作为已拒绝状态
     pendingOps.forEach(op => {
-      try {
-        // 直接设置状态而不调用 rejectDiffOperation
-        op.status = 'rejected'
-        this.updateDiffStatus(op.blockId, 'rejected')
-        successCount += 1
-        this.debug(`Operation rejected: ${op.id}`)
-      } catch (error) {
-        this.debug(`Failed to reject operation ${op.id}:`, error)
-      }
+      // 直接设置状态而不调用 rejectDiffOperation
+      op.status = BlockOperationStatus.REJECTED
+      this.updateDiffStatus(op.blockId, BlockOperationStatus.REJECTED)
+      successCount += 1
     })
 
     // 延迟清理diff状态和从队列移除（让用户看到拒绝效果）
@@ -1012,21 +948,11 @@ export class StreamOperationManager {
   }
 
   /**
-   * 调试日志
-   */
-  private debug(message: string, ...args: unknown[]): void {
-    if (this.options.debug) {
-      console.log(`[StreamOperationManager] ${message}`, ...args)
-    }
-  }
-
-  /**
    * 销毁管理器
    */
   public destroy(): void {
     this.pause()
     this.clearQueue()
     this.operationHistory = []
-    this.debug('StreamOperationManager destroyed')
   }
 }

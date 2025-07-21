@@ -10,12 +10,6 @@ export interface StreamTargetOptions {
   enableVisualIndicator?: boolean
 
   /**
-   * 是否启用调试模式
-   * @default false
-   */
-  debug?: boolean
-
-  /**
    * 目标切换的防抖延迟（毫秒）
    * @default 100
    */
@@ -51,7 +45,6 @@ export class StreamTargetManager {
     this.editor = editor
     this.options = {
       enableVisualIndicator: true,
-      debug: false,
       debounceDelay: 100,
       ...options,
     }
@@ -63,19 +56,14 @@ export class StreamTargetManager {
     if (this.options.enableVisualIndicator) {
       this.createVisualIndicator()
     }
-
-    this.debug('StreamTargetManager initialized')
   }
 
   /**
    * 设置当前流式目标
    */
   public setStreamTarget(blockId: string, sessionId: string): boolean {
-    this.debug(`Setting stream target: ${blockId} for session: ${sessionId}`)
-
     const targetInfo = this.findNodeByBlockId(blockId)
     if (!targetInfo) {
-      this.debug(`Node not found: ${blockId}`)
       return false
     }
 
@@ -100,7 +88,6 @@ export class StreamTargetManager {
       this.showVisualIndicator(blockId)
     }
 
-    this.debug(`Stream target set: ${blockId}`)
     return true
   }
 
@@ -112,8 +99,6 @@ export class StreamTargetManager {
       return
     }
 
-    this.debug(`Clearing stream target: ${this.currentTarget.blockId}`)
-
     // 更新节点属性
     this.updateNodeStreamTarget(this.currentTarget.blockId, null, false)
 
@@ -121,7 +106,6 @@ export class StreamTargetManager {
     this.hideVisualIndicator()
 
     this.currentTarget = null
-    this.debug('Stream target cleared')
   }
 
   /**
@@ -281,15 +265,6 @@ export class StreamTargetManager {
   }
 
   /**
-   * 调试日志
-   */
-  private debug(message: string, ...args: any[]): void {
-    if (this.options.debug) {
-      console.log(`[StreamTargetManager] ${message}`, ...args)
-    }
-  }
-
-  /**
    * 销毁管理器
    */
   public destroy(): void {
@@ -304,7 +279,5 @@ export class StreamTargetManager {
       this.visualIndicator.remove()
       this.visualIndicator = null
     }
-
-    this.debug('StreamTargetManager destroyed')
   }
 }

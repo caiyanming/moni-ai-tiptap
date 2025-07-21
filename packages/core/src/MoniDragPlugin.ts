@@ -20,12 +20,6 @@ export interface MoniDragPluginOptions extends Partial<DragHandleManagerOptions>
   enableIndicators?: boolean
 
   /**
-   * Enable debugging
-   * @default false
-   */
-  debug?: boolean
-
-  /**
    * Debounce delay for mouse events (in ms)
    * @default 50
    */
@@ -107,7 +101,6 @@ export class MoniDragPlugin {
     this.editor = editor
     this.options = {
       enableIndicators: true,
-      debug: false,
       debounceDelay: 50,
       position: { side: 'left', offset: 8 },
       ...options,
@@ -212,10 +205,6 @@ export class MoniDragPlugin {
   }
 
   private handleDragStart(blockId: string, node: any) {
-    if (this.options.debug) {
-      console.log('[MoniDrag] Drag start:', { blockId, node })
-    }
-
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
       blockId,
@@ -227,11 +216,7 @@ export class MoniDragPlugin {
     this.editor.view.dispatch(tr)
   }
 
-  private handleDragEnd(blockId: string, node: any) {
-    if (this.options.debug) {
-      console.log('[MoniDrag] Drag end:', { blockId, node })
-    }
-
+  private handleDragEnd() {
     // Clear drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-end', true)
     this.editor.view.dispatch(tr)
