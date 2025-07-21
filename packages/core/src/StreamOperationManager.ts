@@ -52,15 +52,29 @@ export enum BlockOperationStatus {
   FAILED = 'failed',
 }
 
+/**
+ * Block 内容接口，支持字符串或结构化内容
+ */
+export interface BlockContent {
+  type?: string
+  text?: string
+  content?: BlockContent[]
+  attrs?: Record<string, unknown>
+  marks?: Array<{
+    type: string
+    attrs?: Record<string, unknown>
+  }>
+}
+
 export interface StreamOperation {
   id: string
   sessionId: string
   blockId: string
   type: BlockOperationType
-  content: string | Record<string, any> // 支持字符串或JSON对象
+  content: string | BlockContent // 使用具体的BlockContent接口
   position?: number
   timestamp: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown> // 使用unknown而不是any
 
   // 🔥 Diff Native - 天生需要确认
   status: 'pending' | 'approved' | 'rejected'
@@ -74,7 +88,7 @@ export interface BlockOperation {
   id: string
   type: BlockOperationType
   targetId: string
-  content: Record<string, any>
+  content: BlockContent // 使用具体的BlockContent接口
   position?: number
   canExecute: boolean
   status: BlockOperationStatus
@@ -293,7 +307,7 @@ export class StreamOperationManager {
         result = this.executeDeleteOperation(tr, operation)
         break
       default:
-        throw new Error(`Unsupported operation type: ${(operation as any).type}`)
+        throw new Error(`Unsupported operation type: ${operation.type}`)
     }
 
     // 提交事务
@@ -415,7 +429,7 @@ export class StreamOperationManager {
   /**
    * 从内容创建block节点
    */
-  private createBlockFromContent(content: string | Record<string, any>): ProseMirrorNode | null {
+  private createBlockFromContent(content: string | BlockContent): ProseMirrorNode | null {
     try {
       if (typeof content === 'string') {
         // 简单文本内容，创建段落block
@@ -444,7 +458,7 @@ export class StreamOperationManager {
   /**
    * 从JSON对象创建block节点
    */
-  private createBlockFromJSON(jsonContent: Record<string, any>): ProseMirrorNode | null {
+  private createBlockFromJSON(jsonContent: BlockContent): ProseMirrorNode | null {
     try {
       const { type, attrs = {}, content = [] } = jsonContent
 
@@ -457,6 +471,14 @@ export class StreamOperationManager {
       }
 
       // 根据类型创建节点
+      if (!type) {
+        this.debug('Missing node type in JSON content')
+        return this.editor.schema.nodes.paragraph.create(
+          blockAttrs,
+          this.editor.schema.text(JSON.stringify(jsonContent)),
+        )
+      }
+
       const nodeType = this.editor.schema.nodes[type]
       if (!nodeType) {
         this.debug(`Unknown node type: ${type}`)
@@ -617,42 +639,161 @@ export class StreamOperationManager {
   }
 
   /**
-   * 🔥 新增：渲染diff预览
+   * 🔥 新增：渲染diff预览 - Method A 实现
    * 将操作转换为可视化的diff预览，等待用户确认
+   *
+   * Method A: 对于update操作，临时在文档中添加新block显示修改后内容
+   * 对于insert/delete操作，直接在目标block上设置diff属性
    */
   private renderDiffPreview(operation: StreamOperation): boolean {
     try {
-      const nodeInfo = this.findNodeByBlockId(operation.blockId)
-      if (!nodeInfo) {
-        this.debug(`Target block not found for diff preview: ${operation.blockId}`)
-        return false
+      switch (operation.type) {
+        case BlockOperationType.REPLACE:
+          return this.renderUpdateDiffPreview(operation)
+        case BlockOperationType.INSERT:
+        case BlockOperationType.APPEND:
+          return this.renderInsertDiffPreview(operation)
+        case BlockOperationType.DELETE:
+          return this.renderDeleteDiffPreview(operation)
+        default:
+          this.debug(`Unsupported diff preview type: ${operation.type}`)
+          return false
       }
-
-      const { node, position } = nodeInfo
-      const { tr } = this.editor.view.state
-
-      // 获取原始内容
-      const originalContent = this.serializeNode(node)
-
-      // 使用MoniDiffSupport扩展的命令设置diff状态
-      tr.setNodeMarkup(position, undefined, {
-        ...node.attrs,
-        diffMode: true,
-        diffStatus: 'pending',
-        diffOperationId: operation.id,
-        diffOriginalContent: originalContent,
-        diffNewContent: operation.content,
-      })
-
-      // 应用变更
-      this.editor.view.dispatch(tr)
-
-      this.debug(`Diff preview rendered for operation: ${operation.id}`)
-      return true
     } catch (error) {
       this.debug('Failed to render diff preview:', error)
       return false
     }
+  }
+
+  /**
+   * 渲染更新操作的diff预览 - Method A
+   * 临时添加新block显示修改后的内容，同时高亮原block
+   */
+  private renderUpdateDiffPreview(operation: StreamOperation): boolean {
+    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    if (!nodeInfo) {
+      this.debug(`Target block not found for update diff preview: ${operation.blockId}`)
+      return false
+    }
+
+    const { node, position } = nodeInfo
+    const { tr } = this.editor.view.state
+
+    // 1. 设置原始block的diff状态（显示为要被替换的内容）
+    tr.setNodeMarkup(position, undefined, {
+      ...node.attrs,
+      diffMode: true,
+      diffStatus: 'pending',
+      diffOperationId: operation.id,
+      diffType: 'original',
+      moniDiffTempId: `temp_${operation.id}`,
+    })
+
+    // 2. 在原始block后面插入新的临时block（显示修改后的内容）
+    const newBlock = this.createBlockFromContent(operation.content)
+    if (!newBlock) {
+      this.debug('Failed to create new block for update diff preview')
+      return false
+    }
+
+    // 为新block设置diff属性
+    const newBlockWithDiff = newBlock.type.create(
+      {
+        ...newBlock.attrs,
+        diffMode: true,
+        diffStatus: 'pending',
+        diffOperationId: operation.id,
+        diffType: 'new',
+        moniDiffTempId: `temp_${operation.id}`,
+        moniTempBlock: true, // 标记为临时block
+      },
+      newBlock.content,
+    )
+
+    // 在原始block后插入新block
+    const insertPosition = position + node.nodeSize
+    tr.insert(insertPosition, newBlockWithDiff)
+
+    // 应用变更
+    this.editor.view.dispatch(tr)
+
+    this.debug(`Update diff preview rendered for operation: ${operation.id}`)
+    return true
+  }
+
+  /**
+   * 渲染插入操作的diff预览
+   */
+  private renderInsertDiffPreview(operation: StreamOperation): boolean {
+    // 创建新block并设置为pending状态
+    const newBlock = this.createBlockFromContent(operation.content)
+    if (!newBlock) {
+      this.debug('Failed to create block for insert diff preview')
+      return false
+    }
+
+    const { tr } = this.editor.view.state
+
+    // 为新block设置diff属性
+    const newBlockWithDiff = newBlock.type.create(
+      {
+        ...newBlock.attrs,
+        diffMode: true,
+        diffStatus: 'pending',
+        diffOperationId: operation.id,
+        diffType: 'insert',
+      },
+      newBlock.content,
+    )
+
+    // 确定插入位置
+    let insertPosition: number
+    if (operation.blockId === 'document-root' || operation.blockId === '') {
+      insertPosition = 0
+    } else if (operation.type === BlockOperationType.APPEND) {
+      insertPosition = this.editor.view.state.doc.content.size
+    } else {
+      const nodeInfo = this.findNodeByBlockId(operation.blockId)
+      if (!nodeInfo) {
+        this.debug(`Target block not found for insert diff preview: ${operation.blockId}`)
+        return false
+      }
+      insertPosition = nodeInfo.position
+    }
+
+    tr.insert(insertPosition, newBlockWithDiff)
+    this.editor.view.dispatch(tr)
+
+    this.debug(`Insert diff preview rendered for operation: ${operation.id}`)
+    return true
+  }
+
+  /**
+   * 渲染删除操作的diff预览
+   */
+  private renderDeleteDiffPreview(operation: StreamOperation): boolean {
+    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    if (!nodeInfo) {
+      this.debug(`Target block not found for delete diff preview: ${operation.blockId}`)
+      return false
+    }
+
+    const { node, position } = nodeInfo
+    const { tr } = this.editor.view.state
+
+    // 设置要删除的block的diff状态
+    tr.setNodeMarkup(position, undefined, {
+      ...node.attrs,
+      diffMode: true,
+      diffStatus: 'pending',
+      diffOperationId: operation.id,
+      diffType: 'delete',
+    })
+
+    this.editor.view.dispatch(tr)
+
+    this.debug(`Delete diff preview rendered for operation: ${operation.id}`)
+    return true
   }
 
   /**
@@ -719,7 +860,9 @@ export class StreamOperationManager {
    */
   private updateDiffStatus(blockId: string, status: 'pending' | 'approved' | 'rejected'): void {
     const nodeInfo = this.findNodeByBlockId(blockId)
-    if (!nodeInfo) {return}
+    if (!nodeInfo) {
+      return
+    }
 
     const { node, position } = nodeInfo
     const { tr } = this.editor.view.state
@@ -734,24 +877,58 @@ export class StreamOperationManager {
 
   /**
    * 🔥 新增：清理diff状态，恢复正常显示
+   * 对于update操作，需要特殊处理临时block的清理
    */
   private clearDiffState(blockId: string): void {
-    const nodeInfo = this.findNodeByBlockId(blockId)
-    if (!nodeInfo) {return}
-
-    const { node, position } = nodeInfo
     const { tr } = this.editor.view.state
+    let hasChanges = false
 
-    tr.setNodeMarkup(position, undefined, {
-      ...node.attrs,
-      diffMode: false,
-      diffStatus: 'normal',
-      diffOperationId: null,
-      diffOriginalContent: null,
-      diffNewContent: null,
+    // 查找并清理原始block的diff状态
+    const nodeInfo = this.findNodeByBlockId(blockId)
+    if (nodeInfo) {
+      const { node, position } = nodeInfo
+      const tempId = node.attrs.moniDiffTempId
+
+      // 清理原始block的diff属性
+      tr.setNodeMarkup(position, undefined, {
+        ...node.attrs,
+        diffMode: undefined,
+        diffStatus: undefined,
+        diffOperationId: undefined,
+        diffType: undefined,
+        moniDiffTempId: undefined,
+      })
+      hasChanges = true
+
+      // 如果有关联的临时block，也需要清理
+      if (tempId) {
+        this.clearTempDiffBlocks(tr, tempId)
+      }
+    }
+
+    if (hasChanges) {
+      this.editor.view.dispatch(tr)
+    }
+  }
+
+  /**
+   * 清理与操作相关的所有临时diff block
+   */
+  private clearTempDiffBlocks(tr: Transaction, tempId: string): void {
+    const doc = this.editor.view.state.doc
+    const blocksToDelete: { from: number; to: number }[] = []
+
+    // 找到所有具有相同tempId的临时block
+    doc.descendants((node: ProseMirrorNode, pos: number) => {
+      if (node.attrs?.moniDiffTempId === tempId && node.attrs?.moniTempBlock) {
+        blocksToDelete.push({ from: pos, to: pos + node.nodeSize })
+      }
     })
 
-    this.editor.view.dispatch(tr)
+    // 从后往前删除，避免位置偏移问题
+    blocksToDelete.reverse().forEach(({ from, to }) => {
+      tr.delete(from, to)
+    })
   }
 
   /**
@@ -784,7 +961,32 @@ export class StreamOperationManager {
    */
   public approveAllDiffOperations(): boolean {
     const pendingOps = this.getPendingDiffOperations()
-    return pendingOps.every(op => this.approveDiffOperation(op.id))
+    if (pendingOps.length === 0) {
+      return true
+    }
+
+    let successCount = 0
+
+    // 首先批量设置所有操作为已确认状态，但不触发处理
+    pendingOps.forEach(op => {
+      try {
+        // 直接设置状态而不调用 approveDiffOperation (避免触发 startProcessing)
+        op.status = 'approved'
+        this.updateDiffStatus(op.blockId, 'approved')
+        successCount += 1
+        this.debug(`Operation approved: ${op.id}`)
+      } catch (error) {
+        this.debug(`Failed to approve operation ${op.id}:`, error)
+      }
+    })
+
+    // 所有操作确认完成后，统一启动处理
+    if (successCount > 0) {
+      this.startProcessing()
+    }
+
+    // 只要有操作成功就返回true，全部失败才返回false
+    return successCount > 0
   }
 
   /**
@@ -792,13 +994,47 @@ export class StreamOperationManager {
    */
   public rejectAllDiffOperations(): boolean {
     const pendingOps = this.getPendingDiffOperations()
-    return pendingOps.every(op => this.rejectDiffOperation(op.id))
+    if (pendingOps.length === 0) {
+      return true
+    }
+
+    let successCount = 0
+    const operationIds = pendingOps.map(op => op.id)
+
+    // 批量设置所有操作为已拒绝状态
+    pendingOps.forEach(op => {
+      try {
+        // 直接设置状态而不调用 rejectDiffOperation
+        op.status = 'rejected'
+        this.updateDiffStatus(op.blockId, 'rejected')
+        successCount += 1
+        this.debug(`Operation rejected: ${op.id}`)
+      } catch (error) {
+        this.debug(`Failed to reject operation ${op.id}:`, error)
+      }
+    })
+
+    // 延迟清理diff状态和从队列移除（让用户看到拒绝效果）
+    if (successCount > 0) {
+      setTimeout(() => {
+        operationIds.forEach(id => {
+          const operation = this.operationQueue.find(op => op.id === id)
+          if (operation) {
+            this.clearDiffState(operation.blockId)
+          }
+        })
+        this.operationQueue = this.operationQueue.filter(op => !operationIds.includes(op.id))
+      }, 1000)
+    }
+
+    // 只要有操作成功就返回true，全部失败才返回false
+    return successCount > 0
   }
 
   /**
    * 调试日志
    */
-  private debug(message: string, ...args: any[]): void {
+  private debug(message: string, ...args: unknown[]): void {
     if (this.options.debug) {
       console.log(`[StreamOperationManager] ${message}`, ...args)
     }

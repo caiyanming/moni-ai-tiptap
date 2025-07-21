@@ -335,19 +335,18 @@ export interface NodeConfig<Options = any, Storage = any>
   /**
    * 🔥 Moni Diff Mode Support
    *
-   * Notes about diff attributes that nodes can support:
+   * All nodes now support diff by default. The following diff attributes
+   * are automatically managed by StreamOperationManager:
    * - diffMode: boolean - Whether the node is in diff preview mode
    * - diffStatus: 'normal' | 'pending' | 'approved' | 'rejected' - Current diff state
    * - diffOperationId: string | null - ID of the pending operation
-   * - diffOriginalContent: any - Original content before change
-   * - diffNewContent: any - New content to be applied
+   * - diffType: 'original' | 'new' | 'insert' | 'delete' - Type of diff operation
+   * - moniDiffTempId: string - Temporary ID for grouping related diff blocks
+   * - moniTempBlock: boolean - Whether this is a temporary diff block
    *
-   * These attributes are automatically managed by StreamOperationManager
-   * and should be handled by the frontend for visual styling.
-   *
-   * @default false
+   * These attributes should be handled by the frontend for visual styling
+   * using CSS data attributes and classes.
    */
-  supportsDiff?: boolean
 }
 
 /**

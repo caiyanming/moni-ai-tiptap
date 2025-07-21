@@ -1,14 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Editor } from '../../packages/core/src/Editor'
+import type { MoniStreamAPI } from '../../packages/core/src/MoniStreamPlugin.js'
 /* eslint-disable no-loop-func */
 import { createMoniStreamPlugin, MoniStreamPlugin } from '../../packages/core/src/MoniStreamPlugin.js'
+import type { StreamOperationResult } from '../../packages/core/src/StreamOperationManager.js'
 import { cleanupDOM, createBatchOperations, createMockEditor, waitForAsync } from './test-utils.js'
 
 describe('MoniStreamPlugin', () => {
   let editor: Editor
   let plugin: MoniStreamPlugin
-  let api: any
+  let api: MoniStreamAPI
 
   beforeEach(() => {
     editor = createMockEditor()
@@ -523,7 +525,7 @@ describe('MoniStreamPlugin', () => {
             timeout: 8000,
             interval: 100,
           })
-          .satisfies((history: any[]) => history.length >= Math.floor(operationsPerSession * 0.9)) // 至少90%完成率
+          .satisfies((history: StreamOperationResult[]) => history.length >= Math.floor(operationsPerSession * 0.9)) // 至少90%完成率
       })
       await Promise.all(sessionChecks)
 

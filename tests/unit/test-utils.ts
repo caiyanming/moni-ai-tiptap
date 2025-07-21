@@ -258,7 +258,6 @@ function createMockDocument(schema: Schema): ProseMirrorNode {
         const result = callback(node, index + 1) // 子节点的position从1开始
         if (result === false) {
           // 提前退出遍历
-          
         }
       })
     }),
@@ -488,11 +487,36 @@ export function createMockProgressEvent(overrides: Partial<any> = {}) {
 }
 
 /**
- * 异步等待函数
+ * 异步等待函数 - 支持条件等待和固定时间等待
  */
-export function waitForAsync(ms: number = 0): Promise<void> {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
+export function waitForAsync(conditionOrMs: (() => boolean) | number = 0, timeout: number = 5000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // 如果是数字，直接等待指定毫秒数
+    if (typeof conditionOrMs === 'number') {
+      setTimeout(resolve, conditionOrMs)
+      return
+    }
+
+    // 如果是函数，等待条件满足
+    const condition = conditionOrMs
+    const startTime = Date.now()
+    const checkInterval = 10 // 每10ms检查一次
+
+    const check = () => {
+      if (condition()) {
+        resolve()
+        return
+      }
+
+      if (Date.now() - startTime > timeout) {
+        reject(new Error(`Timeout after ${timeout}ms waiting for condition`))
+        return
+      }
+
+      setTimeout(check, checkInterval)
+    }
+
+    check()
   })
 }
 

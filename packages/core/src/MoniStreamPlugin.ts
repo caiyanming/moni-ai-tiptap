@@ -307,7 +307,7 @@ export class MoniStreamPlugin {
       startStreamSession: (
         sessionId: string,
         blockId: string,
-        operations: Array<Omit<StreamOperation, 'id' | 'timestamp'>>,
+        operations: Array<Omit<StreamOperation, 'id' | 'timestamp' | 'status'>>,
       ) => this.startStreamSession(sessionId, blockId, operations),
       processStreamBatch: (sessionId: string, blockId: string, content: string, batchSize?: number) =>
         this.processStreamBatch(sessionId, blockId, content, batchSize),
@@ -503,7 +503,7 @@ export class MoniStreamPlugin {
   /**
    * 调试日志
    */
-  private debug(message: string, ...args: any[]): void {
+  private debug(message: string, ...args: unknown[]): void {
     if (this.options.debug) {
       console.log(`[MoniStreamPlugin] ${message}`, ...args)
     }
