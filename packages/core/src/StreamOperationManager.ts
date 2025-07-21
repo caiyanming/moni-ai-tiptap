@@ -80,27 +80,7 @@ export interface StreamOperation {
   status: 'pending' | 'approved' | 'rejected'
 }
 
-/**
- * 完整的 Block 操作接口
- * 🔥 与前端 BlockOperation 完全兼容
- */
-export interface BlockOperation {
-  id: string
-  type: BlockOperationType
-  targetId: string
-  content: BlockContent // 使用具体的BlockContent接口
-  position?: number
-  canExecute: boolean
-  status: BlockOperationStatus
-  progress?: number
-  timestamp?: number
-  metadata?: {
-    userIntent?: string
-    sessionId?: string
-    originalType?: string
-    [key: string]: unknown
-  }
-}
+// 🔥 已移除 BlockOperation - 统一使用 StreamOperation 实现零映射架构
 
 export interface StreamOperationResult {
   success: boolean
