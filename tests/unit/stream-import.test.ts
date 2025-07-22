@@ -19,9 +19,11 @@ describe('Stream管理器导入测试', () => {
     expect(typeof StreamProgressManager).toBe('function')
   })
 
-  it('应该能导入MoniStreamPlugin', async () => {
-    const { MoniStreamPlugin } = await import('../../packages/core/src/MoniStreamPlugin.js')
-    expect(MoniStreamPlugin).toBeDefined()
-    expect(typeof MoniStreamPlugin).toBe('function')
+  it('应该能从core导入Block Stream组件', async () => {
+    const { Editor, StreamOperationManager } = await import('../../packages/core/src/index.js')
+    expect(Editor).toBeDefined()
+    expect(StreamOperationManager).toBeDefined()
+    expect(typeof Editor).toBe('function')
+    expect(typeof StreamOperationManager).toBe('function')
   })
 })

@@ -25,7 +25,6 @@ export * from './MoniDragPlugin.js'
 export * from './SmartDragCalculator.js'
 
 // Block Stream System
-export * from './MoniStreamPlugin.js'
 export * from './StreamOperationManager.js'
 export * from './StreamProgressManager.js'
 export * from './StreamTargetManager.js'

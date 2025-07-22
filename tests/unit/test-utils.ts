@@ -368,10 +368,35 @@ export function createMockEditor(): Editor {
   const state = createMockEditorState(doc)
   const view = createMockEditorView(state)
 
+  // 🔥 添加 StreamOperationManager 作为 Editor 的核心属性
+  const mockStreamOperationManager = {
+    queueOperation: vi.fn().mockReturnValue(`op_${Math.random().toString(36).substr(2, 9)}`),
+    queueOperations: vi
+      .fn()
+      .mockImplementation((ops: any[]) => ops.map(() => `op_${Math.random().toString(36).substr(2, 9)}`)),
+    getQueueStatus: vi.fn().mockReturnValue({
+      queueSize: 0,
+      isProcessing: false,
+      maxQueueSize: 100,
+    }),
+    approveDiffOperation: vi.fn().mockReturnValue(true),
+    rejectDiffOperation: vi.fn().mockReturnValue(true),
+    approveAllDiffOperations: vi.fn().mockReturnValue(true),
+    rejectAllDiffOperations: vi.fn().mockReturnValue(true),
+    getPendingDiffOperations: vi.fn().mockReturnValue([]),
+    getOperationHistory: vi.fn().mockReturnValue([]),
+    pause: vi.fn(),
+    resume: vi.fn(),
+    clearQueue: vi.fn(),
+    destroy: vi.fn(),
+  }
+
   return {
     view,
     state,
     schema,
+    // 🔥 直接添加 streamOperationManager 属性
+    streamOperationManager: mockStreamOperationManager,
     commands: {
       focus: vi.fn().mockReturnValue(true),
       blur: vi.fn().mockReturnValue(true),

@@ -259,7 +259,13 @@ export interface DragHandlePluginProps {
   onDragOver?: (event: DragEvent, dropInfo: DropInfo, editor: Editor) => void
   onDrop?: (event: DragEvent, dropInfo: DropInfo, editor: Editor) => void
   // 🎯 Notion风格：+号按钮相关属性
-  onAddBlock?: (options: { node: Node | null; editor: Editor; position: number }) => void
+  onAddBlock?: (options: {
+    node: Node | null
+    editor: Editor
+    position: number
+    event: MouseEvent
+    targetElement: HTMLElement
+  }) => void
 }
 
 export const dragHandlePluginDefaultKey = new PluginKey('dragHandle')
@@ -370,10 +376,10 @@ export const DragHandlePlugin = ({
   element.addEventListener('dragend', onDragEndHandler)
 
   // 🎯 Notion风格：处理+号按钮点击事件（总是显示）
-  let addButtonClickHandler: ((e: Event) => void) | null = null
+  let addButtonClickHandler: ((e: MouseEvent) => void) | null = null
   const addButton = element.querySelector('.add-block-button')
   if (addButton) {
-    addButtonClickHandler = (e: Event) => {
+    addButtonClickHandler = (e: MouseEvent) => {
       e.preventDefault()
       e.stopPropagation()
 
@@ -383,6 +389,8 @@ export const DragHandlePlugin = ({
           node: currentNode,
           editor,
           position: currentNodePos + 1, // 在当前块后面插入
+          event: e, // 传递鼠标事件对象
+          targetElement: e.target as HTMLElement, // 传递目标元素
         })
       }
     }

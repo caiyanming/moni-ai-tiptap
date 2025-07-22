@@ -61,7 +61,13 @@ export interface DragHandleOptions {
   /**
    * 🎯 Notion风格：点击+号按钮的回调
    */
-  onAddBlock?: (options: { node: Node | null; editor: Editor; position: number }) => void
+  onAddBlock?: (options: {
+    node: Node | null
+    editor: Editor
+    position: number
+    event: MouseEvent
+    targetElement: HTMLElement
+  }) => void
 }
 
 declare module '@tiptap/core' {

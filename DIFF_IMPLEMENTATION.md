@@ -29,14 +29,14 @@ interface DiffAttributes {
 }
 ```
 
-### 2. MoniStreamPlugin API Enhancement
+### 2. StreamOperationManager Native API
 
-**File**: `/packages/core/src/MoniStreamPlugin.ts`
+**File**: `/packages/core/src/StreamOperationManager.ts`
 
-**Added to MoniStreamAPI**:
+**Native StreamOperationManager API**:
 ```typescript
-// Diff operation support
-queueOperationWithDiff(operation: Omit<StreamOperation, 'id' | 'timestamp'>): string
+// Diff operation support (built into core)
+queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp'>): string
 approveDiffOperation(operationId: string): boolean
 rejectDiffOperation(operationId: string): boolean
 getPendingDiffOperations(): StreamOperation[]

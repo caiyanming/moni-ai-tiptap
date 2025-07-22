@@ -28,6 +28,7 @@ import { isNodeEmpty } from './helpers/isNodeEmpty.js'
 import { resolveFocusPosition } from './helpers/resolveFocusPosition.js'
 import type { Storage } from './index.js'
 import { NodePos } from './NodePos.js'
+import { StreamOperationManager } from './StreamOperationManager.js'
 import { style } from './style.js'
 import type {
   CanCommands,
@@ -54,6 +55,8 @@ export class Editor extends EventEmitter<EditorEvents> {
   private commandManager!: CommandManager
 
   public extensionManager!: ExtensionManager
+
+  public streamOperationManager!: StreamOperationManager
 
   private css: HTMLStyleElement | null = null
 
@@ -115,6 +118,7 @@ export class Editor extends EventEmitter<EditorEvents> {
     this.setOptions(options)
     this.createExtensionManager()
     this.createCommandManager()
+    this.createStreamOperationManager()
     this.createSchema()
     this.on('beforeCreate', this.options.onBeforeCreate)
     this.emit('beforeCreate', { editor: this })
@@ -458,6 +462,19 @@ export class Editor extends EventEmitter<EditorEvents> {
     this.commandManager = new CommandManager({
       editor: this,
     })
+  }
+
+  /**
+   * Creates a stream operation manager.
+   * 🔥 Block Stream 是 moni-ai-tiptap 的核心能力，默认提供
+   */
+  private createStreamOperationManager(): void {
+    this.streamOperationManager = new StreamOperationManager(this, {
+      maxQueueSize: 100,
+      operationInterval: 50,
+    })
+
+    // 注意：不再需要添加到 storage，直接通过 editor.streamOperationManager 访问
   }
 
   /**
