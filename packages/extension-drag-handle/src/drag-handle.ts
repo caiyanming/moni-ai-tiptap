@@ -68,6 +68,10 @@ export interface DragHandleOptions {
     event: MouseEvent
     targetElement: HTMLElement
   }) => void
+  /**
+   * 🎯 新增：拖拽手柄点击回调（Notion-like 块菜单）
+   */
+  onClick?: (event: MouseEvent, editor: Editor) => void
 }
 
 declare module '@tiptap/core' {
@@ -231,6 +235,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
       onDrop: () => null,
       // 🎯 Notion风格：+号按钮回调
       onAddBlock: () => null,
+      // 🎯 新增：拖拽手柄点击回调
+      onClick: () => null,
     }
   },
 
@@ -274,6 +280,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         onDrop: this.options.onDrop,
         // 🎯 传递Notion风格+号按钮配置
         onAddBlock: this.options.onAddBlock,
+        // 🎯 传递拖拽手柄点击回调
+        onClick: this.options.onClick,
       }).plugin,
     ]
   },

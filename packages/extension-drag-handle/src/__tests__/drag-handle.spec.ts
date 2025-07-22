@@ -1,6 +1,8 @@
 import { Editor } from '@tiptap/core'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { Document } from '../../../extension-document/src/document.js'
+import { Paragraph } from '../../../extension-paragraph/src/paragraph.js'
+import { Text } from '../../../extension-text/src/text.js'
 import { DragHandle } from '../drag-handle.js'
 
 describe('DragHandle Extension', () => {
@@ -10,13 +12,17 @@ describe('DragHandle Extension', () => {
     // 创建基本的测试编辑器
     editor = new Editor({
       element: document.createElement('div'),
-      content: '',
+      content: '<p>Hello world</p>',
       extensions: [
+        Document,
+        Paragraph,
+        Text,
         DragHandle.configure({
-          onAddBlock: vi.fn(),
-          onDragStart: vi.fn(),
-          onDragOver: vi.fn(),
-          onDrop: vi.fn(),
+          onAddBlock: jest.fn(),
+          onDragStart: jest.fn(),
+          onDragOver: jest.fn(),
+          onDrop: jest.fn(),
+          onClick: jest.fn(),
         }),
       ],
     })
@@ -44,25 +50,31 @@ describe('DragHandle Extension', () => {
           onDragStart: expect.any(Function),
           onDragOver: expect.any(Function),
           onDrop: expect.any(Function),
+          onClick: expect.any(Function),
         })
       }
     })
 
     it('should accept custom configuration', () => {
-      const onAddBlock = vi.fn()
-      const onDragStart = vi.fn()
-      const onDragOver = vi.fn()
-      const onDrop = vi.fn()
+      const onAddBlock = jest.fn()
+      const onDragStart = jest.fn()
+      const onDragOver = jest.fn()
+      const onDrop = jest.fn()
+      const onClick = jest.fn()
 
       const customEditor = new Editor({
         element: document.createElement('div'),
-        content: '',
+        content: '<p>Hello world</p>',
         extensions: [
+          Document,
+          Paragraph,
+          Text,
           DragHandle.configure({
             onAddBlock,
             onDragStart,
             onDragOver,
             onDrop,
+            onClick,
           }),
         ],
       })
@@ -74,6 +86,7 @@ describe('DragHandle Extension', () => {
         expect(dragHandleExtension.options.onDragStart).toBe(onDragStart)
         expect(dragHandleExtension.options.onDragOver).toBe(onDragOver)
         expect(dragHandleExtension.options.onDrop).toBe(onDrop)
+        expect(dragHandleExtension.options.onClick).toBe(onClick)
       }
 
       customEditor.destroy()
@@ -209,8 +222,8 @@ describe('DragHandle Extension', () => {
 
       const testEditor = new Editor({
         element: document.createElement('div'),
-        content: '',
-        extensions: [DragHandle.configure(options)],
+        content: '<p>Hello world</p>',
+        extensions: [Document, Paragraph, Text, DragHandle.configure(options)],
       })
 
       expect(testEditor).toBeDefined()

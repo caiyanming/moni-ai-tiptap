@@ -1,11 +1,11 @@
 import 'jest-environment-jsdom'
 
-import { afterEach, beforeAll } from 'vitest'
-
 // 类型定义
 type FrameRequestCallback = (time: number) => void
 
 // 🎯 模拟全局对象和API
+const { TextEncoder, TextDecoder } = require('util')
+
 global.TextEncoder = TextEncoder
 global.TextDecoder = TextDecoder
 

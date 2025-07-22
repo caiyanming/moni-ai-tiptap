@@ -266,6 +266,8 @@ export interface DragHandlePluginProps {
     event: MouseEvent
     targetElement: HTMLElement
   }) => void
+  // 🎯 新增：拖拽手柄点击回调
+  onClick?: (event: MouseEvent, editor: Editor) => void
 }
 
 export const dragHandlePluginDefaultKey = new PluginKey('dragHandle')
@@ -284,6 +286,8 @@ export const DragHandlePlugin = ({
   onDrop,
   // 🎯 Notion风格：+号按钮参数
   onAddBlock,
+  // 🎯 新增：拖拽手柄点击回调参数
+  onClick,
 }: DragHandlePluginProps) => {
   const wrapper = document.createElement('div')
   let locked = false
@@ -376,10 +380,11 @@ export const DragHandlePlugin = ({
   element.addEventListener('dragend', onDragEndHandler)
 
   // 🎯 Notion风格：处理+号按钮点击事件（总是显示）
-  let addButtonClickHandler: ((e: MouseEvent) => void) | null = null
+  let addButtonClickHandler: ((e: Event) => void) | null = null
   const addButton = element.querySelector('.add-block-button')
   if (addButton) {
-    addButtonClickHandler = (e: MouseEvent) => {
+    addButtonClickHandler = (e: Event) => {
+      const mouseEvent = e as MouseEvent
       e.preventDefault()
       e.stopPropagation()
 
@@ -389,13 +394,34 @@ export const DragHandlePlugin = ({
           node: currentNode,
           editor,
           position: currentNodePos + 1, // 在当前块后面插入
-          event: e, // 传递鼠标事件对象
-          targetElement: e.target as HTMLElement, // 传递目标元素
+          event: mouseEvent, // 传递鼠标事件对象
+          targetElement: mouseEvent.target as HTMLElement, // 传递目标元素
         })
       }
     }
 
     addButton.addEventListener('click', addButtonClickHandler)
+  }
+
+  // 🎯 新增：处理拖拽手柄点击事件（Notion-like 块菜单）
+  let dragHandleClickHandler: ((e: Event) => void) | null = null
+  const dragHandle = element.querySelector('.drag-handle')
+  if (dragHandle && onClick) {
+    dragHandleClickHandler = (e: Event) => {
+      // 只有在单击时触发（不是拖拽开始）
+      const mouseEvent = e as MouseEvent
+      const isDragStart = mouseEvent.detail === 0 && e.type === 'click'
+
+      if (!isDragStart) {
+        e.preventDefault()
+        e.stopPropagation()
+
+        // 调用用户自定义的拖拽手柄点击回调
+        onClick(mouseEvent, editor)
+      }
+    }
+
+    dragHandle.addEventListener('click', dragHandleClickHandler)
   }
 
   wrapper.appendChild(element)
@@ -406,8 +432,13 @@ export const DragHandlePlugin = ({
       element.removeEventListener('dragend', onDragEndHandler)
 
       // 🎯 清理+号按钮事件监听器
-      if (addButtonClickHandler) {
-        addButton?.removeEventListener('click', addButtonClickHandler)
+      if (addButtonClickHandler && addButton) {
+        addButton.removeEventListener('click', addButtonClickHandler)
+      }
+
+      // 🎯 清理拖拽手柄点击事件监听器
+      if (dragHandleClickHandler && dragHandle) {
+        dragHandle.removeEventListener('click', dragHandleClickHandler)
       }
 
       // 🎯 销毁指示器管理器

@@ -2,28 +2,33 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.{js,jsx,ts,tsx}', '**/*.(test|spec).{js,jsx,ts,tsx}'],
+  globals: {
+    'ts-jest': {
+      isolatedModules: true
+    }
+  },
+  testMatch: ['**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}', '**/*.(test|spec).{js,jsx,ts,tsx}'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        useESM: false,
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
+      },
+    ],
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/index.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^(.+)\\.js$': '$1',
   },
   testTimeout: 10000,
   verbose: true,
-  // 🎯 支持DOM操作和事件模拟
-  globals: {
-    'ts-jest': {
-      useESM: false,
-      tsconfig: {
-        jsx: 'react-jsx',
-      },
-    },
-  },
   // 🎯 模拟浏览器环境
   testEnvironmentOptions: {
     url: 'http://localhost',

@@ -1,5 +1,4 @@
 import { Editor } from '@tiptap/core'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Document } from '../../../extension-document/src/document.js'
 import { Paragraph } from '../../../extension-paragraph/src/paragraph.js'
@@ -47,7 +46,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       expect(plugin).toBeDefined()
@@ -55,10 +54,11 @@ describe('DragHandlePlugin', () => {
     })
 
     it('should create plugin with custom options', () => {
-      const onAddBlock = vi.fn()
-      const onDragStart = vi.fn()
-      const onDragOver = vi.fn()
-      const onDrop = vi.fn()
+      const onAddBlock = jest.fn()
+      const onDragStart = jest.fn()
+      const onDragOver = jest.fn()
+      const onDrop = jest.fn()
+      const onClick = jest.fn()
 
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
@@ -67,6 +67,7 @@ describe('DragHandlePlugin', () => {
         onDragStart,
         onDragOver,
         onDrop,
+        onClick,
         showIndicators: true,
       })
 
@@ -78,7 +79,7 @@ describe('DragHandlePlugin', () => {
       expect(() => {
         DragHandlePlugin({
           editor,
-          onAddBlock: vi.fn(),
+          onAddBlock: jest.fn(),
         } as any)
       }).toThrow()
     })
@@ -87,7 +88,7 @@ describe('DragHandlePlugin', () => {
       expect(() => {
         DragHandlePlugin({
           element: dragHandleElement,
-          onAddBlock: vi.fn(),
+          onAddBlock: jest.fn(),
         } as any)
       }).toThrow()
     })
@@ -100,7 +101,7 @@ describe('DragHandlePlugin', () => {
         pluginKey: customKey,
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       expect(plugin.plugin.key).toBeDefined()
@@ -115,7 +116,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
         computePositionConfig,
       })
 
@@ -137,7 +138,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
         showIndicators: true,
         indicatorStyles,
       })
@@ -147,20 +148,20 @@ describe('DragHandlePlugin', () => {
   })
 
   describe('Event Handling', () => {
-    let onAddBlock: ReturnType<typeof vi.fn>
-    let onDragStart: ReturnType<typeof vi.fn>
-    let onDragOver: ReturnType<typeof vi.fn>
-    let onDrop: ReturnType<typeof vi.fn>
+    let onAddBlock: ReturnType<typeof jest.fn>
+    let onDragStart: ReturnType<typeof jest.fn>
+    let onDragOver: ReturnType<typeof jest.fn>
+    let onDrop: ReturnType<typeof jest.fn>
 
     beforeEach(() => {
-      onAddBlock = vi.fn()
-      onDragStart = vi.fn()
-      onDragOver = vi.fn()
-      onDrop = vi.fn()
+      onAddBlock = jest.fn()
+      onDragStart = jest.fn()
+      onDragOver = jest.fn()
+      onDrop = jest.fn()
     })
 
     it('should handle node change events', () => {
-      const onNodeChange = vi.fn()
+      const onNodeChange = jest.fn()
 
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
@@ -219,6 +220,20 @@ describe('DragHandlePlugin', () => {
       expect(plugin).toBeDefined()
       expect(onAddBlock).toBeDefined()
     })
+
+    it('should handle click events', () => {
+      const onClick = jest.fn()
+
+      const plugin = DragHandlePlugin({
+        element: dragHandleElement,
+        editor,
+        onAddBlock,
+        onClick,
+      })
+
+      expect(plugin).toBeDefined()
+      expect(onClick).toBeDefined()
+    })
   })
 
   describe('Plugin Integration', () => {
@@ -226,7 +241,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       // 创建包含插件的新编辑器实例
@@ -248,7 +263,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       expect(plugin.plugin.key).toBeDefined()
@@ -258,7 +273,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       expect(plugin.plugin.spec.state).toBeDefined()
@@ -271,7 +286,7 @@ describe('DragHandlePlugin', () => {
         DragHandlePlugin({
           element: null as any,
           editor,
-          onAddBlock: vi.fn(),
+          onAddBlock: jest.fn(),
         })
       }).toThrow()
     })
@@ -289,7 +304,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
       })
 
       expect(() => {
@@ -305,7 +320,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
         showIndicators: true,
       })
 
@@ -316,7 +331,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
         showIndicators: false,
       })
 
@@ -334,7 +349,7 @@ describe('DragHandlePlugin', () => {
       const plugin = DragHandlePlugin({
         element: dragHandleElement,
         editor,
-        onAddBlock: vi.fn(),
+        onAddBlock: jest.fn(),
         showIndicators: true,
         indicatorStyles,
       })
