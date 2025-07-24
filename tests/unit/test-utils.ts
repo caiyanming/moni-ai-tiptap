@@ -4,6 +4,7 @@
 import { vi } from 'vitest'
 
 import type { Editor } from '../../packages/core/src/Editor'
+import { BlockOperationType } from '../../packages/core/src/StreamOperationManager.js'
 
 // 基础类型定义
 export interface ProseMirrorNode {
@@ -261,7 +262,7 @@ function createMockDocument(schema: Schema): ProseMirrorNode {
         }
       })
     }),
-  } as ProseMirrorNode
+  } as unknown as ProseMirrorNode
 
   return doc
 }
@@ -421,8 +422,8 @@ export function createMockStreamOperation(overrides: Partial<any> = {}) {
     id: `operation-${Date.now()}`,
     sessionId: 'session-1',
     blockId: 'block-1',
-    type: 'append', // 默认使用append操作
-    content: 'Mock paragraph content', // 默认内容
+    type: BlockOperationType.APPEND, // 使用枚举值
+    content: { text: 'Mock paragraph content' }, // 使用BlockContent格式
     timestamp: Date.now(),
     ...overrides,
   }

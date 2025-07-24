@@ -144,9 +144,7 @@ describe('StreamTargetManager', () => {
     it('应该在调试模式下输出日志', () => {
       const consoleSpy = vi.spyOn(console, 'log')
 
-      const debugManager = new StreamTargetManager(editor, {
-        debug: true,
-      })
+      const debugManager = new StreamTargetManager(editor)
 
       debugManager.setStreamTarget('block-1', 'session-1')
 
@@ -159,9 +157,7 @@ describe('StreamTargetManager', () => {
     it('应该在非调试模式下不输出日志', () => {
       const consoleSpy = vi.spyOn(console, 'log')
 
-      const normalManager = new StreamTargetManager(editor, {
-        debug: false,
-      })
+      const normalManager = new StreamTargetManager(editor)
 
       normalManager.setStreamTarget('block-1', 'session-1')
 
@@ -253,12 +249,6 @@ describe('StreamTargetManager', () => {
     it('应该支持自定义样式配置', () => {
       const customManager = new StreamTargetManager(editor, {
         enableVisualIndicator: true,
-        progressBarStyle: {
-          height: '4px',
-          backgroundColor: '#f0f0f0',
-          progressColor: '#ff0000',
-          borderRadius: '2px',
-        },
       })
 
       expect(customManager).toBeDefined()

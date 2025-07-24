@@ -67,7 +67,7 @@ export interface StreamOperation {
   sessionId: string
   blockId: string
   type: BlockOperationType
-  content: string | BlockContent // 使用具体的BlockContent接口
+  content: BlockContent // 统一使用BlockContent，支持简单文本和复杂结构
   position?: number
   timestamp: number
   metadata?: Record<string, unknown> // 使用unknown而不是any
@@ -388,26 +388,22 @@ export class StreamOperationManager {
   /**
    * 从内容创建block节点
    */
-  private createBlockFromContent(content: string | BlockContent): ProseMirrorNode | null {
+  private createBlockFromContent(content: BlockContent): ProseMirrorNode | null {
     try {
-      if (typeof content === 'string') {
-        // 简单文本内容，创建段落block
+      // 处理简单文本内容（只有text字段，没有type）
+      if (content.text && !content.type) {
         return this.editor.schema.nodes.paragraph.create(
           {
             moniBlockId: `block_${crypto.randomUUID()}`,
             moniParentId: null,
             moniLevel: 0,
           },
-          this.editor.schema.text(content),
+          this.editor.schema.text(content.text),
         )
       }
 
-      if (typeof content === 'object' && content !== null) {
-        // JSON对象内容，尝试解析为TipTap节点
-        return this.createBlockFromJSON(content)
-      }
-
-      return null
+      // 处理复杂内容（有type或其他字段）
+      return this.createBlockFromJSON(content)
     } catch {
       return null
     }
@@ -964,5 +960,96 @@ export class StreamOperationManager {
     this.pause()
     this.clearQueue()
     this.operationHistory = []
+  }
+}
+
+// ===== 便捷的 BlockContent 创建函数 =====
+
+/**
+ * 创建简单文本内容
+ * @param text 文本内容
+ * @returns BlockContent 对象
+ */
+export function createTextContent(text: string): BlockContent {
+  return { text }
+}
+
+/**
+ * 创建段落内容
+ * @param text 段落文本
+ * @param attrs 段落属性
+ * @returns BlockContent 对象
+ */
+export function createParagraphContent(text: string, attrs: Record<string, unknown> = {}): BlockContent {
+  return {
+    type: 'paragraph',
+    content: [{ text }],
+    attrs,
+  }
+}
+
+/**
+ * 创建标题内容
+ * @param text 标题文本
+ * @param level 标题级别 (1-6)
+ * @param attrs 标题属性
+ * @returns BlockContent 对象
+ */
+export function createHeadingContent(
+  text: string,
+  level: number = 1,
+  attrs: Record<string, unknown> = {},
+): BlockContent {
+  return {
+    type: 'heading',
+    attrs: { level, ...attrs },
+    content: [{ text }],
+  }
+}
+
+/**
+ * 创建列表项内容
+ * @param text 列表项文本
+ * @param attrs 列表项属性
+ * @returns BlockContent 对象
+ */
+export function createListItemContent(text: string, attrs: Record<string, unknown> = {}): BlockContent {
+  return {
+    type: 'listItem',
+    content: [{ text }],
+    attrs,
+  }
+}
+
+/**
+ * 创建代码块内容
+ * @param text 代码文本
+ * @param language 编程语言
+ * @param attrs 代码块属性
+ * @returns BlockContent 对象
+ */
+export function createCodeBlockContent(
+  text: string,
+  language: string = '',
+  attrs: Record<string, unknown> = {},
+): BlockContent {
+  return {
+    type: 'codeBlock',
+    attrs: { language, ...attrs },
+    content: [{ text }],
+  }
+}
+
+/**
+ * 创建引用块内容
+ * @param text 引用文本
+ * @param attrs 引用块属性
+ * @returns BlockContent 对象
+ */
+export function createBlockquoteContent(text: string, attrs: Record<string, unknown> = {}): BlockContent {
+  return {
+    type: 'blockquote',
+    content: [{ text }],
+    attrs,
   }
 }

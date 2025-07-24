@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Editor } from '../../packages/core/src/Editor'
-import { StreamOperationManager } from '../../packages/core/src/StreamOperationManager.js'
+import { BlockOperationType, StreamOperationManager } from '../../packages/core/src/StreamOperationManager.js'
 import { cleanupDOM, createMockEditor, createMockStreamOperation, waitForAsync } from './test-utils.js'
 
 describe('StreamOperationManager', () => {
@@ -27,7 +27,6 @@ describe('StreamOperationManager', () => {
 
     it('应该支持自定义配置', () => {
       const customManager = new StreamOperationManager(editor, {
-        debug: true,
         maxQueueSize: 50,
         operationInterval: 100,
       })
@@ -59,9 +58,9 @@ describe('StreamOperationManager', () => {
       manager.pause()
 
       const operations = [
-        createMockStreamOperation({ content: 'chunk1' }),
-        createMockStreamOperation({ content: 'chunk2' }),
-        createMockStreamOperation({ content: 'chunk3' }),
+        createMockStreamOperation({ content: { text: 'chunk1' } }),
+        createMockStreamOperation({ content: { text: 'chunk2' } }),
+        createMockStreamOperation({ content: { text: 'chunk3' } }),
       ]
 
       const result = manager.queueOperations(operations)
@@ -81,9 +80,9 @@ describe('StreamOperationManager', () => {
       })
 
       const operations = [
-        createMockStreamOperation({ content: 'chunk1' }),
-        createMockStreamOperation({ content: 'chunk2' }),
-        createMockStreamOperation({ content: 'chunk3' }),
+        createMockStreamOperation({ content: { text: 'chunk1' } }),
+        createMockStreamOperation({ content: { text: 'chunk2' } }),
+        createMockStreamOperation({ content: { text: 'chunk3' } }),
       ]
 
       expect(() => {
@@ -113,7 +112,7 @@ describe('StreamOperationManager', () => {
   describe('Block级别操作执行', () => {
     it('应该能执行INSERT操作 - 在block list中插入新block', async () => {
       const operation = createMockStreamOperation({
-        type: 'insert',
+        type: BlockOperationType.INSERT,
         blockId: 'document-root', // 在文档开头插入
         content: {
           type: 'paragraph',
@@ -133,12 +132,12 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('insert')
+      expect(history[0].operation.type).toBe(BlockOperationType.INSERT)
     })
 
     it('应该能执行APPEND操作 - 在block list末尾添加新block', async () => {
       const operation = createMockStreamOperation({
-        type: 'append',
+        type: BlockOperationType.APPEND,
         blockId: '00000000-0000-0000-0000-000000000000', // NULL_BLOCK_UUID
         content: {
           type: 'paragraph',
@@ -158,13 +157,13 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('append')
+      expect(history[0].operation.type).toBe(BlockOperationType.APPEND)
     })
 
     it('应该能执行REPLACE操作 - 替换现有block', async () => {
       // 直接替换mock文档中已存在的block-1
       const replaceOperation = createMockStreamOperation({
-        type: 'replace',
+        type: BlockOperationType.REPLACE,
         blockId: 'block-1', // 使用mock文档中已存在的block ID
         content: {
           type: 'paragraph',
@@ -179,15 +178,15 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('replace')
+      expect(history[0].operation.type).toBe(BlockOperationType.REPLACE)
     })
 
     it('应该能执行DELETE操作 - 删除现有block', async () => {
       // 直接删除mock文档中已存在的block-2
       const deleteOperation = createMockStreamOperation({
-        type: 'delete',
+        type: BlockOperationType.DELETE,
         blockId: 'block-2', // 使用mock文档中已存在的block ID
-        content: '',
+        content: { text: '' },
       })
 
       const deleteOpId = manager.queueOperation(deleteOperation)
@@ -197,7 +196,7 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('delete')
+      expect(history[0].operation.type).toBe(BlockOperationType.DELETE)
     })
 
     it('应该能处理JSON格式的block内容', async () => {
@@ -217,7 +216,7 @@ describe('StreamOperationManager', () => {
       }
 
       const operation = createMockStreamOperation({
-        type: 'append',
+        type: BlockOperationType.APPEND,
         content: jsonContent,
       })
 
@@ -230,7 +229,7 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('append')
+      expect(history[0].operation.type).toBe(BlockOperationType.APPEND)
     })
 
     it('应该能处理复杂的嵌套block结构', async () => {
@@ -272,7 +271,7 @@ describe('StreamOperationManager', () => {
       }
 
       const operation = createMockStreamOperation({
-        type: 'append',
+        type: BlockOperationType.APPEND,
         content: complexContent,
       })
 
@@ -285,7 +284,7 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true)
-      expect(history[0].operation.type).toBe('append')
+      expect(history[0].operation.type).toBe(BlockOperationType.APPEND)
     })
 
     it('应该处理不支持的操作类型', async () => {
@@ -308,7 +307,7 @@ describe('StreamOperationManager', () => {
     it('应该处理目标block不存在的情况', async () => {
       const operation = createMockStreamOperation({
         blockId: 'nonexistent-block',
-        type: 'replace',
+        type: BlockOperationType.REPLACE,
       })
 
       const operationId = manager.queueOperation(operation)
@@ -325,7 +324,7 @@ describe('StreamOperationManager', () => {
 
     it('应该处理无效的JSON内容', async () => {
       const operation = createMockStreamOperation({
-        type: 'append',
+        type: BlockOperationType.APPEND,
         content: null as any,
       })
 
@@ -354,7 +353,7 @@ describe('StreamOperationManager', () => {
       }
 
       const operation = createMockStreamOperation({
-        type: 'append',
+        type: BlockOperationType.APPEND,
         content: unknownTypeContent,
       })
 
@@ -367,16 +366,16 @@ describe('StreamOperationManager', () => {
       const history = manager.getOperationHistory()
       expect(history).toHaveLength(1)
       expect(history[0].success).toBe(true) // 应该降级为段落并成功
-      expect(history[0].operation.type).toBe('append')
+      expect(history[0].operation.type).toBe(BlockOperationType.APPEND)
     })
   })
 
   describe('操作历史', () => {
     it('应该记录操作历史', async () => {
       const operations = [
-        createMockStreamOperation({ type: 'append', content: 'block1' }),
-        createMockStreamOperation({ type: 'append', content: 'block2' }),
-        createMockStreamOperation({ type: 'append', content: 'block3' }),
+        createMockStreamOperation({ type: BlockOperationType.APPEND, content: { text: 'block1' } }),
+        createMockStreamOperation({ type: BlockOperationType.APPEND, content: { text: 'block2' } }),
+        createMockStreamOperation({ type: BlockOperationType.APPEND, content: { text: 'block3' } }),
       ]
 
       operations.forEach(op => manager.queueOperation(op))
@@ -396,13 +395,13 @@ describe('StreamOperationManager', () => {
     it('应该按会话ID过滤操作历史', async () => {
       const session1Operation = createMockStreamOperation({
         sessionId: 'session1',
-        type: 'append',
-        content: 'session1 block',
+        type: BlockOperationType.APPEND,
+        content: { text: 'session1 block' },
       })
       const session2Operation = createMockStreamOperation({
         sessionId: 'session2',
-        type: 'append',
-        content: 'session2 block',
+        type: BlockOperationType.APPEND,
+        content: { text: 'session2 block' },
       })
 
       const op1Id = manager.queueOperation(session1Operation)
@@ -455,8 +454,8 @@ describe('StreamOperationManager', () => {
       manager.pause()
 
       const operations = [
-        createMockStreamOperation({ content: 'block1' }),
-        createMockStreamOperation({ content: 'block2' }),
+        createMockStreamOperation({ content: { text: 'block1' } }),
+        createMockStreamOperation({ content: { text: 'block2' } }),
       ]
 
       manager.queueOperations(operations)
@@ -474,10 +473,10 @@ describe('StreamOperationManager', () => {
       manager.pause()
 
       const session1Operations = [
-        createMockStreamOperation({ sessionId: 'session1', content: 'block1' }),
-        createMockStreamOperation({ sessionId: 'session1', content: 'block2' }),
+        createMockStreamOperation({ sessionId: 'session1', content: { text: 'block1' } }),
+        createMockStreamOperation({ sessionId: 'session1', content: { text: 'block2' } }),
       ]
-      const session2Operations = [createMockStreamOperation({ sessionId: 'session2', content: 'block3' })]
+      const session2Operations = [createMockStreamOperation({ sessionId: 'session2', content: { text: 'block3' } })]
 
       manager.queueOperations([...session1Operations, ...session2Operations])
       expect(manager.getQueueStatus().queueSize).toBe(3)
@@ -496,7 +495,7 @@ describe('StreamOperationManager', () => {
       // 避免在早期的diff rendering阶段就失败
       const operation = createMockStreamOperation({
         blockId: 'nonexistent-block', // 使用不存在的block ID来触发错误
-        type: 'replace',
+        type: BlockOperationType.REPLACE,
       })
 
       const operationId = manager.queueOperation(operation)
@@ -640,9 +639,9 @@ describe('StreamOperationManager', () => {
     })
 
     it('应该支持不同类型的diff操作', () => {
-      const insertOp = createMockStreamOperation({ type: 'insert' })
-      const replaceOp = createMockStreamOperation({ type: 'replace' })
-      const deleteOp = createMockStreamOperation({ type: 'delete' })
+      const insertOp = createMockStreamOperation({ type: BlockOperationType.INSERT })
+      const replaceOp = createMockStreamOperation({ type: BlockOperationType.REPLACE })
+      const deleteOp = createMockStreamOperation({ type: BlockOperationType.DELETE })
 
       manager.queueOperation(insertOp)
       manager.queueOperation(replaceOp)
@@ -650,7 +649,11 @@ describe('StreamOperationManager', () => {
 
       const pendingOps = manager.getPendingDiffOperations()
       expect(pendingOps).toHaveLength(3)
-      expect(pendingOps.map(op => op.type)).toEqual(['insert', 'replace', 'delete'])
+      expect(pendingOps.map(op => op.type)).toEqual([
+        BlockOperationType.INSERT,
+        BlockOperationType.REPLACE,
+        BlockOperationType.DELETE,
+      ])
     })
   })
 
