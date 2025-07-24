@@ -205,6 +205,11 @@ export class StreamOperationManager {
       const result = this.executeOperation(operation)
       this.operationHistory.push(result)
 
+      // 🔥 修复：操作成功执行后立即清理 diff 状态
+      if (result.success) {
+        this.clearDiffState(operation.blockId)
+      }
+
       // 更新节点的操作队列属性
       this.updateNodeOperationQueue(operation.blockId)
 
@@ -450,6 +455,11 @@ export class StreamOperationManager {
             }
 
             if (typeof item === 'object' && item.type) {
+              // 🔥 修复：区分 text 节点和 block 节点
+              if (item.type === 'text' && typeof item.text === 'string') {
+                return this.editor.schema.text(item.text)
+              }
+              // 对于其他节点类型，递归创建
               return this.createBlockFromJSON(item)
             }
 
