@@ -118,7 +118,6 @@ export class Editor extends EventEmitter<EditorEvents> {
     this.setOptions(options)
     this.createExtensionManager()
     this.createCommandManager()
-    this.createStreamOperationManager()
     this.createSchema()
     this.on('beforeCreate', this.options.onBeforeCreate)
     this.emit('beforeCreate', { editor: this })
@@ -159,6 +158,12 @@ export class Editor extends EventEmitter<EditorEvents> {
       )
     }
     this.createView(el)
+
+    // 创建 StreamOperationManager（此时 view 和 schema 都已就绪）
+    this.streamOperationManager = new StreamOperationManager(this.view, this.schema, {
+      maxQueueSize: 100,
+      operationInterval: 50,
+    })
 
     window.setTimeout(() => {
       if (this.isDestroyed) {
@@ -462,19 +467,6 @@ export class Editor extends EventEmitter<EditorEvents> {
     this.commandManager = new CommandManager({
       editor: this,
     })
-  }
-
-  /**
-   * Creates a stream operation manager.
-   * 🔥 Block Stream 是 moni-ai-tiptap 的核心能力，默认提供
-   */
-  private createStreamOperationManager(): void {
-    this.streamOperationManager = new StreamOperationManager(this, {
-      maxQueueSize: 100,
-      operationInterval: 50,
-    })
-
-    // 注意：不再需要添加到 storage，直接通过 editor.streamOperationManager 访问
   }
 
   /**

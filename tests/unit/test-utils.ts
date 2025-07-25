@@ -4,7 +4,7 @@
 import { vi } from 'vitest'
 
 import type { Editor } from '../../packages/core/src/Editor'
-import { BlockOperationType } from '../../packages/core/src/StreamOperationManager.js'
+import { BlockOperationStatus, BlockOperationType } from '../../packages/core/src/StreamOperationManager.js'
 
 // 基础类型定义
 export interface ProseMirrorNode {
@@ -420,11 +420,12 @@ export function createMockEditor(): Editor {
 export function createMockStreamOperation(overrides: Partial<any> = {}) {
   return {
     id: `operation-${Date.now()}`,
-    sessionId: 'session-1',
+    streamId: 'session-1',
     blockId: 'block-1',
     type: BlockOperationType.APPEND, // 使用枚举值
     content: { text: 'Mock paragraph content' }, // 使用BlockContent格式
     timestamp: Date.now(),
+    status: BlockOperationStatus.PENDING, // 添加缺失的status字段
     ...overrides,
   }
 }
@@ -505,7 +506,7 @@ export function createMockCodeBlockContent(
 export function createMockProgressEvent(overrides: Partial<any> = {}) {
   return {
     type: 'progress',
-    sessionId: 'session-1',
+    streamId: 'session-1',
     progress: 0.5,
     timestamp: Date.now(),
     ...overrides,
@@ -549,11 +550,11 @@ export function waitForAsync(conditionOrMs: (() => boolean) | number = 0, timeou
 /**
  * 创建批量操作
  */
-export function createBatchOperations(count: number, sessionId: string = 'session-1', blockId: string = 'block-1') {
+export function createBatchOperations(count: number, streamId: string = 'session-1', blockId: string = 'block-1') {
   return Array.from({ length: count }, (_, index) =>
     createMockStreamOperation({
-      id: `operation-${sessionId}-${index}`,
-      sessionId,
+      id: `operation-${streamId}-${index}`,
+      streamId,
       blockId,
       content: `Content ${index + 1}`,
     }),
