@@ -82,10 +82,11 @@ export interface BlockContent {
  * 1. 完整性 - 包含操作的所有必要信息
  * 2. 不可变性 - 操作一旦创建就不应该被修改
  * 3. 可序列化 - 支持跨组件传递和持久化
+ * 4. 统一命名 - 使用 moni 前缀确保字段命名一致性
  */
 export interface StreamOperation {
-  id: string
-  streamId: string // 区分Block Stream流ID与Chat Stream会话ID
+  moniOperationId: string // 统一操作唯一标识
+  moniStreamId: string // Block Stream流ID (区分与Chat会话ID)
   moniBlockId: string
   type: BlockOperationType
   content: BlockContent
@@ -308,8 +309,8 @@ export class StreamOperationManager {
    * 2. 自动执行 - 确认后自动启动处理流程
    * 3. 返回值 - 返回操作是否成功
    */
-  public approveOperation(operationId: string): boolean {
-    const nodeInfo = this.findNodeByOperationId(operationId)
+  public approveOperation(moniOperationId: string): boolean {
+    const nodeInfo = this.findNodeByOperationId(moniOperationId)
     if (!nodeInfo) {
       return false
     }
@@ -335,8 +336,8 @@ export class StreamOperationManager {
    * 2. 延迟清理 - 延迟清理让用户看到拒绝效果
    * 3. 视觉反馈 - 提供明确的视觉反馈
    */
-  public rejectOperation(operationId: string): boolean {
-    const nodeInfo = this.findNodeByOperationId(operationId)
+  public rejectOperation(moniOperationId: string): boolean {
+    const nodeInfo = this.findNodeByOperationId(moniOperationId)
     if (!nodeInfo) {
       return false
     }
@@ -352,7 +353,7 @@ export class StreamOperationManager {
 
     // 延迟清理diff状态（让用户看到拒绝效果）
     setTimeout(() => {
-      this.clearDiffState(operationId)
+      this.clearDiffState(moniOperationId)
     }, 1000)
 
     return true
@@ -428,9 +429,9 @@ export class StreamOperationManager {
       // 延迟清理所有diff状态
       setTimeout(() => {
         pendingNodes.forEach(node => {
-          const operationId = node.attrs.diffOperationId
-          if (operationId) {
-            this.clearDiffState(operationId)
+          const moniOperationId = node.attrs.diffOperationId
+          if (moniOperationId) {
+            this.clearDiffState(moniOperationId)
           }
         })
       }, 1000)
@@ -451,9 +452,9 @@ export class StreamOperationManager {
     const allNodes = this.getAllDiffOperations()
 
     allNodes.forEach(node => {
-      const operationId = node.attrs.diffOperationId
-      if (operationId) {
-        this.clearDiffState(operationId)
+      const moniOperationId = node.attrs.diffOperationId
+      if (moniOperationId) {
+        this.clearDiffState(moniOperationId)
       }
     })
 
@@ -564,14 +565,14 @@ export class StreamOperationManager {
     }
 
     const node = approvedNodes[0]
-    const operationId = node.attrs.diffOperationId
+    const moniOperationId = node.attrs.diffOperationId
 
     try {
       // 执行操作并清理diff状态
       const success = this.executeDiffNode(node)
 
-      if (success && operationId) {
-        this.clearDiffState(operationId)
+      if (success && moniOperationId) {
+        this.clearDiffState(moniOperationId)
       }
     } catch (error) {
       console.error('Failed to execute diff operation:', error)
@@ -698,9 +699,9 @@ export class StreamOperationManager {
       ...node.attrs,
       diffMode: true,
       diffStatus: 'pending',
-      diffOperationId: operation.id,
+      diffOperationId: operation.moniOperationId,
       diffType: 'original',
-      moniDiffTempId: `temp_${operation.id}`,
+      moniDiffTempId: `temp_${operation.moniOperationId}`,
     })
 
     // 2. 在原始block后面插入新的临时block（显示修改后的内容）
@@ -715,9 +716,9 @@ export class StreamOperationManager {
         ...newBlock.attrs,
         diffMode: true,
         diffStatus: 'pending',
-        diffOperationId: operation.id,
+        diffOperationId: operation.moniOperationId,
         diffType: 'new',
-        moniDiffTempId: `temp_${operation.id}`,
+        moniDiffTempId: `temp_${operation.moniOperationId}`,
         moniTempBlock: true, // 标记为临时block
       },
       newBlock.content,
@@ -755,7 +756,7 @@ export class StreamOperationManager {
         ...newBlock.attrs,
         diffMode: true,
         diffStatus: 'pending',
-        diffOperationId: operation.id,
+        diffOperationId: operation.moniOperationId,
         diffType: 'insert',
       },
       newBlock.content,
@@ -803,7 +804,7 @@ export class StreamOperationManager {
       ...node.attrs,
       diffMode: true,
       diffStatus: 'pending',
-      diffOperationId: operation.id,
+      diffOperationId: operation.moniOperationId,
       diffType: 'delete',
     })
 
@@ -820,12 +821,12 @@ export class StreamOperationManager {
    * 2. 临时节点处理 - 处理临时节点的清理
    * 3. 状态恢复 - 恢复正常显示状态
    */
-  private clearDiffState(operationId: string): void {
+  private clearDiffState(moniOperationId: string): void {
     const { tr } = this.view.state
     let hasChanges = false
 
     // 查找并清理原始block的diff状态
-    const nodeInfo = this.findNodeByOperationId(operationId)
+    const nodeInfo = this.findNodeByOperationId(moniOperationId)
     if (nodeInfo) {
       const { node, position } = nodeInfo
       const tempId = node.attrs.moniDiffTempId
@@ -846,7 +847,7 @@ export class StreamOperationManager {
         this.clearTempDiffBlocks(tr, tempId)
       }
     } else {
-      // 如果通过operationId找不到节点，尝试全局清理所有diff状态
+      // 如果通过moniOperationId找不到节点，尝试全局清理所有diff状态
       this.clearAllDiffStatesGlobally(tr)
       hasChanges = true
     }
@@ -1025,19 +1026,19 @@ export class StreamOperationManager {
   }
 
   /**
-   * 通过operationId查找节点
+   * 通过moniOperationId查找节点
    *
    * 设计原则：
    * 1. 节点遍历 - 通过遍历节点查找目标节点
    * 2. 位置计算 - 同时计算节点位置
    * 3. 性能优化 - 找到后立即停止遍历
    */
-  private findNodeByOperationId(operationId: string): { node: ProseMirrorNode; position: number } | null {
+  private findNodeByOperationId(moniOperationId: string): { node: ProseMirrorNode; position: number } | null {
     const { doc } = this.view.state
     let result: { node: ProseMirrorNode; position: number } | null = null
 
     doc.descendants((node, pos) => {
-      if (node.attrs?.diffOperationId === operationId) {
+      if (node.attrs?.diffOperationId === moniOperationId) {
         result = { node, position: pos }
         return false
       }
