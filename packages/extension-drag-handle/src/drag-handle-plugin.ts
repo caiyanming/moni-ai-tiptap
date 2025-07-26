@@ -576,7 +576,7 @@ export const DragHandlePlugin = ({
               if (blockElement.hasAttribute('data-moni-block-id')) {
                 console.log('✅ 找到有 data-moni-block-id 的元素:', {
                   tagName: blockElement.tagName,
-                  blockId: blockElement.getAttribute('data-moni-block-id'),
+                  moniBlockId: blockElement.getAttribute('data-moni-block-id'),
                   isSourceElement: blockElement === dragSourceElement,
                 })
                 break

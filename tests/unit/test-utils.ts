@@ -421,7 +421,7 @@ export function createMockStreamOperation(overrides: Partial<any> = {}) {
   return {
     id: `operation-${Date.now()}`,
     streamId: 'session-1',
-    blockId: 'block-1',
+    moniBlockId: 'block-1',
     type: BlockOperationType.APPEND, // 使用枚举值
     content: { text: 'Mock paragraph content' }, // 使用BlockContent格式
     timestamp: Date.now(),
@@ -550,12 +550,12 @@ export function waitForAsync(conditionOrMs: (() => boolean) | number = 0, timeou
 /**
  * 创建批量操作
  */
-export function createBatchOperations(count: number, streamId: string = 'session-1', blockId: string = 'block-1') {
+export function createBatchOperations(count: number, streamId: string = 'session-1', moniBlockId: string = 'block-1') {
   return Array.from({ length: count }, (_, index) =>
     createMockStreamOperation({
       id: `operation-${streamId}-${index}`,
       streamId,
-      blockId,
+      moniBlockId,
       content: `Content ${index + 1}`,
     }),
   )

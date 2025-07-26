@@ -86,7 +86,7 @@ export interface BlockContent {
 export interface StreamOperation {
   id: string
   streamId: string // 区分Block Stream流ID与Chat Stream会话ID
-  blockId: string
+  moniBlockId: string
   type: BlockOperationType
   content: BlockContent
   position?: number
@@ -685,7 +685,7 @@ export class StreamOperationManager {
    * 3. 状态关联 - 通过tempId关联相关节点
    */
   private renderUpdateDiffPreview(operation: StreamOperation): boolean {
-    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
     if (!nodeInfo) {
       return false
     }
@@ -763,12 +763,12 @@ export class StreamOperationManager {
 
     // 确定插入位置
     let insertPosition: number
-    if (operation.blockId === 'document-root' || operation.blockId === '') {
+    if (operation.moniBlockId === 'document-root' || operation.moniBlockId === '') {
       insertPosition = 0
     } else if (operation.type === BlockOperationType.APPEND) {
       insertPosition = this.view.state.doc.content.size
     } else {
-      const nodeInfo = this.findNodeByBlockId(operation.blockId)
+      const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
       if (!nodeInfo) {
         return false
       }
@@ -790,7 +790,7 @@ export class StreamOperationManager {
    * 3. 位置保持 - 保持节点在文档中的位置
    */
   private renderDeleteDiffPreview(operation: StreamOperation): boolean {
-    const nodeInfo = this.findNodeByBlockId(operation.blockId)
+    const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
     if (!nodeInfo) {
       return false
     }
@@ -1003,19 +1003,19 @@ export class StreamOperationManager {
   }
 
   /**
-   * 通过blockId查找节点
+   * 通过moniBlockId查找节点
    *
    * 设计原则：
    * 1. 节点遍历 - 通过遍历节点查找目标节点
    * 2. 位置计算 - 同时计算节点位置
    * 3. 性能优化 - 找到后立即停止遍历
    */
-  private findNodeByBlockId(blockId: string): { node: ProseMirrorNode; position: number } | null {
+  private findNodeByBlockId(moniBlockId: string): { node: ProseMirrorNode; position: number } | null {
     const { doc } = this.view.state
     let result: { node: ProseMirrorNode; position: number } | null = null
 
     doc.descendants((node, pos) => {
-      if (node.attrs?.moniBlockId === blockId) {
+      if (node.attrs?.moniBlockId === moniBlockId) {
         result = { node, position: pos }
         return false
       }

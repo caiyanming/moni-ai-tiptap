@@ -28,7 +28,7 @@ interface SmartDragConfig {
 interface CandidatePosition {
   id: string
   type: 'before' | 'after' | 'nested'
-  targetBlockId: string
+  targetMoniBlockId: string
   position: { x: number; y: number; width: number; height: number }
   nestingLevel: number
   confidence: number
@@ -117,7 +117,7 @@ class SmartDragCalculator {
           return
         }
 
-        const blockId = element.getAttribute('data-block-id') || `block-${index}`
+        const moniBlockId = element.getAttribute('data-moni-block-id') || `block-${index}`
         const nestingLevel = parseInt(element.getAttribute('data-nesting-level') || '0', 10) || 0
 
         // Calculate relative position
@@ -128,9 +128,9 @@ class SmartDragCalculator {
         if (relativeY <= 0.25) {
           // Above the element
           candidates.push({
-            id: `before-${blockId}`,
+            id: `before-${moniBlockId}`,
             type: 'before',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: { x: rect.left, y: rect.top - 2, width: rect.width, height: 2 },
             nestingLevel,
             confidence: Math.max(0.1, Math.min(1.0, 1 - relativeY / 0.25)),
@@ -148,9 +148,9 @@ class SmartDragCalculator {
         if (relativeY >= 0.75) {
           // Below the element
           candidates.push({
-            id: `after-${blockId}`,
+            id: `after-${moniBlockId}`,
             type: 'after',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: { x: rect.left, y: rect.bottom, width: rect.width, height: 2 },
             nestingLevel,
             confidence: Math.max(0.1, Math.min(1.0, (relativeY - 0.75) / 0.25)),
@@ -168,9 +168,9 @@ class SmartDragCalculator {
         if (relativeX > 0.25 && nestingLevel < this.config.maxNestingLevel!) {
           // Nesting position
           candidates.push({
-            id: `nested-${blockId}`,
+            id: `nested-${moniBlockId}`,
             type: 'nested',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: {
               x: rect.left + this.config.nestingThreshold!,
               y: rect.top + rect.height / 2 - 1,
@@ -449,7 +449,7 @@ describe('SmartDragCalculator', () => {
       )
 
       // 查找特定来自block-3的候选位置
-      const block3Candidate = result.allCandidates.find(c => c.targetBlockId === 'block-3')
+      const block3Candidate = result.allCandidates.find(c => c.targetMoniBlockId === 'block-3')
       expect(block3Candidate).toBeDefined()
       expect(block3Candidate!.metadata.originalLevel).toBe(1) // 第三个块是嵌套的
     })
@@ -605,7 +605,7 @@ describe('SmartDragCalculator', () => {
 
       // 不应该包含自己作为目标
       result.allCandidates.forEach(candidate => {
-        expect(candidate.targetBlockId).not.toBe('block-2')
+        expect(candidate.targetMoniBlockId).not.toBe('block-2')
       })
     })
 

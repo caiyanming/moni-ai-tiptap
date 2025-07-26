@@ -1,7 +1,7 @@
 import type { Editor } from './Editor.js'
 
 export interface DropTarget {
-  blockId: string
+  moniBlockId: string
   position: 'above' | 'below' | 'inside'
   level?: number
 }

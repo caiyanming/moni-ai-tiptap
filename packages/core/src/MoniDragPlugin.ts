@@ -29,13 +29,13 @@ export interface MoniDragPluginOptions extends Partial<DragHandleManagerOptions>
 export interface MoniDragPluginState {
   isDragging: boolean
   dragData: {
-    blockId: string
+    moniBlockId: string
     dragType: string
     level: number
-    parentId: string | null
+    moniParentId: string | null
   } | null
   dropTarget: {
-    blockId: string
+    moniBlockId: string
     position: 'above' | 'below' | 'inside'
     level?: number
   } | null
@@ -207,10 +207,10 @@ export class MoniDragPlugin {
   private handleDragStart(blockId: string, node: any) {
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
-      blockId,
+      moniBlockId: blockId,
       dragType: node.attrs['data-moni-drag-type'] || 'block',
       level: node.attrs['data-moni-level'] || 0,
-      parentId: node.attrs['data-moni-parent-id'] || null,
+      moniParentId: node.attrs['data-moni-parent-id'] || null,
     })
 
     this.editor.view.dispatch(tr)
@@ -270,7 +270,7 @@ export class MoniDragPlugin {
     }
 
     // Find source and target nodes
-    const sourceNode = this.findNodeByBlockId(view, dragData.blockId)
+    const sourceNode = this.findNodeByBlockId(view, dragData.moniBlockId)
     const targetNode = this.findNodeByBlockId(view, targetBlockId)
 
     if (!sourceNode || !targetNode) {
@@ -279,7 +279,7 @@ export class MoniDragPlugin {
 
     // Execute the drop operation
     const operation = {
-      sourceBlockId: dragData.blockId,
+      sourceBlockId: dragData.moniBlockId,
       targetBlockId,
       position: dropPosition.position,
       sourceNode,
@@ -331,7 +331,7 @@ export class MoniDragPlugin {
 
   private extractDragData(
     event: DragEvent,
-  ): { blockId: string; dragType: string; level: number; parentId: string | null } | null {
+  ): { moniBlockId: string; dragType: string; level: number; moniParentId: string | null } | null {
     try {
       const data = event.dataTransfer?.getData('application/moni-block')
       if (!data) {

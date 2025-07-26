@@ -143,10 +143,10 @@ export class DragHandleManager {
       event.dataTransfer.setData(
         'application/moni-block',
         JSON.stringify({
-          blockId: this.currentBlockId,
+          moniBlockId: this.currentBlockId,
           dragType: this.currentNode.attrs['data-moni-drag-type'] || 'block',
           level: this.currentNode.attrs['data-moni-level'] || 0,
-          parentId: this.currentNode.attrs['data-moni-parent-id'] || null,
+          moniParentId: this.currentNode.attrs['data-moni-parent-id'] || null,
         }),
       )
     }

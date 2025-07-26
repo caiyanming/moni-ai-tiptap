@@ -76,9 +76,9 @@ describe('Moni Drag System - Extended Tests', () => {
       expect(allBlocks.length).to.be.greaterThan(0)
 
       allBlocks.forEach(block => {
-        const blockId = block.getAttribute('data-moni-block-id')
-        expect(blockId).to.not.be.null
-        expect(blockId).to.not.be.empty
+        const moniBlockId = block.getAttribute('data-moni-block-id')
+        expect(moniBlockId).to.not.be.null
+        expect(moniBlockId).to.not.be.empty
 
         // 验证基本属性存在
         const hasLevel = block.hasAttribute('data-moni-level')
@@ -86,12 +86,12 @@ describe('Moni Drag System - Extended Tests', () => {
 
         // 验证层级的一致性
         const level = parseInt(block.getAttribute('data-moni-level') || '0', 10)
-        const parentId = block.getAttribute('data-moni-parent-id')
+        const moniParentId = block.getAttribute('data-moni-parent-id')
 
         if (level > 0) {
-          expect(parentId).to.not.be.null
+          expect(moniParentId).to.not.be.null
         } else {
-          expect(parentId).to.be.null
+          expect(moniParentId).to.be.null
         }
       })
     })
@@ -101,11 +101,11 @@ describe('Moni Drag System - Extended Tests', () => {
       const nestedItems = editor.view.dom.querySelectorAll('[data-moni-level="2"]')
 
       nestedItems.forEach(item => {
-        const parentId = item.getAttribute('data-moni-parent-id')
-        expect(parentId).to.not.be.null
+        const moniParentId = item.getAttribute('data-moni-parent-id')
+        expect(moniParentId).to.not.be.null
 
         // 查找父元素
-        const parent = editor.view.dom.querySelector(`[data-moni-block-id="${parentId}"]`)
+        const parent = editor.view.dom.querySelector(`[data-moni-block-id="${moniParentId}"]`)
         expect(parent).to.not.be.null
 
         // 验证父元素的层级
@@ -371,14 +371,14 @@ describe('Moni Drag System - Extended Tests', () => {
 
       // 尝试无效的拖拽操作
       const invalidDragData = {
-        blockId: 'non-existent',
+        moniBlockId: 'non-existent',
         dragType: 'block',
         level: 0,
-        parentId: null,
+        moniParentId: null,
       }
 
       const invalidDropTarget = {
-        blockId: 'also-non-existent',
+        moniBlockId: 'also-non-existent',
         position: 'above' as const,
       }
 
@@ -437,7 +437,7 @@ describe('Moni Drag System - Extended Tests', () => {
       expect(() => {
         dragHandleManager.findNodeByBlockId('root-1')
         indicatorManager.showIndicator({
-          blockId: 'root-1',
+          moniBlockId: 'root-1',
           position: 'below',
         })
         indicatorManager.hideAll()
@@ -467,7 +467,7 @@ describe('Moni Drag System - Extended Tests', () => {
       // 验证状态更新
       const dragState = plugin.getPlugin().getState(editor.state)
       expect(dragState?.isDragging).to.be.true
-      expect(dragState?.dragData?.blockId).to.equal('root-1')
+      expect(dragState?.dragData?.moniBlockId).to.equal('root-1')
 
       // 结束拖拽
       plugin.handleDragEnd('root-1', { attrs: {} })
@@ -610,14 +610,14 @@ describe('Current Issue Debugging', () => {
     console.log('具有 data-moni-block-id 的元素数量:', elementsWithBlockId.length)
 
     elementsWithBlockId.forEach((el, index) => {
-      const blockId = el.getAttribute('data-moni-block-id')
+      const moniBlockId = el.getAttribute('data-moni-block-id')
       const dragEnabled = el.getAttribute('data-moni-drag-enabled')
       const allAttrs = Array.from(el.attributes)
         .map(attr => `${attr.name}="${attr.value}"`)
         .join(' ')
 
       console.log(`元素 ${index + 1}:`, {
-        blockId,
+        moniBlockId,
         dragEnabled,
         tagName: el.tagName,
         allAttrs,
@@ -628,9 +628,9 @@ describe('Current Issue Debugging', () => {
 
     // 验证每个元素都有必需的属性
     elementsWithBlockId.forEach(el => {
-      const blockId = el.getAttribute('data-moni-block-id')
-      expect(blockId).to.not.be.null
-      expect(blockId).to.not.be.empty
+      const moniBlockId = el.getAttribute('data-moni-block-id')
+      expect(moniBlockId).to.not.be.null
+      expect(moniBlockId).to.not.be.empty
     })
   })
 

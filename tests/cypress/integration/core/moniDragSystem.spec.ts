@@ -26,12 +26,12 @@ describe('Moni Drag System', () => {
       element: container,
       extensions: [Document, Text, Paragraph, BulletList, ListItem],
       content: `
-        <p moni-block-id="block-1">First paragraph</p>
-        <ul moni-block-id="block-2">
-          <li moni-block-id="block-3" moni-parent-id="block-2" moni-level="1">First list item</li>
-          <li moni-block-id="block-4" moni-parent-id="block-2" moni-level="1">Second list item</li>
+        <p data-moni-block-id="block-1">First paragraph</p>
+        <ul data-moni-block-id="block-2">
+          <li data-moni-block-id="block-3" data-moni-parent-id="block-2" data-moni-level="1">First list item</li>
+          <li data-moni-block-id="block-4" data-moni-parent-id="block-2" data-moni-level="1">Second list item</li>
         </ul>
-        <p moni-block-id="block-5">Second paragraph</p>
+        <p data-moni-block-id="block-5">Second paragraph</p>
       `,
     })
   })
@@ -88,7 +88,7 @@ describe('Moni Drag System', () => {
       let paragraphNode: any = null
 
       doc.descendants(node => {
-        if (node.type.name === 'paragraph' && node.attrs['moni-block-id'] === 'block-1') {
+        if (node.type.name === 'paragraph' && node.attrs['data-moni-block-id'] === 'block-1') {
           paragraphNode = node
           return false
         }
@@ -96,11 +96,11 @@ describe('Moni Drag System', () => {
       })
 
       expect(paragraphNode).to.not.be.null
-      expect(paragraphNode.attrs['moni-drag-enabled']).to.be.true
-      expect(paragraphNode.attrs['moni-drag-handle']).to.be.true
-      expect(paragraphNode.attrs['moni-nestable']).to.be.false
-      expect(paragraphNode.attrs['moni-drag-type']).to.equal('block')
-      expect(paragraphNode.attrs['moni-level']).to.equal(0)
+      expect(paragraphNode.attrs['data-moni-drag-enabled']).to.be.true
+      expect(paragraphNode.attrs['data-moni-drag-handle']).to.be.true
+      expect(paragraphNode.attrs['data-moni-nestable']).to.be.false
+      expect(paragraphNode.attrs['data-moni-drag-type']).to.equal('block')
+      expect(paragraphNode.attrs['data-moni-level']).to.equal(0)
     })
 
     it('should have correct list item specific configurations', () => {
@@ -108,7 +108,7 @@ describe('Moni Drag System', () => {
       let listItemNode: any = null
 
       doc.descendants(node => {
-        if (node.type.name === 'listItem' && node.attrs['moni-block-id'] === 'block-3') {
+        if (node.type.name === 'listItem' && node.attrs['data-moni-block-id'] === 'block-3') {
           listItemNode = node
           return false
         }
@@ -116,11 +116,11 @@ describe('Moni Drag System', () => {
       })
 
       expect(listItemNode).to.not.be.null
-      expect(listItemNode.attrs['moni-drag-type']).to.equal('list-item')
-      expect(listItemNode.attrs['moni-nestable']).to.be.true
-      expect(listItemNode.attrs['moni-can-nest-in']).to.deep.equal(['bulletList', 'orderedList', 'listItem'])
-      expect(listItemNode.attrs['moni-drop-targets']).to.deep.equal(['listItem', 'bulletList', 'orderedList'])
-      expect(listItemNode.attrs['moni-max-nest-level']).to.equal(6)
+      expect(listItemNode.attrs['data-moni-drag-type']).to.equal('list-item')
+      expect(listItemNode.attrs['data-moni-nestable']).to.be.true
+      expect(listItemNode.attrs['data-moni-can-nest-in']).to.deep.equal(['bulletList', 'orderedList', 'listItem'])
+      expect(listItemNode.attrs['data-moni-drop-targets']).to.deep.equal(['listItem', 'bulletList', 'orderedList'])
+      expect(listItemNode.attrs['data-moni-max-nest-level']).to.equal(6)
     })
   })
 
@@ -152,7 +152,7 @@ describe('Moni Drag System', () => {
     })
 
     it('should show handle on mouse move over block', () => {
-      const blockElement = editor.view.dom.querySelector('[moni-block-id="block-1"]') as HTMLElement
+      const blockElement = editor.view.dom.querySelector('[data-moni-block-id="block-1"]') as HTMLElement
       expect(blockElement).to.not.be.null
 
       // Simulate mouse move event
@@ -212,7 +212,7 @@ describe('Moni Drag System', () => {
 
     it('should show position indicator correctly', () => {
       const dropTarget = {
-        blockId: 'block-1',
+        moniBlockId: 'block-1',
         position: 'below' as const,
       }
 
@@ -224,7 +224,7 @@ describe('Moni Drag System', () => {
 
     it('should show nesting indicator for inside drops', () => {
       const dropTarget = {
-        blockId: 'block-2',
+        moniBlockId: 'block-2',
         position: 'inside' as const,
       }
 
@@ -261,14 +261,14 @@ describe('Moni Drag System', () => {
 
     it('should validate drop operations correctly', () => {
       const validDragData = {
-        blockId: 'block-1',
+        moniBlockId: 'block-1',
         dragType: 'block',
         level: 0,
-        parentId: null,
+        moniParentId: null,
       }
 
       const validDropTarget = {
-        blockId: 'block-5',
+        moniBlockId: 'block-5',
         position: 'above' as const,
       }
 
@@ -278,14 +278,14 @@ describe('Moni Drag System', () => {
 
     it('should reject self-drops', () => {
       const dragData = {
-        blockId: 'block-1',
+        moniBlockId: 'block-1',
         dragType: 'block',
         level: 0,
-        parentId: null,
+        moniParentId: null,
       }
 
       const dropTarget = {
-        blockId: 'block-1',
+        moniBlockId: 'block-1',
         position: 'below' as const,
       }
 
@@ -305,7 +305,7 @@ describe('Moni Drag System', () => {
       const targetData = dragOperationManager.findNodeData('block-5')!
 
       const dropTarget = {
-        blockId: 'block-5',
+        moniBlockId: 'block-5',
         position: 'above' as const,
       }
 
@@ -350,9 +350,9 @@ describe('Moni Drag System', () => {
     it('should handle drag start correctly', () => {
       const mockNode = {
         attrs: {
-          'moni-drag-type': 'block',
-          'moni-level': 0,
-          'moni-parent-id': null,
+          'data-moni-drag-type': 'block',
+          'data-moni-level': 0,
+          'data-moni-parent-id': null,
         },
       }
 
@@ -361,15 +361,15 @@ describe('Moni Drag System', () => {
       // Check if drag state was set in plugin state
       const pluginState = moniDragPlugin.getPlugin().getState(editor.state)
       expect(pluginState?.isDragging).to.be.true
-      expect(pluginState?.dragData?.blockId).to.equal('block-1')
+      expect(pluginState?.dragData?.moniBlockId).to.equal('block-1')
     })
 
     it('should handle drag end correctly', () => {
       const mockNode = {
         attrs: {
-          'moni-drag-type': 'block',
-          'moni-level': 0,
-          'moni-parent-id': null,
+          'data-moni-drag-type': 'block',
+          'data-moni-level': 0,
+          'data-moni-parent-id': null,
         },
       }
 
@@ -390,13 +390,13 @@ describe('Moni Drag System', () => {
       // Mock elementFromPoint
       const originalElementFromPoint = document.elementFromPoint
       document.elementFromPoint = () => {
-        const element = editor.view.dom.querySelector('[moni-block-id="block-1"]')
+        const element = editor.view.dom.querySelector('[data-moni-block-id="block-1"]')
         return element
       }
 
       const dropTarget = moniDragPlugin.calculateDropTarget(mockDragEvent)
       expect(dropTarget).to.not.be.null
-      expect(dropTarget!.blockId).to.equal('block-1')
+      expect(dropTarget!.moniBlockId).to.equal('block-1')
 
       // Restore original function
       document.elementFromPoint = originalElementFromPoint
@@ -418,14 +418,14 @@ describe('Moni Drag System', () => {
 
       // Simulate drag data
       const dragData = {
-        blockId: 'block-1',
+        moniBlockId: 'block-1',
         dragType: 'block',
         level: 0,
-        parentId: null,
+        moniParentId: null,
       }
 
       const dropTarget = {
-        blockId: 'block-5',
+        moniBlockId: 'block-5',
         position: 'above' as const,
       }
 

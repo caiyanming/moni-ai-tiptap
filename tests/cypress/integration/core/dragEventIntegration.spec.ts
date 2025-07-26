@@ -82,7 +82,7 @@ describe('Drag Event Integration - Debug Current Issue', () => {
       expect(paragraphs.length).to.equal(3)
 
       paragraphs.forEach((p, index) => {
-        const blockId = p.getAttribute('data-moni-block-id')
+        const moniBlockId = p.getAttribute('data-moni-block-id')
         const dragEnabled = p.getAttribute('data-moni-drag-enabled')
         const dragHandle = p.getAttribute('data-moni-drag-handle')
         const dragType = p.getAttribute('data-moni-drag-type')
@@ -90,7 +90,7 @@ describe('Drag Event Integration - Debug Current Issue', () => {
         const nestable = p.getAttribute('data-moni-nestable')
 
         console.log(`段落 ${index + 1} 属性:`, {
-          blockId,
+          moniBlockId,
           dragEnabled,
           dragHandle,
           dragType,
@@ -100,7 +100,7 @@ describe('Drag Event Integration - Debug Current Issue', () => {
         })
 
         // 验证所有必需属性存在
-        expect(blockId).to.not.be.null
+        expect(moniBlockId).to.not.be.null
         expect(dragEnabled).to.equal('true')
         expect(dragHandle).to.equal('true')
         expect(dragType).to.equal('block')
@@ -113,16 +113,16 @@ describe('Drag Event Integration - Debug Current Issue', () => {
       const paragraphs = editor.view.dom.querySelectorAll('p[data-moni-drag-enabled="true"]')
 
       paragraphs.forEach(p => {
-        const blockId = p.getAttribute('data-moni-block-id')
+        const moniBlockId = p.getAttribute('data-moni-block-id')
         const hasDragHandle = p.hasAttribute('data-moni-drag-handle')
 
         console.log('段落拖拽状态:', {
-          blockId,
+          moniBlockId,
           hasDragHandle,
           tagName: p.tagName,
         })
 
-        expect(blockId).to.not.be.null
+        expect(moniBlockId).to.not.be.null
         expect(hasDragHandle).to.be.true
       })
     })

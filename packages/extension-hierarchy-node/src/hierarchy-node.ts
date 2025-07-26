@@ -70,19 +70,19 @@ declare module '@tiptap/core' {
        * Update hierarchy node with new child documents
        * @example editor.commands.updateHierarchyNode('block-id', ['child-1', 'child-2', 'child-3'])
        */
-      updateHierarchyNode: (blockId: string, childDocuments: string[]) => ReturnType
+      updateHierarchyNode: (moniBlockId: string, childDocuments: string[]) => ReturnType
 
       /**
        * Add a child document to existing hierarchy node
        * @example editor.commands.addChildDocument('block-id', 'new-child-id')
        */
-      addChildDocument: (blockId: string, childDocumentId: string) => ReturnType
+      addChildDocument: (moniBlockId: string, childDocumentId: string) => ReturnType
 
       /**
        * Remove a child document from hierarchy node
        * @example editor.commands.removeChildDocument('block-id', 'child-id')
        */
-      removeChildDocument: (blockId: string, childDocumentId: string) => ReturnType
+      removeChildDocument: (moniBlockId: string, childDocumentId: string) => ReturnType
 
       /**
        * Sync child documents for a parent document
@@ -94,13 +94,13 @@ declare module '@tiptap/core' {
        * Toggle hierarchy node collapse state
        * @example editor.commands.toggleHierarchyCollapse('block-id')
        */
-      toggleHierarchyCollapse: (blockId: string) => ReturnType
+      toggleHierarchyCollapse: (moniBlockId: string) => ReturnType
 
       /**
        * Set hierarchy node display mode
        * @example editor.commands.setHierarchyDisplayMode('block-id', 'grid')
        */
-      setHierarchyDisplayMode: (blockId: string, mode: HierarchyNodeAttributes['displayMode']) => ReturnType
+      setHierarchyDisplayMode: (moniBlockId: string, mode: HierarchyNodeAttributes['displayMode']) => ReturnType
     }
   }
 }
@@ -400,14 +400,14 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
         },
 
       updateHierarchyNode:
-        (blockId, childDocuments) =>
+        (moniBlockId, childDocuments) =>
         ({ tr, state }) => {
           let nodePos: number | null = null
           let node: any = null
 
           // 查找目标节点
           state.doc.descendants((descendant, pos) => {
-            if (descendant.attrs?.moniBlockId === blockId && descendant.type.name === this.name) {
+            if (descendant.attrs?.moniBlockId === moniBlockId && descendant.type.name === this.name) {
               nodePos = pos
               node = descendant
               return false
@@ -430,14 +430,14 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
         },
 
       addChildDocument:
-        (blockId, childDocumentId) =>
+        (moniBlockId, childDocumentId) =>
         ({ tr, state, dispatch }) => {
           let nodePos: number | null = null
           let node: any = null
 
           // 查找目标节点
           state.doc.descendants((descendant, pos) => {
-            if (descendant.attrs?.moniBlockId === blockId && descendant.type.name === this.name) {
+            if (descendant.attrs?.moniBlockId === moniBlockId && descendant.type.name === this.name) {
               nodePos = pos
               node = descendant
               return false
@@ -470,14 +470,14 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
         },
 
       removeChildDocument:
-        (blockId, childDocumentId) =>
+        (moniBlockId, childDocumentId) =>
         ({ tr, state, dispatch }) => {
           let nodePos: number | null = null
           let node: any = null
 
           // 查找目标节点
           state.doc.descendants((descendant, pos) => {
-            if (descendant.attrs?.moniBlockId === blockId && descendant.type.name === this.name) {
+            if (descendant.attrs?.moniBlockId === moniBlockId && descendant.type.name === this.name) {
               nodePos = pos
               node = descendant
               return false
@@ -524,14 +524,14 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
         },
 
       toggleHierarchyCollapse:
-        blockId =>
+        moniBlockId =>
         ({ tr, state }) => {
           let nodePos: number | null = null
           let node: any = null
 
           // 查找目标节点
           state.doc.descendants((descendant, pos) => {
-            if (descendant.attrs?.moniBlockId === blockId && descendant.type.name === this.name) {
+            if (descendant.attrs?.moniBlockId === moniBlockId && descendant.type.name === this.name) {
               nodePos = pos
               node = descendant
               return false
@@ -553,14 +553,14 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
         },
 
       setHierarchyDisplayMode:
-        (blockId, mode) =>
+        (moniBlockId, mode) =>
         ({ tr, state }) => {
           let nodePos: number | null = null
           let node: any = null
 
           // 查找目标节点
           state.doc.descendants((descendant, pos) => {
-            if (descendant.attrs?.moniBlockId === blockId && descendant.type.name === this.name) {
+            if (descendant.attrs?.moniBlockId === moniBlockId && descendant.type.name === this.name) {
               nodePos = pos
               node = descendant
               return false

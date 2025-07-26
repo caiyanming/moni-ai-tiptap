@@ -28,7 +28,7 @@ interface SmartDragConfig {
 interface CandidatePosition {
   id: string
   type: 'before' | 'after' | 'nested'
-  targetBlockId: string
+  targetMoniBlockId: string
   position: { x: number; y: number; width: number; height: number }
   nestingLevel: number
   confidence: number
@@ -93,7 +93,7 @@ class SmartDragCalculator {
     // Handle null/undefined querySelectorAll
     let blockElements: HTMLElement[] = []
     try {
-      const queryResult = editorElement.querySelectorAll('[data-block-id]')
+      const queryResult = editorElement.querySelectorAll('[data-moni-block-id]')
       if (queryResult) {
         blockElements = Array.from(queryResult) as HTMLElement[]
       }
@@ -101,7 +101,7 @@ class SmartDragCalculator {
       console.warn('Error in querySelectorAll:', error)
     }
 
-    const filteredElements = blockElements.filter(el => el.getAttribute('data-block-id') !== draggedId)
+    const filteredElements = blockElements.filter(el => el.getAttribute('data-moni-block-id') !== draggedId)
 
     const candidates: CandidatePosition[] = []
 
@@ -136,7 +136,7 @@ class SmartDragCalculator {
           return
         }
 
-        const blockId = element.getAttribute('data-block-id') || `block-${index}`
+        const moniBlockId = element.getAttribute('data-moni-block-id') || `block-${index}`
 
         // Handle invalid nesting level
         let nestingLevel = 0
@@ -162,9 +162,9 @@ class SmartDragCalculator {
         // Generate candidates based on position
         if (relativeY <= 0.25) {
           candidates.push({
-            id: `before-${blockId}`,
+            id: `before-${moniBlockId}`,
             type: 'before',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: { x: rect.left, y: rect.top - 2, width: rect.width, height: 2 },
             nestingLevel,
             confidence,
@@ -181,9 +181,9 @@ class SmartDragCalculator {
 
         if (relativeY >= 0.75) {
           candidates.push({
-            id: `after-${blockId}`,
+            id: `after-${moniBlockId}`,
             type: 'after',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: { x: rect.left, y: rect.bottom, width: rect.width, height: 2 },
             nestingLevel,
             confidence,
@@ -200,9 +200,9 @@ class SmartDragCalculator {
 
         if (relativeX > 0.25 && nestingLevel < this.config.maxNestingLevel!) {
           candidates.push({
-            id: `nested-${blockId}`,
+            id: `nested-${moniBlockId}`,
             type: 'nested',
-            targetBlockId: blockId,
+            targetMoniBlockId: moniBlockId,
             position: {
               x: rect.left + this.config.nestingThreshold!,
               y: rect.top + rect.height / 2 - 1,
@@ -295,7 +295,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
   describe('数学计算边界bug', () => {
     it('应该处理NaN和Infinity的getBoundingClientRect返回值', () => {
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
 
       // 模拟异常的DOM rect值
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
@@ -327,7 +327,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
 
     it('应该处理除零情况', () => {
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
 
       // 宽度或高度为0的元素
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
@@ -358,7 +358,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
       // 创建大量不同的元素来测试缓存增长
       for (let i = 0; i < 1000; i += 1) {
         const mockElement = document.createElement('div')
-        mockElement.setAttribute('data-block-id', `block-${i}`)
+        mockElement.setAttribute('data-moni-block-id', `block-${i}`)
 
         Object.defineProperty(mockElement, 'getBoundingClientRect', {
           value: () => ({
@@ -393,7 +393,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
       Date.now = vi.fn(() => mockTime)
 
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
         value: () => ({ top: 100, left: 100, bottom: 140, right: 400, width: 300, height: 40 }),
       })
@@ -420,7 +420,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
   describe('竞态条件bug', () => {
     it('快速连续调用应该不会产生不一致的结果', () => {
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
         value: () => ({ top: 100, left: 100, bottom: 140, right: 400, width: 300, height: 40 }),
       })
@@ -450,7 +450,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
   describe('真实DOM异常情况', () => {
     it('应该处理元素在计算过程中被移除的情况', () => {
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
 
       let callCount = 0
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
@@ -493,7 +493,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
       const elements: HTMLElement[] = []
       for (let i = 0; i < 1000; i += 1) {
         const element = document.createElement('div')
-        element.setAttribute('data-block-id', `block-${i}`)
+        element.setAttribute('data-moni-block-id', `block-${i}`)
         Object.defineProperty(element, 'getBoundingClientRect', {
           value: () => ({
             top: i * 50,
@@ -525,7 +525,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
   describe('数据一致性bug', () => {
     it('嵌套层级数据应该与DOM属性保持一致', () => {
       const mockElement = document.createElement('div')
-      mockElement.setAttribute('data-block-id', 'test-block')
+      mockElement.setAttribute('data-moni-block-id', 'test-block')
       mockElement.setAttribute('data-nesting-level', '5')
 
       Object.defineProperty(mockElement, 'getBoundingClientRect', {
@@ -550,7 +550,7 @@ describe('SmartDragCalculator - Bug Detection', () => {
 
       testCases.forEach(invalidLevel => {
         const mockElement = document.createElement('div')
-        mockElement.setAttribute('data-block-id', 'test-block')
+        mockElement.setAttribute('data-moni-block-id', 'test-block')
         mockElement.setAttribute('data-nesting-level', invalidLevel)
 
         Object.defineProperty(mockElement, 'getBoundingClientRect', {
