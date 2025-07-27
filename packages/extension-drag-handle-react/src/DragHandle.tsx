@@ -32,7 +32,7 @@ export const DragHandle = (props: DragHandleProps) => {
   useEffect(() => {
     let initPlugin: {
       plugin: Plugin
-      unbind: () => void
+      destroy: () => void
     } | null = null
 
     if (!element) {
@@ -55,7 +55,7 @@ export const DragHandle = (props: DragHandleProps) => {
         computePositionConfig: { ...defaultComputePositionConfig, ...computePositionConfig },
         onNodeChange,
       })
-      plugin.current = initPlugin.plugin
+      plugin.current = initPlugin!.plugin
 
       editor.registerPlugin(plugin.current)
     }
@@ -64,7 +64,7 @@ export const DragHandle = (props: DragHandleProps) => {
       editor.unregisterPlugin(pluginKey)
       plugin.current = null
       if (initPlugin) {
-        initPlugin.unbind()
+        initPlugin.destroy()
         initPlugin = null
       }
     }

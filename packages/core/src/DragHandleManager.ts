@@ -322,9 +322,14 @@ export class DragHandleManager {
     this.handleElement.removeEventListener('dragstart', this.handleDragStart.bind(this))
     this.handleElement.removeEventListener('dragend', this.handleDragEnd.bind(this))
 
-    // Remove handle element
-    if (this.handleElement.parentElement) {
-      this.handleElement.parentElement.removeChild(this.handleElement)
+    // Remove handle element safely
+    try {
+      if (this.handleElement.parentElement && this.handleElement.parentElement.contains(this.handleElement)) {
+        this.handleElement.parentElement.removeChild(this.handleElement)
+      }
+    } catch {
+      // Ignore DOM cleanup errors - element might already be removed
+      console.debug('DragHandleManager: Element already removed during cleanup')
     }
   }
 }

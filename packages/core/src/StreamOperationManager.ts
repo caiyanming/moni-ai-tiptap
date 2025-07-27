@@ -229,6 +229,8 @@ export class StreamOperationManager {
    * 3. 容量检查 - 确保不超过队列容量限制
    */
   public queueOperations(operations: StreamOperation[]): void {
+    console.log(`[StreamOperationManager] 开始批量队列操作:`, operations.length)
+
     const pendingCount = this.getPendingOperations().length
     const remainingCapacity = this.options.maxQueueSize - pendingCount
 
@@ -236,9 +238,21 @@ export class StreamOperationManager {
       throw new Error('Not enough queue capacity for batch operations')
     }
 
-    operations.forEach(operation => {
-      this.renderDiffPreview(operation)
+    let successCount = 0
+    operations.forEach((operation, index) => {
+      console.log(`[StreamOperationManager] 处理操作 ${index + 1}/${operations.length}:`, {
+        type: operation.type,
+        operationId: operation.moniOperationId,
+        blockId: operation.moniBlockId,
+      })
+
+      const success = this.renderDiffPreview(operation)
+      if (success) {
+        successCount += 1
+      }
     })
+
+    console.log(`[StreamOperationManager] 批量队列操作完成: ${successCount}/${operations.length} 成功`)
   }
 
   /**
@@ -257,6 +271,18 @@ export class StreamOperationManager {
         pendingNodes.push(node)
       }
     })
+
+    console.log(`[StreamOperationManager] getPendingOperations: 找到 ${pendingNodes.length} 个待处理节点`)
+    if (pendingNodes.length > 0) {
+      pendingNodes.forEach((node, index) => {
+        console.log(`[StreamOperationManager] 待处理节点 ${index + 1}:`, {
+          operationId: node.attrs.diffOperationId,
+          blockId: node.attrs.moniBlockId,
+          diffType: node.attrs.diffType,
+          nodeType: node.type.name,
+        })
+      })
+    }
 
     return pendingNodes
   }
@@ -670,9 +696,11 @@ export class StreamOperationManager {
         case BlockOperationType.DELETE:
           return this.renderDeleteDiffPreview(operation)
         default:
+          console.warn(`[StreamOperationManager] 未知的操作类型: ${operation.type}`)
           return false
       }
-    } catch {
+    } catch (error) {
+      console.error(`[StreamOperationManager] renderDiffPreview 失败:`, error)
       return false
     }
   }
@@ -743,8 +771,15 @@ export class StreamOperationManager {
    * 3. 内容创建 - 创建新的内容节点
    */
   private renderInsertDiffPreview(operation: StreamOperation): boolean {
+    console.log(`[StreamOperationManager] 开始渲染${operation.type}操作:`, {
+      operationId: operation.moniOperationId,
+      blockId: operation.moniBlockId,
+      content: operation.content,
+    })
+
     const newBlock = this.createBlockFromContent(operation.content)
     if (!newBlock) {
+      console.warn(`[StreamOperationManager] 无法从内容创建block:`, operation.content)
       return false
     }
 
@@ -757,7 +792,7 @@ export class StreamOperationManager {
         diffMode: true,
         diffStatus: 'pending',
         diffOperationId: operation.moniOperationId,
-        diffType: 'insert',
+        diffType: operation.type, // 使用实际的操作类型
       },
       newBlock.content,
     )
@@ -771,13 +806,22 @@ export class StreamOperationManager {
     } else {
       const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
       if (!nodeInfo) {
+        console.warn(`[StreamOperationManager] 找不到目标block: ${operation.moniBlockId}`)
         return false
       }
       insertPosition = nodeInfo.position
     }
 
+    console.log(`[StreamOperationManager] 插入位置: ${insertPosition}, 文档大小: ${this.view.state.doc.content.size}`)
+
     tr.insert(insertPosition, newBlockWithDiff)
     this.view.dispatch(tr)
+
+    console.log(`[StreamOperationManager] 成功渲染${operation.type}操作:`, {
+      operationId: operation.moniOperationId,
+      blockId: operation.moniBlockId,
+      position: insertPosition,
+    })
 
     return true
   }
@@ -918,9 +962,11 @@ export class StreamOperationManager {
    */
   private createBlockFromContent(content: BlockContent): ProseMirrorNode | null {
     try {
+      console.log(`[StreamOperationManager] 创建block from content:`, content)
+
       // 处理简单文本内容（只有text字段，没有type）
       if (content.text && !content.type) {
-        return this.schema.nodes.paragraph.create(
+        const block = this.schema.nodes.paragraph.create(
           {
             moniBlockId: `block_${crypto.randomUUID()}`,
             moniParentId: null,
@@ -928,11 +974,16 @@ export class StreamOperationManager {
           },
           this.schema.text(content.text),
         )
+        console.log(`[StreamOperationManager] 创建简单文本block成功:`, block)
+        return block
       }
 
       // 处理复杂内容（有type或其他字段）
-      return this.createBlockFromJSON(content)
-    } catch {
+      const block = this.createBlockFromJSON(content)
+      console.log(`[StreamOperationManager] 创建复杂内容block结果:`, block ? '成功' : '失败')
+      return block
+    } catch (error) {
+      console.error(`[StreamOperationManager] createBlockFromContent 失败:`, error)
       return null
     }
   }

@@ -11,6 +11,15 @@ import { Text } from '@tiptap/extension-text'
 import { MoniDragPlugin } from '../../../../packages/core/src/MoniDragPlugin.js'
 
 /**
+ * 事件执行结果接口
+ */
+interface EventResult {
+  type: string
+  result: boolean
+  defaultPrevented: boolean
+}
+
+/**
  * 🎯 专门用于调试拖拽事件不响应问题的集成测试
  *
  * 测试重点：
@@ -345,7 +354,7 @@ describe('Drag Event Integration - Debug Current Issue', () => {
         },
       ]
 
-      const eventResults = []
+      const eventResults: EventResult[] = []
 
       // 执行事件序列
       events.forEach(({ type, element, coords }) => {

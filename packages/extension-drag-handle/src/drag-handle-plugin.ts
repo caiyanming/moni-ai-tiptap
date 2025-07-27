@@ -195,11 +195,26 @@ export class DragIndicatorManager {
   }
 
   public destroy() {
-    if (this.horizontalIndicator?.parentElement) {
-      this.horizontalIndicator.parentElement.removeChild(this.horizontalIndicator)
+    try {
+      if (
+        this.horizontalIndicator?.parentElement &&
+        this.horizontalIndicator.parentElement.contains(this.horizontalIndicator)
+      ) {
+        this.horizontalIndicator.parentElement.removeChild(this.horizontalIndicator)
+      }
+    } catch {
+      console.debug('DragIndicatorManager (plugin): Horizontal indicator already removed during cleanup')
     }
-    if (this.verticalIndicator?.parentElement) {
-      this.verticalIndicator.parentElement.removeChild(this.verticalIndicator)
+
+    try {
+      if (
+        this.verticalIndicator?.parentElement &&
+        this.verticalIndicator.parentElement.contains(this.verticalIndicator)
+      ) {
+        this.verticalIndicator.parentElement.removeChild(this.verticalIndicator)
+      }
+    } catch {
+      console.debug('DragIndicatorManager (plugin): Vertical indicator already removed during cleanup')
     }
 
     this.horizontalIndicator = null
@@ -289,6 +304,14 @@ export const DragHandlePlugin = ({
   // 🎯 新增：拖拽手柄点击回调参数
   onClick,
 }: DragHandlePluginProps) => {
+  // 参数验证
+  if (!editor) {
+    throw new Error('DragHandlePlugin: editor is required')
+  }
+  if (!element) {
+    throw new Error('DragHandlePlugin: element is required')
+  }
+
   const wrapper = document.createElement('div')
   let locked = false
   let currentNode: Node | null = null
@@ -427,7 +450,7 @@ export const DragHandlePlugin = ({
   wrapper.appendChild(element)
 
   return {
-    unbind() {
+    destroy() {
       element.removeEventListener('dragstart', onDragStartHandler)
       element.removeEventListener('dragend', onDragEndHandler)
 

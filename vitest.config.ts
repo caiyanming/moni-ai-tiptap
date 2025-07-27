@@ -6,7 +6,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
-    includeSource: ['tests/**/*.{test,spec}.{js,ts}'],
+    include: ['tests/unit/**/*.{test,spec}.{js,ts}', 'packages/**/__tests__/**/*.{test,spec}.{js,ts,tsx}'],
+    exclude: ['node_modules/**', 'demos/**', 'packages-deprecated/**', 'tests/cypress/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

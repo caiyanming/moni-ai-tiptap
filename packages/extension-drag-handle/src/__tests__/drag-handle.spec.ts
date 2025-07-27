@@ -1,4 +1,5 @@
 import { Editor } from '@tiptap/core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { Document } from '../../../extension-document/src/document.js'
 import { Paragraph } from '../../../extension-paragraph/src/paragraph.js'
@@ -18,11 +19,11 @@ describe('DragHandle Extension', () => {
         Paragraph,
         Text,
         DragHandle.configure({
-          onAddBlock: jest.fn(),
-          onDragStart: jest.fn(),
-          onDragOver: jest.fn(),
-          onDrop: jest.fn(),
-          onClick: jest.fn(),
+          onAddBlock: vi.fn(),
+          onDragStart: vi.fn(),
+          onDragOver: vi.fn(),
+          onDrop: vi.fn(),
+          onClick: vi.fn(),
         }),
       ],
     })
@@ -56,11 +57,11 @@ describe('DragHandle Extension', () => {
     })
 
     it('should accept custom configuration', () => {
-      const onAddBlock = jest.fn()
-      const onDragStart = jest.fn()
-      const onDragOver = jest.fn()
-      const onDrop = jest.fn()
-      const onClick = jest.fn()
+      const onAddBlock = vi.fn()
+      const onDragStart = vi.fn()
+      const onDragOver = vi.fn()
+      const onDrop = vi.fn()
+      const onClick = vi.fn()
 
       const customEditor = new Editor({
         element: document.createElement('div'),
@@ -276,7 +277,7 @@ describe('DragHandle Extension', () => {
       const testEditor = new Editor({
         element: document.createElement('div'),
         content: '',
-        extensions: [DragHandle.configure({})],
+        extensions: [Document, Paragraph, Text, DragHandle.configure({})],
       })
 
       expect(testEditor).toBeDefined()

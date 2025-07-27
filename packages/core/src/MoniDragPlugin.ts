@@ -24,6 +24,12 @@ export interface MoniDragPluginOptions extends Partial<DragHandleManagerOptions>
    * @default 50
    */
   debounceDelay?: number
+
+  /**
+   * Enable debug mode for logging
+   * @default false
+   */
+  debug?: boolean
 }
 
 export interface MoniDragPluginState {
@@ -204,13 +210,13 @@ export class MoniDragPlugin {
     })
   }
 
-  private handleDragStart(blockId: string, node: any) {
+  private handleDragStart(blockId: string, node: ProseMirrorNode) {
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
       moniBlockId: blockId,
-      dragType: node.attrs['data-moni-drag-type'] || 'block',
-      level: node.attrs['data-moni-level'] || 0,
-      moniParentId: node.attrs['data-moni-parent-id'] || null,
+      dragType: node.attrs?.moniDragType || 'block',
+      level: node.attrs?.moniLevel || 0,
+      moniParentId: node.attrs?.moniParentId || null,
     })
 
     this.editor.view.dispatch(tr)

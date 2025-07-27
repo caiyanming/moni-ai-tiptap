@@ -419,8 +419,8 @@ export function createMockEditor(): Editor {
  */
 export function createMockStreamOperation(overrides: Partial<any> = {}) {
   return {
-    id: `operation-${Date.now()}`,
-    streamId: 'session-1',
+    moniOperationId: `operation-${Date.now()}`,
+    moniStreamId: 'session-1',
     moniBlockId: 'block-1',
     type: BlockOperationType.APPEND, // 使用枚举值
     content: { text: 'Mock paragraph content' }, // 使用BlockContent格式
@@ -553,10 +553,10 @@ export function waitForAsync(conditionOrMs: (() => boolean) | number = 0, timeou
 export function createBatchOperations(count: number, streamId: string = 'session-1', moniBlockId: string = 'block-1') {
   return Array.from({ length: count }, (_, index) =>
     createMockStreamOperation({
-      id: `operation-${streamId}-${index}`,
-      streamId,
+      moniOperationId: `operation-${streamId}-${index}`,
+      moniStreamId: streamId,
       moniBlockId,
-      content: `Content ${index + 1}`,
+      content: { text: `Content ${index + 1}` },
     }),
   )
 }
@@ -568,24 +568,36 @@ export function cleanupDOM(): void {
   // 清理所有测试创建的DOM元素
   const proseMirrorElements = document.querySelectorAll('.ProseMirror')
   proseMirrorElements.forEach(element => {
-    if (element.parentNode) {
-      element.parentNode.removeChild(element)
+    try {
+      if (element.parentNode && element.parentNode.contains(element)) {
+        element.parentNode.removeChild(element)
+      }
+    } catch {
+      // Ignore DOM cleanup errors - element might already be removed
     }
   })
 
   // 清理进度条
   const progressBars = document.querySelectorAll('.moni-stream-progress-bar')
   progressBars.forEach(bar => {
-    if (bar.parentNode) {
-      bar.parentNode.removeChild(bar)
+    try {
+      if (bar.parentNode && bar.parentNode.contains(bar)) {
+        bar.parentNode.removeChild(bar)
+      }
+    } catch {
+      // Ignore DOM cleanup errors - element might already be removed
     }
   })
 
   // 清理其他测试元素
   const testElements = document.querySelectorAll('[data-test]')
   testElements.forEach(element => {
-    if (element.parentNode) {
-      element.parentNode.removeChild(element)
+    try {
+      if (element.parentNode && element.parentNode.contains(element)) {
+        element.parentNode.removeChild(element)
+      }
+    } catch {
+      // Ignore DOM cleanup errors - element might already be removed
     }
   })
 }

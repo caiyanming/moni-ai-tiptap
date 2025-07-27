@@ -1,4 +1,4 @@
-import 'jest-environment-jsdom'
+// Test setup for Vitest environment
 
 // 类型定义
 type FrameRequestCallback = (time: number) => void
@@ -108,61 +108,67 @@ const MockBrowserAPIs = {
 // 初始化模拟API
 MockBrowserAPIs.initialize()
 
-// 🎯 增强jest匹配器
-expect.extend({
-  toBeInTheDocument(received) {
-    const pass = received && received.ownerDocument === document
-    if (pass) {
-      return {
-        message: () => `expected element not to be in the document`,
-        pass: true,
+// 🎯 增强vitest匹配器
+if (typeof expect !== 'undefined') {
+  expect.extend({
+    toBeInTheDocument(received: any) {
+      const pass = received && received.ownerDocument === document
+      if (pass) {
+        return {
+          message: () => `expected element not to be in the document`,
+          pass: true,
+        }
       }
-    }
-    return {
-      message: () => `expected element to be in the document`,
-      pass: false,
-    }
-  },
+      return {
+        message: () => `expected element to be in the document`,
+        pass: false,
+      }
+    },
 
-  toHaveClass(received, className) {
-    const pass = received && received.classList && received.classList.contains(className)
-    if (pass) {
-      return {
-        message: () => `expected element not to have class "${className}"`,
-        pass: true,
+    toHaveClass(received: any, className: string) {
+      const pass = received && received.classList && received.classList.contains(className)
+      if (pass) {
+        return {
+          message: () => `expected element not to have class "${className}"`,
+          pass: true,
+        }
       }
-    }
-    return {
-      message: () => `expected element to have class "${className}"`,
-      pass: false,
-    }
-  },
-})
+      return {
+        message: () => `expected element to have class "${className}"`,
+        pass: false,
+      }
+    },
+  })
+}
 
 // 🎯 清理函数，在每个测试后清理DOM
-afterEach(() => {
-  // 清理document.body中的所有子元素
-  document.body.innerHTML = ''
+if (typeof afterEach !== 'undefined') {
+  afterEach(() => {
+    // 清理document.body中的所有子元素
+    document.body.innerHTML = ''
 
-  // 清理所有事件监听器
-  const elements = document.querySelectorAll('*')
-  elements.forEach(element => {
-    const clonedElement = element.cloneNode(true)
-    element.parentNode?.replaceChild(clonedElement, element)
+    // 清理所有事件监听器
+    const elements = document.querySelectorAll('*')
+    elements.forEach(element => {
+      const clonedElement = element.cloneNode(true)
+      element.parentNode?.replaceChild(clonedElement, element)
+    })
   })
-})
+}
 
 // 🎯 全局错误处理
-beforeAll(() => {
-  // 抑制特定的警告信息
-  const originalError = console.error
-  console.error = (...args: any[]) => {
-    if (typeof args[0] === 'string' && args[0].includes('Warning: ReactDOM.render is deprecated')) {
-      return
+if (typeof beforeAll !== 'undefined') {
+  beforeAll(() => {
+    // 抑制特定的警告信息
+    const originalError = console.error
+    console.error = (...args: any[]) => {
+      if (typeof args[0] === 'string' && args[0].includes('Warning: ReactDOM.render is deprecated')) {
+        return
+      }
+      originalError.call(console, ...args)
     }
-    originalError.call(console, ...args)
-  }
-})
+  })
+}
 
 // 🎯 类型扩展
 declare global {

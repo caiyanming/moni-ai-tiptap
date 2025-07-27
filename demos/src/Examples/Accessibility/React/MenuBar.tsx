@@ -76,7 +76,7 @@ function NodeTypeDropdown({ editor }: { editor: Editor }) {
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-controls="heading-dropdown"
-        className={`node-type-dropdown__trigger${isOpen ? ' is-active' : ''}`}
+        className={`node-type-dropdown__trigger${isOpen ? 'is-active' : ''}`}
         tabIndex={-1}
       >
         Node Type: {editorState.activeNodeType.slice(0, 1).toUpperCase() + editorState.activeNodeType.slice(1)}

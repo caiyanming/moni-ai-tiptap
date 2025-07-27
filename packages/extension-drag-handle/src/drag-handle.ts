@@ -103,7 +103,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         const container = document.createElement('div')
         container.classList.add('drag-handle-container')
 
-        // 设置容器样式
+        // 设置容器样式和属性
+        container.draggable = true
         Object.assign(container.style, {
           display: 'flex',
           alignItems: 'center',
@@ -120,6 +121,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         const dragHandle = document.createElement('div')
         dragHandle.classList.add('drag-handle')
         dragHandle.draggable = true
+        dragHandle.setAttribute('aria-label', 'Drag to reorder')
+        dragHandle.setAttribute('title', 'Drag to reorder')
 
         Object.assign(dragHandle.style, {
           width: '18px',
@@ -134,9 +137,14 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           transition: 'background-color 0.15s ease',
         })
 
+        // 设置 CSS 自定义属性
+        dragHandle.style.setProperty('--dot-color', '#9ca3af')
+        dragHandle.style.setProperty('--dot-color-hover', '#6b7280')
+
         // 创建6个小点
         for (let i = 0; i < 6; i += 1) {
           const dot = document.createElement('div')
+          dot.classList.add('grid-dot')
           Object.assign(dot.style, {
             width: '2px',
             height: '2px',
@@ -150,6 +158,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         // 创建+号按钮
         const addButton = document.createElement('div')
         addButton.classList.add('add-block-button')
+        addButton.setAttribute('aria-label', 'Add block')
+        addButton.setAttribute('title', 'Add block')
 
         Object.assign(addButton.style, {
           width: '18px',
@@ -165,6 +175,10 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           fontWeight: 'bold',
           transition: 'all 0.15s ease',
         })
+
+        // 设置 CSS 自定义属性
+        addButton.style.setProperty('--bg-color', 'transparent')
+        addButton.style.setProperty('--bg-color-hover', '#f3f4f6')
 
         addButton.textContent = '+'
 
@@ -244,21 +258,24 @@ export const DragHandle = Extension.create<DragHandleOptions>({
     return {
       lockDragHandle:
         () =>
-        ({ editor }) => {
+        ({ tr }) => {
           this.options.locked = true
-          return editor.commands.setMeta('lockDragHandle', this.options.locked)
+          tr.setMeta('lockDragHandle', this.options.locked)
+          return true
         },
       unlockDragHandle:
         () =>
-        ({ editor }) => {
+        ({ tr }) => {
           this.options.locked = false
-          return editor.commands.setMeta('lockDragHandle', this.options.locked)
+          tr.setMeta('lockDragHandle', this.options.locked)
+          return true
         },
       toggleDragHandle:
         () =>
-        ({ editor }) => {
+        ({ tr }) => {
           this.options.locked = !this.options.locked
-          return editor.commands.setMeta('lockDragHandle', this.options.locked)
+          tr.setMeta('lockDragHandle', this.options.locked)
+          return true
         },
     }
   },

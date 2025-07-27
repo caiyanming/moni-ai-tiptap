@@ -155,25 +155,49 @@ Object.defineProperty(window, 'DataTransfer', {
     items: any[]
     files: any[]
     types: string[]
+    effectAllowed: string
 
     constructor() {
       this.items = []
       this.files = []
       this.types = []
+      this.effectAllowed = 'none'
     }
 
-    setData(format: string, _data: string) {
+    setData(format: string, data: string) {
       this.types.push(format)
+      // Store data for retrieval
+      ;(this as any)[`_data_${format}`] = data
     }
 
-    getData(_format: string) {
-      return ''
+    getData(format: string) {
+      return (this as any)[`_data_${format}`] || ''
     }
 
     clearData() {
       this.items = []
       this.files = []
       this.types = []
+    }
+
+    setDragImage(_image: Element, _x: number, _y: number) {
+      // Mock implementation
+    }
+  },
+})
+
+// 模拟DragEvent
+Object.defineProperty(window, 'DragEvent', {
+  value: class DragEvent extends Event {
+    dataTransfer: DataTransfer | null
+    clientX: number
+    clientY: number
+
+    constructor(type: string, options: any = {}) {
+      super(type, options)
+      this.dataTransfer = options.dataTransfer || new DataTransfer()
+      this.clientX = options.clientX || 0
+      this.clientY = options.clientY || 0
     }
   },
 })
@@ -232,6 +256,23 @@ global.HTMLElement = HTMLElement
 global.Document = Document
 global.DOMParser = DOMParser
 global.XMLSerializer = XMLSerializer
+
+// 设置拖拽相关的全局变量
+if (!global.DataTransfer) {
+  Object.defineProperty(global, 'DataTransfer', {
+    value: (window as any).DataTransfer,
+    writable: true,
+    configurable: true,
+  })
+}
+
+if (!global.DragEvent) {
+  Object.defineProperty(global, 'DragEvent', {
+    value: (window as any).DragEvent,
+    writable: true,
+    configurable: true,
+  })
+}
 
 // 捕获并忽略未处理的promise rejection
 process.on('unhandledRejection', error => {

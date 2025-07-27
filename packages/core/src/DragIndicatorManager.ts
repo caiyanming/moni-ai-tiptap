@@ -180,11 +180,26 @@ export class DragIndicatorManager {
   }
 
   public destroy() {
-    if (this.horizontalIndicator?.parentElement) {
-      this.horizontalIndicator.parentElement.removeChild(this.horizontalIndicator)
+    try {
+      if (
+        this.horizontalIndicator?.parentElement &&
+        this.horizontalIndicator.parentElement.contains(this.horizontalIndicator)
+      ) {
+        this.horizontalIndicator.parentElement.removeChild(this.horizontalIndicator)
+      }
+    } catch {
+      console.debug('DragIndicatorManager: Horizontal indicator already removed during cleanup')
     }
-    if (this.verticalIndicator?.parentElement) {
-      this.verticalIndicator.parentElement.removeChild(this.verticalIndicator)
+
+    try {
+      if (
+        this.verticalIndicator?.parentElement &&
+        this.verticalIndicator.parentElement.contains(this.verticalIndicator)
+      ) {
+        this.verticalIndicator.parentElement.removeChild(this.verticalIndicator)
+      }
+    } catch {
+      console.debug('DragIndicatorManager: Vertical indicator already removed during cleanup')
     }
 
     this.horizontalIndicator = null

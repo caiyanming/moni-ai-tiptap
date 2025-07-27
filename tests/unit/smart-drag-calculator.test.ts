@@ -95,8 +95,8 @@ class SmartDragCalculator {
     const startTime = performance.now()
 
     // Get all block elements
-    const blockElements = Array.from(editorElement.querySelectorAll('[data-block-id]')) as HTMLElement[]
-    const filteredElements = blockElements.filter(el => el.getAttribute('data-block-id') !== draggedId)
+    const blockElements = Array.from(editorElement.querySelectorAll('[data-moni-block-id]')) as HTMLElement[]
+    const filteredElements = blockElements.filter(el => el.getAttribute('data-moni-block-id') !== draggedId)
 
     const candidates: CandidatePosition[] = []
 
@@ -277,7 +277,7 @@ describe('SmartDragCalculator', () => {
 
     for (let i = 1; i <= 5; i += 1) {
       const blockElement = document.createElement('div')
-      blockElement.setAttribute('data-block-id', `block-${i}`)
+      blockElement.setAttribute('data-moni-block-id', `block-${i}`)
       blockElement.setAttribute('data-nesting-level', (i <= 2 ? '0' : '1').toString())
       blockElement.className = 'notion-block'
 
@@ -312,7 +312,7 @@ describe('SmartDragCalculator', () => {
     // 模拟 querySelectorAll
     Object.defineProperty(mockEditorElement, 'querySelectorAll', {
       value: (selector: string) => {
-        if (selector === '[data-block-id]') {
+        if (selector === '[data-moni-block-id]') {
           return mockBlockElements
         }
         return []
