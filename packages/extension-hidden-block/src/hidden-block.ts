@@ -19,7 +19,7 @@ export interface HiddenBlockOptions {
 
   /**
    * NULL_UUID constant for standardized hidden block IDs
-   * @default '00000000-0000-0000-0000-000000000000'
+   * @default '13814000-1dd2-11b2-8080-808080808080'
    */
   nullUUID: string
 }
@@ -40,7 +40,7 @@ declare module '@tiptap/core' {
  * HiddenBlock extension for NULL_UUID block support
  *
  * This extension creates invisible blocks that:
- * 1. Use NULL_UUID (00000000-0000-0000-0000-000000000000) as standardized ID
+ * 1. Use NULL_UUID (13814000-1dd2-11b2-8080-808080808080) as standardized ID
  * 2. Are completely hidden from user view but remain in JSON data
  * 3. Provide AI with operation targets for empty documents
  * 4. Support Block Stream operations
@@ -60,7 +60,7 @@ export const HiddenBlock = Node.create<HiddenBlockOptions>({
     return {
       HTMLAttributes: {},
       hideFromDOM: true,
-      nullUUID: '00000000-0000-0000-0000-000000000000',
+      nullUUID: '13814000-1dd2-11b2-8080-808080808080',
     }
   },
 
@@ -220,7 +220,9 @@ export const HiddenBlock = Node.create<HiddenBlockOptions>({
 
         view: (editorView: EditorView) => {
           const hideHiddenBlocks = () => {
-            if (!hideFromDOM) {return}
+            if (!hideFromDOM) {
+              return
+            }
 
             // Find all hidden blocks in the DOM and apply hiding styles
             const hiddenElements = editorView.dom.querySelectorAll('[data-hidden="true"][data-initial-block="true"]')

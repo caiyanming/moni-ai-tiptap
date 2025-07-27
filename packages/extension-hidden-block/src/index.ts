@@ -5,7 +5,7 @@ export * from './hidden-block.js'
 export default HiddenBlock
 
 // 🔥 Export NULL_UUID constant for external use
-export const NULL_UUID = '00000000-0000-0000-0000-000000000000'
+export const NULL_UUID = '13814000-1dd2-11b2-8080-808080808080'
 
 // 🔥 Utility functions for working with NULL_UUID hidden blocks
 export const HiddenBlockUtils = {
@@ -44,7 +44,9 @@ export const HiddenBlockUtils = {
   hasVisibleContent: (doc: any): boolean => {
     let hasVisible = false
 
-    if (!doc?.content) {return false}
+    if (!doc?.content) {
+      return false
+    }
 
     doc.content.forEach((node: any) => {
       if (!HiddenBlockUtils.isNullUUIDHiddenBlock(node)) {
@@ -59,7 +61,9 @@ export const HiddenBlockUtils = {
    * Filter out hidden blocks from document content for display
    */
   filterHiddenBlocks: (content: any): any => {
-    if (!content?.content) {return content}
+    if (!content?.content) {
+      return content
+    }
 
     const visibleContent = content.content.filter((node: any) => !HiddenBlockUtils.isNullUUIDHiddenBlock(node))
 
@@ -83,12 +87,16 @@ export const HiddenBlockUtils = {
    * Restore hidden blocks to document content for saving
    */
   restoreHiddenBlocks: (editedContent: any, originalContent: any): any => {
-    if (!originalContent?.content) {return editedContent}
+    if (!originalContent?.content) {
+      return editedContent
+    }
 
     // Extract hidden NULL_UUID blocks from original
     const hiddenBlocks = originalContent.content.filter((node: any) => HiddenBlockUtils.isNullUUIDHiddenBlock(node))
 
-    if (hiddenBlocks.length === 0) {return editedContent}
+    if (hiddenBlocks.length === 0) {
+      return editedContent
+    }
 
     // Merge hidden blocks with edited content
     return {

@@ -3,7 +3,7 @@
  */
 
 // 🔥 NULL_UUID constant for hidden blocks and AI operations
-export const NULL_UUID = '00000000-0000-0000-0000-000000000000'
+export const NULL_UUID = '13814000-1dd2-11b2-8080-808080808080'
 
 // 🔥 Block-related constants
 export const BLOCK_CONSTANTS = {

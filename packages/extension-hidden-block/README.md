@@ -9,7 +9,7 @@ This TipTap extension provides native support for hidden blocks with standardize
 ## Features
 
 - 🔒 **Hidden Block Rendering**: Blocks with `hidden: true` and `isInitialBlock: true` are completely invisible to users
-- 🎯 **NULL_UUID Support**: Standardized `00000000-0000-0000-0000-000000000000` UUID for AI operation targeting
+- 🎯 **NULL_UUID Support**: Standardized `13814000-1dd2-11b2-8080-808080808080` UUID for AI operation targeting
 - 🤖 **AI Integration**: Provides operation targets for empty documents in Block Stream systems
 - 📄 **JSON Preservation**: Hidden blocks remain in document JSON data structure
 - 🔧 **DOM Filtering**: Uses ProseMirror plugins to filter hidden elements from DOM rendering
@@ -33,7 +33,7 @@ const editor = new Editor({
   extensions: [
     HiddenBlock.configure({
       hideFromDOM: true, // Enable DOM filtering (default: true)
-      nullUUID: '00000000-0000-0000-0000-000000000000' // Custom NULL_UUID (optional)
+      nullUUID: '13814000-1dd2-11b2-8080-808080808080' // Custom NULL_UUID (optional)
     })
   ]
 })
@@ -72,16 +72,16 @@ const DocumentEditor = () => {
     if (!documentContent) return null
     return HiddenBlockUtils.filterHiddenBlocks(documentContent)
   }, [documentContent])
-  
+
   const handleSave = (editedContent) => {
     // Restore hidden blocks before saving
     const completeContent = HiddenBlockUtils.restoreHiddenBlocks(
-      editedContent, 
+      editedContent,
       originalDocumentContent
     )
     saveDocument(completeContent)
   }
-  
+
   return <TipTapEditor content={displayContent} onChange={handleSave} />
 }
 
@@ -168,10 +168,10 @@ const nullBlocks = editor.storage.hiddenBlock.getNullUUIDBlocks()
 ### Block Stream Integration
 
 ```typescript
-// AI can target NULL_UUID blocks for operations  
+// AI can target NULL_UUID blocks for operations
 const streamOperation = {
   type: 'insert_after',
-  blockId: '00000000-0000-0000-0000-000000000000', // NULL_UUID - 零映射架构
+  blockId: '13814000-1dd2-11b2-8080-808080808080', // NULL_UUID - 零映射架构
   content: { type: 'paragraph', content: [{ type: 'text', text: 'New content' }] }
 }
 ```

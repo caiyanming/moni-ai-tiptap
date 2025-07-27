@@ -4,7 +4,7 @@ import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { HiddenBlock, HiddenBlockUtils,NULL_UUID } from '../index.js'
+import { HiddenBlock, HiddenBlockUtils, NULL_UUID } from '../index.js'
 
 describe('HiddenBlock Extension', () => {
   let editor: Editor
@@ -427,7 +427,7 @@ describe('HiddenBlock Extension', () => {
   describe('NULL_UUID Constant', () => {
     it('should export NULL_UUID constant', () => {
       expect(NULL_UUID).toBeDefined()
-      expect(NULL_UUID).toBe('00000000-0000-0000-0000-000000000000')
+      expect(NULL_UUID).toBe('13814000-1dd2-11b2-8080-808080808080')
       expect(typeof NULL_UUID).toBe('string')
     })
 
@@ -475,10 +475,10 @@ describe('HiddenBlock Extension', () => {
       editor.commands.setContent({ type: 'doc', content: [content] })
       const json = editor.getJSON()
 
-      expect(typeof json.content[0].attrs.hidden).toBe('boolean')
-      expect(typeof json.content[0].attrs.isInitialBlock).toBe('boolean')
-      expect(typeof json.content[0].attrs.moniLevel).toBe('number')
-      expect(typeof json.content[0].attrs.moniDragEnabled).toBe('boolean')
+      expect(typeof json.content[0]?.attrs?.hidden).toBe('boolean')
+      expect(typeof json.content[0]?.attrs?.isInitialBlock).toBe('boolean')
+      expect(typeof json.content[0]?.attrs?.moniLevel).toBe('number')
+      expect(typeof json.content[0]?.attrs?.moniDragEnabled).toBe('boolean')
     })
   })
 
