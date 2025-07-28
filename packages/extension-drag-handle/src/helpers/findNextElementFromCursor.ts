@@ -15,26 +15,29 @@ export const findElementNextToCoords = (options: FindElementNextToCoords) => {
   let pos: number | null = null
 
   let currentX = x
-  
+
   // 🔧 FIX: 防止无限循环 - 限制最大迭代次数和搜索范围
   const maxIterations = 100 // 最多搜索100像素
   const maxSearchDistance = 200 // 最大搜索距离200像素
   let iterations = 0
-  
+
   // 🔧 FIX: 添加安全检查
   if (typeof window === 'undefined' || !editor.view.dom.isConnected) {
     return { resultElement: null, resultNode: null, pos: null }
   }
 
-  const searchLimit = direction === 'left' 
-    ? Math.max(0, x - maxSearchDistance)
-    : Math.min(window.innerWidth, x + maxSearchDistance)
+  const searchLimit =
+    direction === 'left' ? Math.max(0, x - maxSearchDistance) : Math.min(window.innerWidth, x + maxSearchDistance)
 
   while (resultNode === null && currentX < window.innerWidth && currentX > 0 && iterations < maxIterations) {
     // 🔧 FIX: 检查搜索边界
-    if (direction === 'left' && currentX <= searchLimit) break
-    if (direction === 'right' && currentX >= searchLimit) break
-    
+    if (direction === 'left' && currentX <= searchLimit) {
+      break
+    }
+    if (direction === 'right' && currentX >= searchLimit) {
+      break
+    }
+
     try {
       const allElements = document.elementsFromPoint(currentX, y)
       const prosemirrorIndex = allElements.findIndex(element => element.classList.contains('ProseMirror'))
@@ -71,8 +74,8 @@ export const findElementNextToCoords = (options: FindElementNextToCoords) => {
     } else {
       currentX += 1
     }
-    
-    iterations++
+
+    iterations += 1
   }
 
   return { resultElement, resultNode, pos: pos ?? null }

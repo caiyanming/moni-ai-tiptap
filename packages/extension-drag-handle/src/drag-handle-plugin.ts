@@ -11,11 +11,12 @@ import {
 } from '@tiptap/y-tiptap'
 
 import type { DragIndicatorStyles, DropInfo } from './drag-handle.js'
-import { ModernDragIndicator, DropPositionCalculator, createDragIndicator } from './modern-drag-indicator.js'
+import { DropPositionCalculator } from './drop-position-calculator.js'
 import { dragHandler } from './helpers/dragHandler.js'
 import { findElementNextToCoords } from './helpers/findNextElementFromCursor.js'
 import { getOuterNode, getOuterNodePos } from './helpers/getOuterNode.js'
 import { removeNode } from './helpers/removeNode.js'
+import { type ModernDragIndicator, createDragIndicator } from './modern-drag-indicator.js'
 
 type PluginState = {
   locked: boolean
@@ -96,7 +97,6 @@ export const DragHandlePlugin = ({
   onNodeChange,
   // 🎯 新增参数
   showIndicators = false,
-  indicatorStyles = {},
   onDragStart,
   onDragOver,
   onDrop,
@@ -122,8 +122,8 @@ export const DragHandlePlugin = ({
 
   // 🎯 创建现代化拖拽指示器
   let dragIndicator: ModernDragIndicator | null = null
-  
-  // 🔧 FIX: 全局清理函数引用，避免内存泄漏 
+
+  // 🔧 FIX: 全局清理函数引用，避免内存泄漏
   let globalCleanupListeners: (() => void) | null = null
 
   function hideHandle() {
@@ -362,7 +362,7 @@ export const DragHandlePlugin = ({
 
         // 🎯 创建现代化拖拽指示器
         let cleanupListeners: (() => void) | null = null
-        
+
         if (showIndicators) {
           try {
             dragIndicator = createDragIndicator(view, 'notion', true)
@@ -382,22 +382,26 @@ export const DragHandlePlugin = ({
           }
 
           const handleDragStart = (event: DragEvent) => {
-            if (!dragIndicator) return // 🔧 FIX: 防止在指示器不存在时处理事件
-            
+            if (!dragIndicator) {
+              return // 🔧 FIX: 防止在指示器不存在时处理事件
+            }
+
             isDragging = true
             dragSourceElement = event.target as HTMLElement
-            
+
             console.log('🎯 拖拽开始检测:', {
               isDragging,
               source: dragSourceElement?.tagName,
               sourceClass: dragSourceElement?.className,
               sourceId: dragSourceElement?.getAttribute('data-moni-block-id') || 'N/A',
-              eventType: event.type
+              eventType: event.type,
             })
           }
 
           const handleDragOver = (event: DragEvent) => {
-            if (!isDragging || !dragIndicator) return
+            if (!isDragging || !dragIndicator) {
+              return
+            }
 
             try {
               event.preventDefault()
@@ -407,7 +411,7 @@ export const DragHandlePlugin = ({
               if (blockElement && blockElement !== dragSourceElement) {
                 // 🎯 使用现代化计算器
                 const result = DropPositionCalculator.calculate(event, blockElement)
-                
+
                 // 🎨 显示指示器
                 dragIndicator.show({
                   direction: result.direction,
@@ -438,14 +442,16 @@ export const DragHandlePlugin = ({
           }
 
           const handleDropHandler = (event: DragEvent) => {
-            if (!isDragging) return
+            if (!isDragging) {
+              return
+            }
 
             const target = event.target as HTMLElement
             const blockElement = findBlockElement(target)
 
             if (blockElement) {
               const result = DropPositionCalculator.calculate(event, blockElement)
-              
+
               // 🎯 调用用户自定义回调
               const dropInfo: DropInfo = {
                 position: result.dropPosition,
@@ -483,7 +489,7 @@ export const DragHandlePlugin = ({
               document.removeEventListener('drop', handleDropHandler)
               document.removeEventListener('dragend', handleDragEnd)
             }
-            
+
             // 🔧 FIX: 将清理函数保存到全局范围，以便在主destroy中调用
             globalCleanupListeners = cleanupListeners
           }

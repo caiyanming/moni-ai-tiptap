@@ -4,15 +4,12 @@
 
 import type { EditorView } from '@tiptap/pm/view'
 
-export type IndicatorDirection = 'horizontal' | 'vertical'
-export type DropPosition = 'above' | 'below' | 'inside'
-
-export interface IndicatorPosition {
-  x: number
-  y: number
-  width?: number
-  height?: number
-}
+import {
+  type DropPosition,
+  type IndicatorDirection,
+  type IndicatorPosition,
+  DropPositionCalculator,
+} from './drop-position-calculator.js'
 
 export interface IndicatorTheme {
   color: string
@@ -62,12 +59,12 @@ export class ModernDragIndicator {
 
   constructor(
     private view: EditorView,
-    private config: IndicatorConfig = DEFAULT_CONFIG
+    private config: IndicatorConfig = DEFAULT_CONFIG,
   ) {
     if (typeof window === 'undefined') {
       throw new Error('ModernDragIndicator: window is not available')
     }
-    
+
     if (!this.view.dom.isConnected) {
       throw new Error('ModernDragIndicator: EditorView DOM is not connected')
     }
@@ -76,22 +73,20 @@ export class ModernDragIndicator {
     this.createIndicators()
   }
 
-  show(params: {
-    direction: IndicatorDirection
-    position: IndicatorPosition
-    dropPosition: DropPosition
-  }): void {
+  show(params: { direction: IndicatorDirection; position: IndicatorPosition; dropPosition: DropPosition }): void {
     const { direction, position } = params
     const indicator = this.getIndicator(direction)
-    
+
     this.updateIndicatorPosition(indicator, direction, position)
     this.showIndicator(indicator)
     this.isVisible = true
   }
 
   hide(): void {
-    if (!this.isVisible) return
-    
+    if (!this.isVisible) {
+      return
+    }
+
     this.hideIndicator(this.horizontal)
     this.hideIndicator(this.vertical)
     this.isVisible = false
@@ -103,11 +98,11 @@ export class ModernDragIndicator {
       cancelAnimationFrame(this.animationFrameId)
       this.animationFrameId = null
     }
-    
+
     this.hide()
     this.removeIndicator(this.horizontal)
     this.removeIndicator(this.vertical)
-    
+
     // 显式清空引用，帮助GC
     this.horizontal = null
     this.vertical = null
@@ -125,7 +120,7 @@ export class ModernDragIndicator {
   private createIndicators(): void {
     this.horizontal = this.createIndicator('horizontal')
     this.vertical = this.createIndicator('vertical')
-    
+
     this.container.appendChild(this.horizontal)
     this.container.appendChild(this.vertical)
   }
@@ -142,7 +137,7 @@ export class ModernDragIndicator {
   private applyThemeStyles(indicator: HTMLElement, direction: IndicatorDirection): void {
     const { theme, animation } = this.config
     const isHorizontal = direction === 'horizontal'
-    
+
     Object.assign(indicator.style, {
       position: 'absolute',
       backgroundColor: theme.color,
@@ -152,13 +147,15 @@ export class ModernDragIndicator {
       pointerEvents: 'none',
       zIndex: '9999',
       transition: `all ${animation.duration}ms ${animation.easing}`,
-      ...(isHorizontal ? {
-        height: `${theme.thickness}px`,
-        minWidth: '20px',
-      } : {
-        width: `${theme.thickness}px`,
-        minHeight: '20px',
-      }),
+      ...(isHorizontal
+        ? {
+            height: `${theme.thickness}px`,
+            minWidth: '20px',
+          }
+        : {
+            width: `${theme.thickness}px`,
+            minHeight: '20px',
+          }),
     })
   }
 
@@ -173,13 +170,13 @@ export class ModernDragIndicator {
   private updateIndicatorPosition(
     indicator: HTMLElement,
     direction: IndicatorDirection,
-    position: IndicatorPosition
+    position: IndicatorPosition,
   ): void {
     const isHorizontal = direction === 'horizontal'
-    
+
     indicator.style.left = `${position.x}px`
     indicator.style.top = `${position.y}px`
-    
+
     if (isHorizontal && position.width) {
       indicator.style.width = `${position.width}px`
     }
@@ -190,12 +187,12 @@ export class ModernDragIndicator {
 
   private showIndicator(indicator: HTMLElement): void {
     indicator.style.display = 'block'
-    
+
     // 核心修复: 取消之前的动画帧，防止内存泄漏
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId)
     }
-    
+
     this.animationFrameId = requestAnimationFrame(() => {
       indicator.style.opacity = this.config.theme.opacity.toString()
       indicator.style.transform = 'scale(1)'
@@ -204,14 +201,18 @@ export class ModernDragIndicator {
   }
 
   private hideIndicator(indicator: HTMLElement | null): void {
-    if (!indicator) return
+    if (!indicator) {
+      return
+    }
     indicator.style.display = 'none'
     indicator.style.transform = 'scale(0.8)'
   }
 
   private removeIndicator(indicator: HTMLElement | null): void {
-    if (!indicator) return
-    
+    if (!indicator) {
+      return
+    }
+
     try {
       indicator.style.display = 'none'
       indicator.remove()
@@ -226,79 +227,16 @@ export class ModernDragIndicator {
 export function createDragIndicator(
   view: EditorView,
   theme: keyof typeof DEFAULT_THEMES = 'notion',
-  debug = false
+  debug = false,
 ): ModernDragIndicator {
   const config: IndicatorConfig = {
     theme: DEFAULT_THEMES[theme],
     animation: DEFAULT_CONFIG.animation,
     debug,
   }
-  
+
   return new ModernDragIndicator(view, config)
 }
 
-export class DropPositionCalculator {
-  static calculate(
-    event: DragEvent,
-    targetElement: HTMLElement
-  ): {
-    dropPosition: DropPosition
-    indicatorPosition: IndicatorPosition
-    direction: IndicatorDirection
-  } {
-    const rect = targetElement.getBoundingClientRect()
-    const { clientX: x, clientY: y } = event
-    
-    const isNestable = targetElement.hasAttribute('data-moni-nestable')
-    const isInNestZone = x < rect.left + 40
-    
-    if (isNestable && isInNestZone) {
-      return {
-        dropPosition: 'inside',
-        direction: 'vertical',
-        indicatorPosition: {
-          x: rect.left - 2,
-          y: rect.top,
-          height: rect.height,
-        },
-      }
-    }
-    
-    const topThreshold = rect.top + rect.height * 0.25
-    const bottomThreshold = rect.bottom - rect.height * 0.25
-    
-    if (y < topThreshold) {
-      return {
-        dropPosition: 'above',
-        direction: 'horizontal',
-        indicatorPosition: {
-          x: rect.left,
-          y: rect.top - 2,
-          width: rect.width,
-        },
-      }
-    }
-    
-    if (y > bottomThreshold) {
-      return {
-        dropPosition: 'below',
-        direction: 'horizontal',
-        indicatorPosition: {
-          x: rect.left,
-          y: rect.bottom - 1,
-          width: rect.width,
-        },
-      }
-    }
-    
-    return {
-      dropPosition: 'inside',
-      direction: 'horizontal',
-      indicatorPosition: {
-        x: rect.left,
-        y: rect.top + rect.height / 2,
-        width: rect.width,
-      },
-    }
-  }
-}
+// Export DropPositionCalculator for convenience
+export { DropPositionCalculator }

@@ -48,7 +48,9 @@ describe('HiddenBlock Extension', () => {
 
     it('should be a block node', () => {
       const hiddenBlockExtension = editor.extensionManager.extensions.find(ext => ext.name === 'hiddenBlock')
-      expect(hiddenBlockExtension?.config.group).toBe('block')
+      // Type assertion for node extension config
+      const nodeConfig = hiddenBlockExtension?.config as { group?: string }
+      expect(nodeConfig?.group).toBe('block')
     })
   })
 
@@ -266,7 +268,7 @@ describe('HiddenBlock Extension', () => {
       )
 
       if (hiddenBlockPlugin && hiddenBlockPlugin.props?.handleDOMEvents?.click) {
-        const handled = hiddenBlockPlugin.props.handleDOMEvents.click(editor.view, mockEvent)
+        const handled = hiddenBlockPlugin.props.handleDOMEvents.click.call(hiddenBlockPlugin, editor.view, mockEvent)
         expect(handled).toBe(false) // Should not handle clicks on non-hidden elements
       }
 

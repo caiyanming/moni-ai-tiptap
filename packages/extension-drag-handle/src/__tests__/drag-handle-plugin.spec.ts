@@ -105,7 +105,7 @@ describe('DragHandlePlugin', () => {
         onAddBlock: vi.fn(),
       })
 
-      expect(plugin.plugin.key).toBeDefined()
+      expect(plugin.plugin.spec.key).toBeDefined()
     })
 
     it('should accept compute position config', () => {
@@ -260,7 +260,7 @@ describe('DragHandlePlugin', () => {
         onAddBlock: vi.fn(),
       })
 
-      expect(plugin.plugin.key).toBeDefined()
+      expect(plugin.plugin.spec.key).toBeDefined()
     })
 
     it('should handle plugin state', () => {

@@ -1,13 +1,15 @@
 // Test setup for Vitest environment
 
-// 类型定义
-type FrameRequestCallback = (time: number) => void
+/// <reference types="vitest" />
+/// <reference types="vitest/globals" />
 
 // 🎯 模拟全局对象和API
-const { TextEncoder, TextDecoder } = require('util')
-
-global.TextEncoder = TextEncoder
-global.TextDecoder = TextDecoder
+// Only set TextEncoder/TextDecoder if they don't exist
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder: NodeTextEncoder, TextDecoder: NodeTextDecoder } = require('util')
+  global.TextEncoder = NodeTextEncoder
+  global.TextDecoder = NodeTextDecoder
+}
 
 // 预定义的Mock类
 const MockDragEvent = class extends Event {
@@ -15,7 +17,7 @@ const MockDragEvent = class extends Event {
   public clientX: number = 0
   public clientY: number = 0
 
-  constructor(type: string, options?: any) {
+  constructor(type: string, options?: { clientX?: number; clientY?: number; dataTransfer?: DataTransfer | null }) {
     super(type, options)
     if (options) {
       this.clientX = options.clientX || 0
@@ -37,12 +39,13 @@ const MockBrowserAPIs = {
   // 模拟DataTransfer对象
   setupDataTransfer(): void {
     if (!global.DataTransfer) {
-      global.DataTransfer = function () {
+      global.DataTransfer = function (this: Partial<DataTransfer>) {
         this.dropEffect = 'none'
         this.effectAllowed = 'uninitialized'
-        this.files = [] as any
-        this.items = [] as any
-        this.types = []
+        // Mock read-only properties
+        Object.defineProperty(this, 'files', { value: [], writable: false })
+        Object.defineProperty(this, 'items', { value: [], writable: false })
+        Object.defineProperty(this, 'types', { value: [], writable: false })
         this.clearData = () => {}
         this.getData = () => ''
         this.setData = () => {}
@@ -53,7 +56,7 @@ const MockBrowserAPIs = {
 
   // 模拟IntersectionObserver
   setupIntersectionObserver(): void {
-    global.IntersectionObserver = function () {
+    global.IntersectionObserver = function (this: Partial<IntersectionObserver>) {
       this.observe = () => {}
       this.unobserve = () => {}
       this.disconnect = () => {}
@@ -62,7 +65,7 @@ const MockBrowserAPIs = {
 
   // 模拟ResizeObserver
   setupResizeObserver(): void {
-    global.ResizeObserver = function () {
+    global.ResizeObserver = function (this: Partial<ResizeObserver>) {
       this.observe = () => {}
       this.unobserve = () => {}
       this.disconnect = () => {}
@@ -75,15 +78,15 @@ const MockBrowserAPIs = {
       global.getComputedStyle = () =>
         ({
           getPropertyValue: () => '',
-        }) as any
+        }) as unknown as CSSStyleDeclaration
     }
   },
 
   // 模拟requestAnimationFrame
   setupAnimationFrame(): void {
     if (!global.requestAnimationFrame) {
-      global.requestAnimationFrame = (callback: FrameRequestCallback) => {
-        return setTimeout(callback, 16) as any
+      global.requestAnimationFrame = (callback: (time: number) => void) => {
+        return setTimeout(callback, 16) as unknown as number
       }
     }
 
@@ -111,7 +114,7 @@ MockBrowserAPIs.initialize()
 // 🎯 增强vitest匹配器
 if (typeof expect !== 'undefined') {
   expect.extend({
-    toBeInTheDocument(received: any) {
+    toBeInTheDocument(received: Element | null) {
       const pass = received && received.ownerDocument === document
       if (pass) {
         return {
@@ -125,7 +128,7 @@ if (typeof expect !== 'undefined') {
       }
     },
 
-    toHaveClass(received: any, className: string) {
+    toHaveClass(received: Element | null, className: string) {
       const pass = received && received.classList && received.classList.contains(className)
       if (pass) {
         return {
@@ -161,7 +164,7 @@ if (typeof beforeAll !== 'undefined') {
   beforeAll(() => {
     // 抑制特定的警告信息
     const originalError = console.error
-    console.error = (...args: any[]) => {
+    console.error = (...args: unknown[]) => {
       if (typeof args[0] === 'string' && args[0].includes('Warning: ReactDOM.render is deprecated')) {
         return
       }
@@ -170,10 +173,5 @@ if (typeof beforeAll !== 'undefined') {
   })
 }
 
-// 🎯 类型扩展
-declare global {
-  interface CustomMatchers<R = unknown> {
-    toBeInTheDocument(): R
-    toHaveClass(className: string): R
-  }
-}
+// Export for module recognition
+export {}
