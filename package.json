@@ -59,6 +59,7 @@
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@cypress/webpack-preprocessor": "^6.0.2",
+    "@playwright/test": "^1.54.1",
     "@testing-library/react": "16.2.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
