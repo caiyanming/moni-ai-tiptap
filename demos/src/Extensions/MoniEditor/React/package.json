@@ -1,0 +1,34 @@
+{
+  "name": "moni-editor-react-e2e",
+  "version": "1.0.0",
+  "description": "MoniAI TipTap Editor React - Playwright E2E Tests",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:poc": "playwright test drag-handle-poc.spec.js --project=chromium",
+    "test:drag": "playwright test drag-handle-migrated.spec.js --project=chromium",
+    "test:stream": "playwright test stream-operations-migrated.spec.js --project=chromium",
+    "test:hidden": "playwright test hidden-blocks-migrated.spec.js --project=chromium",
+    "test:all": "playwright test *-migrated.spec.js --project=chromium",
+    "test:cross-browser": "playwright test *-migrated.spec.js",
+    "test:mobile": "playwright test drag-handle-migrated.spec.js --project=\"Mobile Chrome\" --project=\"Mobile Safari\"",
+    "test:report": "playwright show-report",
+    "test:install": "playwright install",
+    "dev": "npm start",
+    "start": "cd ../../../.. && npm start"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "tiptap",
+    "drag-drop",
+    "ai-editor"
+  ],
+  "author": "MoniAI Team",
+  "license": "MIT"
+}

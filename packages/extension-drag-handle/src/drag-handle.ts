@@ -234,14 +234,16 @@ export const DragHandle = Extension.create<DragHandleOptions>({
       showIndicators: true,
       indicatorStyles: {
         horizontal: {
-          backgroundColor: '#0066cc',
-          height: '2px',
-          borderRadius: '1px',
+          backgroundColor: '#3b82f6',
+          height: '3px',
+          borderRadius: '2px',
+          boxShadow: '0 0 8px rgba(59, 130, 246, 0.4)',
         },
         vertical: {
-          backgroundColor: '#0066cc',
-          width: '2px',
-          borderRadius: '1px',
+          backgroundColor: '#3b82f6',
+          width: '3px',
+          borderRadius: '2px',
+          boxShadow: '0 0 8px rgba(59, 130, 246, 0.4)',
         },
       },
       onDragStart: () => null,

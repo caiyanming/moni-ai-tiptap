@@ -38,3 +38,78 @@ demos/*.tgz
 # demo directories
 demos/src/Dev/**
 !demos/src/Dev/.gitkeep
+
+# Test and reporting directories
+demos/playwright-report/
+demos/test-results/
+test-results/
+playwright-report/
+
+# Temporary test files (should not be committed)
+test-*.js
+test-*.html
+*temp*.html
+*temp*.js
+
+# Cypress test artifacts
+cypress/videos/
+cypress/screenshots/
+cypress/reports/
+**/cypress/videos/
+**/cypress/screenshots/
+**/cypress/reports/
+
+# Server logs
+server.log
+**/server.log
+
+# Additional test artifacts
+*.spec.js.html
+*.test.js.html
+
+# Visual test artifacts  
+**/*.png
+**/*.webm
+**/*.mp4
+!docs/**/*.png
+!README*.png
+!**/assets/**/*.png
+!**/static/**/*.png
+
+# Test and reporting directories
+demos/playwright-report/
+demos/test-results/
+test-results/
+playwright-report/
+
+# Temporary test files (should not be committed)
+test-*.js
+test-*.html
+*temp*.html
+*temp*.js
+
+# Cypress test artifacts
+cypress/videos/
+cypress/screenshots/
+cypress/reports/
+**/cypress/videos/
+**/cypress/screenshots/
+**/cypress/reports/
+
+# Server logs
+server.log
+**/server.log
+
+# Additional test artifacts
+*.spec.js.html
+*.test.js.html
+test-simple.html
+
+# Visual test artifacts  
+**/*.png
+**/*.webm
+**/*.mp4
+!docs/**/*.png
+!README*.png
+!**/assets/**/*.png
+!**/static/**/*.png

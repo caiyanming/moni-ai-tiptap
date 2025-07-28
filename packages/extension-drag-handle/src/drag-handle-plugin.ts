@@ -11,6 +11,7 @@ import {
 } from '@tiptap/y-tiptap'
 
 import type { DragIndicatorStyles, DropInfo } from './drag-handle.js'
+import { ModernDragIndicator, DropPositionCalculator, createDragIndicator } from './modern-drag-indicator.js'
 import { dragHandler } from './helpers/dragHandler.js'
 import { findElementNextToCoords } from './helpers/findNextElementFromCursor.js'
 import { getOuterNode, getOuterNodePos } from './helpers/getOuterNode.js'
@@ -21,209 +22,9 @@ type PluginState = {
 }
 
 /**
- * 🎯 拖拽指示器管理器 - 直接集成到DragHandle扩展中
+ * 🎯 现代化拖拽指示器集成
+ * 使用新的 ModernDragIndicator 架构
  */
-export class DragIndicatorManager {
-  private readonly view: EditorView
-  private horizontalIndicator: HTMLElement | null = null
-  private verticalIndicator: HTMLElement | null = null
-  private containerElement: HTMLElement | null = null
-  private readonly styles: DragIndicatorStyles
-
-  constructor(view: EditorView, styles: DragIndicatorStyles = {}) {
-    this.view = view
-    this.styles = styles
-    this.initialize()
-  }
-
-  private initialize() {
-    this.containerElement = this.view.dom.parentElement
-    if (!this.containerElement) {
-      console.warn('DragIndicatorManager: 无法找到容器元素')
-      return
-    }
-
-    this.createIndicators()
-  }
-
-  private createIndicators() {
-    // 创建水平指示器（块上方/下方的蓝色横线）
-    this.horizontalIndicator = document.createElement('div')
-    this.horizontalIndicator.className = 'tiptap-drag-indicator-horizontal'
-
-    const defaultHorizontalStyles = {
-      position: 'absolute',
-      height: '2px',
-      backgroundColor: '#0066cc',
-      borderRadius: '1px',
-      pointerEvents: 'none',
-      zIndex: '1000',
-      visibility: 'hidden',
-      transition: 'all 0.15s ease',
-    }
-
-    Object.assign(this.horizontalIndicator.style, {
-      ...defaultHorizontalStyles,
-      ...this.styles.horizontal,
-    })
-
-    // 在横线开始处添加圆圈
-    const circle = document.createElement('div')
-    Object.assign(circle.style, {
-      position: 'absolute',
-      left: '-4px',
-      top: '-3px',
-      width: '8px',
-      height: '8px',
-      backgroundColor: this.styles.horizontal?.backgroundColor || '#0066cc',
-      borderRadius: '50%',
-    })
-    this.horizontalIndicator.appendChild(circle)
-
-    // 创建垂直指示器（嵌套缩进的蓝色竖线）
-    this.verticalIndicator = document.createElement('div')
-    this.verticalIndicator.className = 'tiptap-drag-indicator-vertical'
-
-    const defaultVerticalStyles = {
-      position: 'absolute',
-      width: '2px',
-      backgroundColor: '#0066cc',
-      borderRadius: '1px',
-      pointerEvents: 'none',
-      zIndex: '999',
-      visibility: 'hidden',
-      transition: 'all 0.15s ease',
-    }
-
-    Object.assign(this.verticalIndicator.style, {
-      ...defaultVerticalStyles,
-      ...this.styles.vertical,
-    })
-
-    // 添加指示器到容器
-    this.containerElement!.appendChild(this.horizontalIndicator)
-    this.containerElement!.appendChild(this.verticalIndicator)
-
-    console.log('🎯 TipTap Fork 拖拽指示器已创建')
-  }
-
-  public showIndicator(targetElement: HTMLElement, position: 'above' | 'below' | 'inside'): void {
-    if (!this.containerElement) {
-      return
-    }
-
-    this.hideIndicator()
-
-    const rect = targetElement.getBoundingClientRect()
-    const containerRect = this.containerElement.getBoundingClientRect()
-
-    if (position === 'above') {
-      this.showHorizontalIndicator(rect, containerRect, 'above')
-    } else if (position === 'below') {
-      this.showHorizontalIndicator(rect, containerRect, 'below')
-    } else if (position === 'inside') {
-      this.showVerticalIndicator(rect, containerRect)
-    }
-  }
-
-  private showHorizontalIndicator(rect: DOMRect, containerRect: DOMRect, position: 'above' | 'below'): void {
-    if (!this.horizontalIndicator) {
-      return
-    }
-
-    const y = position === 'above' ? rect.top - containerRect.top : rect.bottom - containerRect.top
-    const x = rect.left - containerRect.left
-    const width = rect.width
-
-    this.horizontalIndicator.style.left = `${x}px`
-    this.horizontalIndicator.style.top = `${y - 1}px`
-    this.horizontalIndicator.style.width = `${width}px`
-    this.horizontalIndicator.style.visibility = 'visible'
-  }
-
-  private showVerticalIndicator(rect: DOMRect, containerRect: DOMRect): void {
-    if (!this.verticalIndicator) {
-      return
-    }
-
-    const x = rect.left - containerRect.left
-    const y = rect.top - containerRect.top
-    const height = rect.height
-
-    this.verticalIndicator.style.left = `${x - 2}px`
-    this.verticalIndicator.style.top = `${y}px`
-    this.verticalIndicator.style.height = `${height}px`
-    this.verticalIndicator.style.visibility = 'visible'
-  }
-
-  public hideIndicator(): void {
-    if (this.horizontalIndicator) {
-      this.horizontalIndicator.style.visibility = 'hidden'
-    }
-    if (this.verticalIndicator) {
-      this.verticalIndicator.style.visibility = 'hidden'
-    }
-  }
-
-  public calculateDropPosition(
-    event: DragEvent,
-    targetElement: HTMLElement,
-  ): { position: 'above' | 'below' | 'inside'; element: HTMLElement } | null {
-    const rect = targetElement.getBoundingClientRect()
-    const y = event.clientY
-    const x = event.clientX
-
-    // 检查是否在可嵌套元素上拖拽
-    const nestable = targetElement.getAttribute('data-moni-nestable') === 'true'
-    const leftIndentZone = rect.left + 40 // 左侧40px为缩进区域
-
-    if (nestable && x < leftIndentZone) {
-      return { position: 'inside', element: targetElement }
-    }
-
-    // 根据鼠标位置计算放置位置
-    const topThreshold = rect.top + rect.height * 0.25
-    const bottomThreshold = rect.bottom - rect.height * 0.25
-
-    if (y < topThreshold) {
-      return { position: 'above', element: targetElement }
-    }
-    if (y > bottomThreshold) {
-      return { position: 'below', element: targetElement }
-    }
-    return { position: 'inside', element: targetElement }
-  }
-
-  public destroy() {
-    try {
-      if (
-        this.horizontalIndicator?.parentElement &&
-        this.horizontalIndicator.parentElement.contains(this.horizontalIndicator)
-      ) {
-        this.horizontalIndicator.parentElement.removeChild(this.horizontalIndicator)
-      }
-    } catch {
-      console.debug('DragIndicatorManager (plugin): Horizontal indicator already removed during cleanup')
-    }
-
-    try {
-      if (
-        this.verticalIndicator?.parentElement &&
-        this.verticalIndicator.parentElement.contains(this.verticalIndicator)
-      ) {
-        this.verticalIndicator.parentElement.removeChild(this.verticalIndicator)
-      }
-    } catch {
-      console.debug('DragIndicatorManager (plugin): Vertical indicator already removed during cleanup')
-    }
-
-    this.horizontalIndicator = null
-    this.verticalIndicator = null
-    this.containerElement = null
-
-    console.log('🎯 TipTap Fork 拖拽指示器已销毁')
-  }
-}
 
 const getRelativePos = (state: EditorState, absolutePos: number) => {
   const ystate = ySyncPluginKey.getState(state)
@@ -319,8 +120,11 @@ export const DragHandlePlugin = ({
   // biome-ignore lint/suspicious/noExplicitAny: See above - relative positions in y-prosemirror are not typed
   let currentNodeRelPos: any
 
-  // 🎯 创建拖拽指示器管理器
-  let indicatorManager: DragIndicatorManager | null = null
+  // 🎯 创建现代化拖拽指示器
+  let dragIndicator: ModernDragIndicator | null = null
+  
+  // 🔧 FIX: 全局清理函数引用，避免内存泄漏 
+  let globalCleanupListeners: (() => void) | null = null
 
   function hideHandle() {
     if (!element) {
@@ -396,7 +200,7 @@ export const DragHandlePlugin = ({
     }
 
     // 🎯 拖拽结束时隐藏指示器
-    indicatorManager?.hideIndicator()
+    dragIndicator?.hide()
   }
 
   element.addEventListener('dragstart', onDragStartHandler)
@@ -464,9 +268,15 @@ export const DragHandlePlugin = ({
         dragHandle.removeEventListener('click', dragHandleClickHandler)
       }
 
-      // 🎯 销毁指示器管理器
-      indicatorManager?.destroy()
-      indicatorManager = null
+      // 🔧 FIX: 清理document级别的事件监听器，防止内存泄漏
+      if (globalCleanupListeners) {
+        globalCleanupListeners()
+        globalCleanupListeners = null
+      }
+
+      // 🎯 销毁现代化指示器
+      dragIndicator?.destroy()
+      dragIndicator = null
     },
     plugin: new Plugin({
       key: typeof pluginKey === 'string' ? new PluginKey(pluginKey) : pluginKey,
@@ -547,171 +357,135 @@ export const DragHandlePlugin = ({
         // 🎯 确保拖拽手柄在最上层显示，避免被代码块背景或列表线条覆盖
         wrapper.style.zIndex = '1001'
 
-        // 🎯 创建拖拽指示器管理器
+        // 🔧 FIX: Hide the handle initially so it only shows on hover
+        hideHandle()
+
+        // 🎯 创建现代化拖拽指示器
+        let cleanupListeners: (() => void) | null = null
+        
         if (showIndicators) {
-          indicatorManager = new DragIndicatorManager(view, indicatorStyles)
+          try {
+            dragIndicator = createDragIndicator(view, 'notion', true)
+          } catch (error) {
+            console.error('🔧 FIX: Failed to create drag indicator:', error)
+            // 如果指示器创建失败，继续运行但不使用指示器
+            dragIndicator = null
+          }
 
           // 🎯 改进的拖拽事件监听 - 监听document级别事件
           let isDragging = false
           let dragSourceElement: HTMLElement | null = null
 
+          // 🔍 简化的目标元素查找
+          const findBlockElement = (target: HTMLElement): HTMLElement | null => {
+            return target.closest('[data-moni-block-id]') as HTMLElement | null
+          }
+
           const handleDragStart = (event: DragEvent) => {
+            if (!dragIndicator) return // 🔧 FIX: 防止在指示器不存在时处理事件
+            
             isDragging = true
             dragSourceElement = event.target as HTMLElement
-            console.log('🎯 拖拽开始检测:', { isDragging, source: dragSourceElement?.tagName })
+            
+            console.log('🎯 拖拽开始检测:', {
+              isDragging,
+              source: dragSourceElement?.tagName,
+              sourceClass: dragSourceElement?.className,
+              sourceId: dragSourceElement?.getAttribute('data-moni-block-id') || 'N/A',
+              eventType: event.type
+            })
           }
 
           const handleDragOver = (event: DragEvent) => {
-            if (!isDragging) {
-              console.log('🔍 拖拽悬停 - 不在拖拽状态:', { isDragging })
-              return
-            }
+            if (!isDragging || !dragIndicator) return
 
-            event.preventDefault()
-            const target = event.target as HTMLElement
+            try {
+              event.preventDefault()
+              const target = event.target as HTMLElement
+              const blockElement = findBlockElement(target)
 
-            console.log('🔍 拖拽悬停事件处理:', {
-              eventType: event.type,
-              targetTagName: target.tagName,
-              targetAttributes: target.attributes
-                ? Array.from(target.attributes)
-                    .map(attr => `${attr.name}="${attr.value}"`)
-                    .join(' ')
-                : 'No attributes',
-              isDragging,
-              dragSourceElement: dragSourceElement?.tagName,
-            })
-
-            // 查找最近的有data-moni-block-id的元素
-            let blockElement: HTMLElement | null = target
-            let searchDepth = 0
-            const maxDepth = 10 // 防止无限循环
-
-            while (blockElement && blockElement !== document.body && searchDepth < maxDepth) {
-              console.log(`🔍 搜索层级 ${searchDepth}:`, {
-                tagName: blockElement.tagName,
-                hasMoniBlockId: blockElement.hasAttribute('data-moni-block-id'),
-                moniBlockIdValue: blockElement.getAttribute('data-moni-block-id') || 'N/A',
-                className: blockElement.className || 'No class',
-                isSourceElement: blockElement === dragSourceElement,
-              })
-
-              if (blockElement.hasAttribute('data-moni-block-id')) {
-                console.log('✅ 找到有 data-moni-block-id 的元素:', {
-                  tagName: blockElement.tagName,
-                  moniBlockId: blockElement.getAttribute('data-moni-block-id'),
-                  isSourceElement: blockElement === dragSourceElement,
+              if (blockElement && blockElement !== dragSourceElement) {
+                // 🎯 使用现代化计算器
+                const result = DropPositionCalculator.calculate(event, blockElement)
+                
+                // 🎨 显示指示器
+                dragIndicator.show({
+                  direction: result.direction,
+                  position: result.indicatorPosition,
+                  dropPosition: result.dropPosition,
                 })
-                break
-              }
-              blockElement = blockElement.parentElement
-              searchDepth += 1
-            }
-
-            if (blockElement && blockElement.hasAttribute('data-moni-block-id') && blockElement !== dragSourceElement) {
-              console.log('🎯 准备显示拖拽指示器:', {
-                targetElement: blockElement.tagName,
-                targetBlockId: blockElement.getAttribute('data-moni-block-id'),
-                sourceElement: dragSourceElement?.tagName,
-                sourceBlockId: dragSourceElement?.getAttribute('data-moni-block-id') || 'N/A',
-              })
-
-              const dropPosition = indicatorManager?.calculateDropPosition(event, blockElement)
-              if (dropPosition) {
-                console.log('🎯 显示拖拽指示器:', { position: dropPosition.position, target: blockElement.tagName })
-                indicatorManager?.showIndicator(blockElement, dropPosition.position)
 
                 // 🎯 调用用户自定义回调
                 const dropInfo: DropInfo = {
-                  position: dropPosition.position,
+                  position: result.dropPosition,
                   targetElement: blockElement,
                 }
                 onDragOver?.(event, dropInfo, editor)
               } else {
-                console.log('⚠️ calculateDropPosition 返回了 null')
+                dragIndicator.hide()
               }
-            } else {
-              console.log('❌ 未找到合适的拖拽目标:', {
-                blockElementFound: !!blockElement,
-                hasBlockId: blockElement?.hasAttribute('data-moni-block-id'),
-                isSameAsSource: blockElement === dragSourceElement,
-                searchDepth,
-              })
+            } catch (error) {
+              console.error('🔧 FIX: DragOver error:', error)
+              dragIndicator.hide()
             }
           }
 
           const handleDragLeave = (event: DragEvent) => {
             // 只有当离开整个编辑器区域时才隐藏指示器
             if (event.relatedTarget && !view.dom.contains(event.relatedTarget as HTMLElement)) {
-              console.log('🎯 隐藏拖拽指示器 (离开编辑器)')
-              indicatorManager?.hideIndicator()
+              dragIndicator?.hide()
             }
           }
 
           const handleDropHandler = (event: DragEvent) => {
-            if (!isDragging) {
-              return
-            }
+            if (!isDragging) return
 
             const target = event.target as HTMLElement
+            const blockElement = findBlockElement(target)
 
-            // 查找最近的有data-moni-block-id的元素
-            let blockElement: HTMLElement | null = target
-            while (blockElement && blockElement !== document.body) {
-              if (blockElement.hasAttribute('data-moni-block-id')) {
-                break
+            if (blockElement) {
+              const result = DropPositionCalculator.calculate(event, blockElement)
+              
+              // 🎯 调用用户自定义回调
+              const dropInfo: DropInfo = {
+                position: result.dropPosition,
+                targetElement: blockElement,
               }
-              blockElement = blockElement.parentElement
+              onDrop?.(event, dropInfo, editor)
             }
 
-            if (blockElement && blockElement.hasAttribute('data-moni-block-id')) {
-              const dropPosition = indicatorManager?.calculateDropPosition(event, blockElement)
-              if (dropPosition) {
-                console.log('🎯 处理拖拽放置:', { position: dropPosition.position, target: blockElement.tagName })
-
-                // 🎯 调用用户自定义回调
-                const dropInfo: DropInfo = {
-                  position: dropPosition.position,
-                  targetElement: blockElement,
-                }
-                onDrop?.(event, dropInfo, editor)
-              }
-            }
-
-            // 重置拖拽状态
+            // 重置状态
             isDragging = false
             dragSourceElement = null
-            indicatorManager?.hideIndicator()
+            dragIndicator?.hide()
           }
 
           const handleDragEnd = () => {
-            console.log('🎯 拖拽结束，重置状态')
             isDragging = false
             dragSourceElement = null
-            indicatorManager?.hideIndicator()
+            dragIndicator?.hide()
           }
 
-          // 添加事件监听器到document级别以捕获所有拖拽事件
-          document.addEventListener('dragstart', handleDragStart)
-          document.addEventListener('dragover', handleDragOver)
-          document.addEventListener('dragleave', handleDragLeave)
-          document.addEventListener('drop', handleDropHandler)
-          document.addEventListener('dragend', handleDragEnd)
+          // 🔧 FIX: 只有在指示器成功创建后才添加事件监听器
+          if (dragIndicator) {
+            // 添加事件监听器到document级别以捕获所有拖拽事件
+            document.addEventListener('dragstart', handleDragStart, { passive: false })
+            document.addEventListener('dragover', handleDragOver, { passive: false })
+            document.addEventListener('dragleave', handleDragLeave, { passive: true })
+            document.addEventListener('drop', handleDropHandler, { passive: false })
+            document.addEventListener('dragend', handleDragEnd, { passive: true })
 
-          // 保存清理函数的引用
-          const cleanupListeners = () => {
-            document.removeEventListener('dragstart', handleDragStart)
-            document.removeEventListener('dragover', handleDragOver)
-            document.removeEventListener('dragleave', handleDragLeave)
-            document.removeEventListener('drop', handleDropHandler)
-            document.removeEventListener('dragend', handleDragEnd)
-          }
-
-          // 在destroy时清理
-          const originalDestroy = view.destroy
-          view.destroy = () => {
-            cleanupListeners()
-            originalDestroy.call(view)
+            // 🔧 FIX: 保存清理函数的引用，避免循环引用
+            cleanupListeners = () => {
+              document.removeEventListener('dragstart', handleDragStart)
+              document.removeEventListener('dragover', handleDragOver)
+              document.removeEventListener('dragleave', handleDragLeave)
+              document.removeEventListener('drop', handleDropHandler)
+              document.removeEventListener('dragend', handleDragEnd)
+            }
+            
+            // 🔧 FIX: 将清理函数保存到全局范围，以便在主destroy中调用
+            globalCleanupListeners = cleanupListeners
           }
         }
 
@@ -776,9 +550,14 @@ export const DragHandlePlugin = ({
               removeNode(wrapper)
             }
 
-            // 🎯 销毁指示器管理器
-            indicatorManager?.destroy()
-            indicatorManager = null
+            // 🔧 FIX: 清理document级别的事件监听器，防止内存泄漏
+            if (cleanupListeners) {
+              cleanupListeners()
+            }
+
+            // 🎯 销毁现代化指示器
+            dragIndicator?.destroy()
+            dragIndicator = null
           },
         }
       },
