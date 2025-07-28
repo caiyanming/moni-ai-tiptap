@@ -1,5 +1,6 @@
 export * from './Context.js'
 export * from './EditorContent.js'
+export * from './MoniEditorProvider.js'
 export * from './NodeViewContent.js'
 export * from './NodeViewWrapper.js'
 export * from './ReactMarkViewRenderer.js'
