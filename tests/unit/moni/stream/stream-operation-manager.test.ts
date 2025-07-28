@@ -1,8 +1,8 @@
 // 设置DOM环境
+import { StreamOperationManager } from '@tiptap/core'
 import { JSDOM } from 'jsdom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { StreamOperationManager } from '../../packages/core/src/StreamOperationManager.js'
 import { cleanupDOM, createMockStreamOperation } from './test-utils.js'
 
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')

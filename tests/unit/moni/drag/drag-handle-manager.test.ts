@@ -1,8 +1,6 @@
+import { type DragHandleManagerOptions, type Editor, DragHandleManager } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { type DragHandleManagerOptions, DragHandleManager } from '../../packages/core/src/DragHandleManager.js'
-import type { Editor } from '../../packages/core/src/Editor.js'
 
 // Mock NodeSelection
 vi.mock('@tiptap/pm/state', () => ({

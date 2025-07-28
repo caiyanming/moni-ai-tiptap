@@ -1,10 +1,9 @@
 /**
  * 测试工具文件 - 提供Mock对象和辅助函数
  */
+import type { Editor } from '@tiptap/core'
+import { BlockOperationStatus, BlockOperationType } from '@tiptap/core'
 import { vi } from 'vitest'
-
-import type { Editor } from '../../packages/core/src/Editor'
-import { BlockOperationStatus, BlockOperationType } from '../../packages/core/src/StreamOperationManager.js'
 
 // 基础类型定义
 export interface ProseMirrorNode {

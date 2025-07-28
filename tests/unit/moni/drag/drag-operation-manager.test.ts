@@ -1,9 +1,7 @@
+import { type DropOperation, type Editor, DragOperationManager } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
-import { type DropOperation, DragOperationManager } from '../../packages/core/src/DragOperationManager.js'
-import type { Editor } from '../../packages/core/src/Editor.js'
 
 // Mock ProseMirror node
 const createMockNode = (
