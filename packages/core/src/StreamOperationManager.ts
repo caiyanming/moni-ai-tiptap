@@ -377,9 +377,9 @@ export class StreamOperationManager {
     })
     this.view.dispatch(tr)
 
-    // 延迟清理diff状态（让用户看到拒绝效果）
+    // 延迟执行撤销操作（让用户看到拒绝效果）
     setTimeout(() => {
-      this.clearDiffState(moniOperationId)
+      this.revertOperation(moniOperationId)
     }, 1000)
 
     return true
@@ -855,6 +855,148 @@ export class StreamOperationManager {
     this.view.dispatch(tr)
 
     return true
+  }
+
+  /**
+   * 撤销操作（用于reject）
+   *
+   * 设计原则：
+   * 1. 内容恢复 - 恢复到AI修改前的原始状态
+   * 2. 临时节点移除 - 移除新增的临时预览节点
+   * 3. 状态清理 - 清理所有diff相关状态
+   */
+  private revertOperation(moniOperationId: string): void {
+    console.log(`[StreamOperationManager] 开始撤销操作: ${moniOperationId}`)
+
+    const { tr } = this.view.state
+    const { doc } = this.view.state
+
+    // 收集所有与此操作相关的节点
+    const relatedNodes: Array<{ node: ProseMirrorNode; position: number; diffType: string }> = []
+
+    doc.descendants((node, pos) => {
+      if (node.attrs?.diffOperationId === moniOperationId) {
+        relatedNodes.push({
+          node,
+          position: pos,
+          diffType: node.attrs.diffType || 'unknown',
+        })
+      }
+    })
+
+    if (relatedNodes.length === 0) {
+      console.warn(`[StreamOperationManager] 撤销操作失败: 找不到操作节点 ${moniOperationId}`)
+      return
+    }
+
+    console.log(
+      `[StreamOperationManager] 找到 ${relatedNodes.length} 个相关节点:`,
+      relatedNodes.map(n => `${n.diffType}@${n.position}`),
+    )
+
+    try {
+      // 🔥 步骤1: 首先恢复原始节点到正常状态
+      const originalNodes = relatedNodes.filter(n => n.diffType === 'original')
+      originalNodes.forEach(({ node, position }) => {
+        console.log(`[StreamOperationManager] 恢复原始节点 at position ${position}`)
+        // 清理diff属性，恢复原始节点的正常显示状态
+        tr.setNodeMarkup(position, undefined, {
+          ...node.attrs,
+          diffMode: undefined,
+          diffStatus: undefined,
+          diffOperationId: undefined,
+          diffType: undefined,
+          moniDiffTempId: undefined,
+        })
+      })
+
+      // 🔥 步骤2: 然后删除AI添加的新节点
+      // 按位置从高到低排序，先删除后面的节点避免位置偏移
+      const nodesToDelete = relatedNodes.filter(n => n.diffType === 'new').sort((a, b) => b.position - a.position)
+
+      // 删除所有 'new' 类型的节点（AI修改的内容）
+      nodesToDelete.forEach(({ node, position }) => {
+        console.log(`[StreamOperationManager] 删除新节点 at position ${position}`)
+        tr.delete(position, position + node.nodeSize)
+      })
+
+      // 🔥 步骤3: 应用所有事务操作
+      if (originalNodes.length > 0 || nodesToDelete.length > 0) {
+        this.view.dispatch(tr)
+        console.log(
+          `[StreamOperationManager] 完成撤销操作: 恢复 ${originalNodes.length} 个原始节点，删除 ${nodesToDelete.length} 个AI修改节点`,
+        )
+      }
+
+      // 🔥 步骤4: 清理任何剩余的临时节点（使用更精准的清理方法）
+      this.clearRemainingTempNodes(moniOperationId)
+    } catch (error) {
+      console.error(`[StreamOperationManager] 撤销操作异常:`, error)
+      // 失败时仍然清理状态，避免界面卡死
+      this.clearDiffState(moniOperationId)
+    }
+  }
+
+  /**
+   * 清理剩余的临时节点（用于reject操作后的精准清理）
+   *
+   * 设计原则：
+   * 1. 精准清理 - 只清理与指定操作相关的临时节点
+   * 2. 避免副作用 - 不影响其他正在进行的diff操作
+   * 3. 事务安全 - 使用单独的事务确保操作原子性
+   */
+  private clearRemainingTempNodes(moniOperationId: string): void {
+    const { tr } = this.view.state
+    const { doc } = this.view.state
+    let hasRemainingNodes = false
+
+    // 查找任何剩余的与此操作相关的节点
+    const remainingNodes: Array<{ position: number; nodeSize: number }> = []
+
+    doc.descendants((node, pos) => {
+      if (node.attrs?.diffOperationId === moniOperationId) {
+        remainingNodes.push({ position: pos, nodeSize: node.nodeSize })
+      }
+    })
+
+    if (remainingNodes.length > 0) {
+      console.log(`[StreamOperationManager] 发现 ${remainingNodes.length} 个剩余节点，进行最终清理`)
+
+      // 从后往前删除剩余节点
+      remainingNodes
+        .sort((a, b) => b.position - a.position)
+        .forEach(({ position, nodeSize }) => {
+          tr.delete(position, position + nodeSize)
+          hasRemainingNodes = true
+        })
+
+      if (hasRemainingNodes) {
+        this.view.dispatch(tr)
+        console.log(`[StreamOperationManager] 完成剩余节点清理`)
+      }
+    }
+  }
+
+  /**
+   * 移除临时节点
+   */
+  private removeTempNodes(tr: any, tempId: string): void {
+    const { doc } = this.view.state
+    const nodesToRemove: { position: number; size: number }[] = []
+
+    // 收集需要删除的临时节点
+    doc.descendants((node, pos) => {
+      if (node.attrs?.moniDiffTempId === tempId && node.attrs?.diffType === 'new') {
+        nodesToRemove.push({ position: pos, size: node.nodeSize })
+      }
+    })
+
+    // 从后往前删除，避免位置偏移问题
+    nodesToRemove
+      .sort((a, b) => b.position - a.position)
+      .forEach(({ position, size }) => {
+        tr.delete(position, position + size)
+      })
   }
 
   /**
