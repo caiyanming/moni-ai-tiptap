@@ -1,0 +1,773 @@
+{
+  "config": {
+    "configFile": "/Users/caiym/Source/ffx/moni.root/moni-agent/moni-ai-tiptap/comprehensive-drag-tests/playwright.config.js",
+    "rootDir": "/Users/caiym/Source/ffx/moni.root/moni-agent/moni-ai-tiptap/comprehensive-drag-tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/caiym/Source/ffx/moni.root/moni-agent/moni-ai-tiptap/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-drag-tests",
+        "name": "chromium-drag-tests",
+        "testDir": "/Users/caiym/Source/ffx/moni.root/moni-agent/moni-ai-tiptap/comprehensive-drag-tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "port": 3666,
+      "reuseExistingServer": true,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "01-basic-drag-behavior.spec.js",
+      "file": "01-basic-drag-behavior.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "基础拖拽行为测试",
+          "file": "01-basic-drag-behavior.spec.js",
+          "line": 208,
+          "column": 6,
+          "specs": [
+            {
+              "title": "01-段落向下拖拽",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-drag-tests",
+                  "projectName": "chromium-drag-tests",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6447,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 测试内容插入完成\n"
+                        },
+                        {
+                          "text": "✅ 测试环境初始化完成\n"
+                        },
+                        {
+                          "text": "📝 拖拽前段落顺序:\n"
+                        },
+                        {
+                          "text": "  0: \"...\"\n"
+                        },
+                        {
+                          "text": "  1: \"这是第一个段落，用于测试基础拖拽功能。...\"\n"
+                        },
+                        {
+                          "text": "  2: \"...\"\n"
+                        },
+                        {
+                          "text": "  3: \"这是第二个段落，包含一些格式化文本：**加粗文本**和*斜体...\"\n"
+                        },
+                        {
+                          "text": "  4: \"...\"\n"
+                        },
+                        {
+                          "text": "  5: \"这是第三个段落，是一个较长的文本段落，用于测试长文本内容的拖...\"\n"
+                        },
+                        {
+                          "text": "  6: \"...\"\n"
+                        },
+                        {
+                          "text": "  7: \"...\"\n"
+                        },
+                        {
+                          "text": "  8: \"这是子标题下的第一个段落。...\"\n"
+                        },
+                        {
+                          "text": "  9: \"...\"\n"
+                        },
+                        {
+                          "text": "  10: \"这是子标题下的第二个段落，用于测试跨区域拖拽。...\"\n"
+                        },
+                        {
+                          "text": "  11: \"...\"\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到下方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 133.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 230.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "✅ 拖拽操作执行: 通过\n"
+                        },
+                        {
+                          "text": "📝 拖拽后段落顺序:\n"
+                        },
+                        {
+                          "text": "  0: \"这是第一个段落，用于测试基础拖拽功能。...\"\n"
+                        },
+                        {
+                          "text": "  1: \"...\"\n"
+                        },
+                        {
+                          "text": "  2: \"...\"\n"
+                        },
+                        {
+                          "text": "  3: \"这是第二个段落，包含一些格式化文本：**加粗文本**和*斜体...\"\n"
+                        },
+                        {
+                          "text": "  4: \"...\"\n"
+                        },
+                        {
+                          "text": "  5: \"这是第三个段落，是一个较长的文本段落，用于测试长文本内容的拖...\"\n"
+                        },
+                        {
+                          "text": "  6: \"...\"\n"
+                        },
+                        {
+                          "text": "  7: \"...\"\n"
+                        },
+                        {
+                          "text": "  8: \"这是子标题下的第一个段落。...\"\n"
+                        },
+                        {
+                          "text": "  9: \"...\"\n"
+                        },
+                        {
+                          "text": "  10: \"这是子标题下的第二个段落，用于测试跨区域拖拽。...\"\n"
+                        },
+                        {
+                          "text": "  11: \"...\"\n"
+                        },
+                        {
+                          "text": "✅ 拖拽结果验证: 通过\n"
+                        },
+                        {
+                          "text": "\\n📊 测试套件执行总结:\n"
+                        },
+                        {
+                          "text": "  总测试数: 2\n"
+                        },
+                        {
+                          "text": "  通过数: 2\n"
+                        },
+                        {
+                          "text": "  失败数: 0\n"
+                        },
+                        {
+                          "text": "  成功率: 100.00%\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-29T03:28:04.166Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "07f5485b0a533c55d30e-ebc4f25e13b56a347f80",
+              "file": "01-basic-drag-behavior.spec.js",
+              "line": 216,
+              "column": 7
+            },
+            {
+              "title": "02-段落向上拖拽",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-drag-tests",
+                  "projectName": "chromium-drag-tests",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6417,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 测试内容插入完成\n"
+                        },
+                        {
+                          "text": "✅ 测试环境初始化完成\n"
+                        },
+                        {
+                          "text": "📝 拖拽前段落顺序:\n"
+                        },
+                        {
+                          "text": "  0: \"...\"\n"
+                        },
+                        {
+                          "text": "  1: \"这是第一个段落，用于测试基础拖拽功能。...\"\n"
+                        },
+                        {
+                          "text": "  2: \"...\"\n"
+                        },
+                        {
+                          "text": "  3: \"这是第二个段落，包含一些格式化文本：**加粗文本**和*斜体...\"\n"
+                        },
+                        {
+                          "text": "  4: \"...\"\n"
+                        },
+                        {
+                          "text": "  5: \"这是第三个段落，是一个较长的文本段落，用于测试长文本内容的拖...\"\n"
+                        },
+                        {
+                          "text": "  6: \"...\"\n"
+                        },
+                        {
+                          "text": "  7: \"...\"\n"
+                        },
+                        {
+                          "text": "  8: \"这是子标题下的第一个段落。...\"\n"
+                        },
+                        {
+                          "text": "  9: \"...\"\n"
+                        },
+                        {
+                          "text": "  10: \"这是子标题下的第二个段落，用于测试跨区域拖拽。...\"\n"
+                        },
+                        {
+                          "text": "  11: \"...\"\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到上方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 213.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 116.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "✅ 向上拖拽操作执行: 通过\n"
+                        },
+                        {
+                          "text": "📝 拖拽后段落顺序:\n"
+                        },
+                        {
+                          "text": "  0: \"...\"\n"
+                        },
+                        {
+                          "text": "  1: \"...\"\n"
+                        },
+                        {
+                          "text": "  2: \"这是第一个段落，用于测试基础拖拽功能。...\"\n"
+                        },
+                        {
+                          "text": "  3: \"这是第二个段落，包含一些格式化文本：**加粗文本**和*斜体...\"\n"
+                        },
+                        {
+                          "text": "  4: \"...\"\n"
+                        },
+                        {
+                          "text": "  5: \"这是第三个段落，是一个较长的文本段落，用于测试长文本内容的拖...\"\n"
+                        },
+                        {
+                          "text": "  6: \"...\"\n"
+                        },
+                        {
+                          "text": "  7: \"...\"\n"
+                        },
+                        {
+                          "text": "  8: \"这是子标题下的第一个段落。...\"\n"
+                        },
+                        {
+                          "text": "  9: \"...\"\n"
+                        },
+                        {
+                          "text": "  10: \"这是子标题下的第二个段落，用于测试跨区域拖拽。...\"\n"
+                        },
+                        {
+                          "text": "  11: \"...\"\n"
+                        },
+                        {
+                          "text": "✅ 向上拖拽结果验证: 通过\n"
+                        },
+                        {
+                          "text": "\\n📊 测试套件执行总结:\n"
+                        },
+                        {
+                          "text": "  总测试数: 2\n"
+                        },
+                        {
+                          "text": "  通过数: 2\n"
+                        },
+                        {
+                          "text": "  失败数: 0\n"
+                        },
+                        {
+                          "text": "  成功率: 100.00%\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-29T03:28:10.694Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "07f5485b0a533c55d30e-89ed6161fe90cedf64c6",
+              "file": "01-basic-drag-behavior.spec.js",
+              "line": 261,
+              "column": 7
+            },
+            {
+              "title": "03-相邻段落拖拽",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-drag-tests",
+                  "projectName": "chromium-drag-tests",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6402,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 测试内容插入完成\n"
+                        },
+                        {
+                          "text": "✅ 测试环境初始化完成\n"
+                        },
+                        {
+                          "text": "📝 相邻段落拖拽测试:\n"
+                        },
+                        {
+                          "text": "  源段落: \"...\"\n"
+                        },
+                        {
+                          "text": "  目标段落: \"这是第一个段落，用于测试基础拖拽功能。...\"\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到下方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 133.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 190.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "✅ 相邻段落拖拽执行: 通过\n"
+                        },
+                        {
+                          "text": "✅ 相邻段落位置交换: 通过\n"
+                        },
+                        {
+                          "text": "\\n📊 测试套件执行总结:\n"
+                        },
+                        {
+                          "text": "  总测试数: 2\n"
+                        },
+                        {
+                          "text": "  通过数: 2\n"
+                        },
+                        {
+                          "text": "  失败数: 0\n"
+                        },
+                        {
+                          "text": "  成功率: 100.00%\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-29T03:28:17.114Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "07f5485b0a533c55d30e-4de58cc164d597ebce84",
+              "file": "01-basic-drag-behavior.spec.js",
+              "line": 306,
+              "column": 7
+            },
+            {
+              "title": "04-拖拽手柄可见性测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-drag-tests",
+                  "projectName": "chromium-drag-tests",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2954,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 测试内容插入完成\n"
+                        },
+                        {
+                          "text": "✅ 测试环境初始化完成\n"
+                        },
+                        {
+                          "text": "悬停前SVG手柄可见性: false\n"
+                        },
+                        {
+                          "text": "悬停后SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "SVG手柄边界框有效性: true\n"
+                        },
+                        {
+                          "text": "✅ 拖拽手柄悬停显示: 通过\n"
+                        },
+                        {
+                          "text": "鼠标移开后SVG手柄可见性: false\n"
+                        },
+                        {
+                          "text": "✅ 拖拽手柄鼠标离开后状态: 通过\n"
+                        },
+                        {
+                          "text": "\\n📊 测试套件执行总结:\n"
+                        },
+                        {
+                          "text": "  总测试数: 2\n"
+                        },
+                        {
+                          "text": "  通过数: 2\n"
+                        },
+                        {
+                          "text": "  失败数: 0\n"
+                        },
+                        {
+                          "text": "  成功率: 100.00%\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-29T03:28:23.518Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "07f5485b0a533c55d30e-7e45d981aba21cbb008e",
+              "file": "01-basic-drag-behavior.spec.js",
+              "line": 348,
+              "column": 7
+            },
+            {
+              "title": "05-批量拖拽性能测试",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-drag-tests",
+                  "projectName": "chromium-drag-tests",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9941,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 测试内容插入完成\n"
+                        },
+                        {
+                          "text": "✅ 测试环境初始化完成\n"
+                        },
+                        {
+                          "text": "🚀 开始批量拖拽性能测试...\n"
+                        },
+                        {
+                          "text": "📊 执行第1轮拖拽测试...\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到下方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 133.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 230.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "    拖拽结果: 成功\n"
+                        },
+                        {
+                          "text": "  第1轮耗时: 2704ms\n"
+                        },
+                        {
+                          "text": "📊 执行第2轮拖拽测试...\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到下方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 133.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 230.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "    拖拽结果: 成功\n"
+                        },
+                        {
+                          "text": "  第2轮耗时: 2706ms\n"
+                        },
+                        {
+                          "text": "📊 执行第3轮拖拽测试...\n"
+                        },
+                        {
+                          "text": "🎯 开始拖拽操作（拖拽到下方）...\n"
+                        },
+                        {
+                          "text": "   1️⃣ 悬停激活拖拽手柄...\n"
+                        },
+                        {
+                          "text": "   2️⃣ 等待SVG拖拽手柄变为可见...\n"
+                        },
+                        {
+                          "text": "      SVG手柄可见性: true\n"
+                        },
+                        {
+                          "text": "   3️⃣ 拖拽参数:\n"
+                        },
+                        {
+                          "text": "      手柄位置: (66, 133.53125)\n"
+                        },
+                        {
+                          "text": "      目标位置: (640, 230.53125)\n"
+                        },
+                        {
+                          "text": "   4️⃣ 执行拖拽操作...\n"
+                        },
+                        {
+                          "text": "   5️⃣ 拖拽操作完成，等待DOM更新...\n"
+                        },
+                        {
+                          "text": "    拖拽结果: 成功\n"
+                        },
+                        {
+                          "text": "  第3轮耗时: 2701ms\n"
+                        },
+                        {
+                          "text": "📊 性能测试结果:\n"
+                        },
+                        {
+                          "text": "  平均耗时: 2703.67ms\n"
+                        },
+                        {
+                          "text": "  最大耗时: 2706ms\n"
+                        },
+                        {
+                          "text": "  最小耗时: 2701ms\n"
+                        },
+                        {
+                          "text": "✅ 批量拖拽性能: 通过\n"
+                        },
+                        {
+                          "text": "\\n📊 测试套件执行总结:\n"
+                        },
+                        {
+                          "text": "  总测试数: 1\n"
+                        },
+                        {
+                          "text": "  通过数: 1\n"
+                        },
+                        {
+                          "text": "  失败数: 0\n"
+                        },
+                        {
+                          "text": "  成功率: 100.00%\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-29T03:28:26.475Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "07f5485b0a533c55d30e-6feddf2fd14bef31177a",
+              "file": "01-basic-drag-behavior.spec.js",
+              "line": 401,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-07-29T03:28:03.848Z",
+    "duration": 32588.373,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
