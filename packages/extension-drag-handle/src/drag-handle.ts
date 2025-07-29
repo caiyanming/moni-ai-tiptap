@@ -1,12 +1,16 @@
 import type { ComputePositionConfig } from '@floating-ui/dom'
+import { offset } from '@floating-ui/dom'
 import { type Editor, Extension } from '@tiptap/core'
 import type { Node } from '@tiptap/pm/model'
 
 import { DragHandlePlugin } from './drag-handle-plugin.js'
 
 export const defaultComputePositionConfig: ComputePositionConfig = {
-  placement: 'left-start',
+  placement: 'left', // 使用'left'而非'left-start'来实现垂直居中对齐
   strategy: 'absolute',
+  middleware: [
+    offset(10), // 正值让手柄在左侧外部保持适当间距
+  ],
 }
 
 export interface DropInfo {
