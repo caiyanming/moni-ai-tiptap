@@ -5,9 +5,10 @@ module.exports = defineConfig({
   video: false,
   e2e: {
     setupNodeEvents(on, config) {
-      return require('./cypress/plugins/index.js')(on, config)
+      return require('../cypress/plugins/index.js')(on, config)
     },
     baseUrl: 'http://localhost:3000',
-    specPattern: '../{demos,tests}/**/*.spec.{js,ts}',
+    specPattern: '../../{demos,tests}/**/*.spec.{js,ts}',
+    supportFile: false, // Disable default support file requirement
   },
 })

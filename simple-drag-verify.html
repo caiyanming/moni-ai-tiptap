@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单拖拽功能验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        #testFrame { width: 100%; height: 600px; border: 1px solid #ccc; }
+        .test-section { margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Notion 级别拖拽功能验证</h1>
+    
+    <div class="test-section">
+        <h2>📋 验证步骤</h2>
+        <ol>
+            <li>检查 TipTap 编辑器是否正常加载</li>
+            <li>验证段落是否存在且可交互</li>
+            <li>测试拖拽手柄是否显示</li>
+            <li>尝试执行拖拽操作</li>
+            <li>验证拖拽结果</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 自动化测试</h2>
+        <button onclick="runBasicTest()">运行基础测试</button>
+        <button onclick="runDragTest()">运行拖拽测试</button>
+        <button onclick="clearResults()">清除结果</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="test-section">
+        <h2>📺 实时演示</h2>
+        <iframe id="testFrame" src="http://localhost:3666/preview/Extensions/DragHandle"></iframe>
+    </div>
+
+    <script>
+        let resultDiv = document.getElementById('results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            resultDiv.appendChild(div);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            resultDiv.innerHTML = '';
+        }
+        
+        async function runBasicTest() {
+            addResult('🚀 开始基础测试...', 'info');
+            
+            try {
+                const iframe = document.getElementById('testFrame');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // 等待 iframe 加载
+                if (!iframeDoc.readyState || iframeDoc.readyState === 'loading') {
+                    addResult('⏳ 等待 iframe 加载...', 'warning');
+                    
+                    iframe.onload = () => {
+                        setTimeout(() => runBasicTest(), 1000);
+                    };
+                    return;
+                }
+                
+                // 查找编辑器内容
+                const proseMirrorDiv = iframeDoc.querySelector('.ProseMirror');
+                if (proseMirrorDiv) {
+                    addResult('✅ 找到 ProseMirror 编辑器', 'success');
+                    
+                    const paragraphs = proseMirrorDiv.querySelectorAll('p');
+                    addResult(`📝 发现 ${paragraphs.length} 个段落`, 'info');
+                    
+                    if (paragraphs.length >= 2) {
+                        addResult('✅ 段落数量足够进行拖拽测试', 'success');
+                        
+                        // 检查段落内容
+                        const contents = Array.from(paragraphs).map(p => p.textContent?.trim() || '');
+                        addResult(`📄 段落内容: ${JSON.stringify(contents)}`, 'info');
+                        
+                        // 检查拖拽相关属性
+                        const firstP = paragraphs[0];
+                        const isDraggable = firstP.getAttribute('draggable');
+                        addResult(`🔍 第一段落 draggable 属性: ${isDraggable}`, 'info');
+                        
+                        // 检查是否有拖拽手柄相关元素
+                        const dragElements = iframeDoc.querySelectorAll('[data-drag-handle], .drag-handle, [draggable="true"]');
+                        if (dragElements.length > 0) {
+                            addResult(`✅ 找到 ${dragElements.length} 个拖拽相关元素`, 'success');
+                        } else {
+                            addResult('⚠️ 未找到明显的拖拽手柄元素', 'warning');
+                        }
+                        
+                    } else {
+                        addResult('❌ 段落数量不足，无法进行拖拽测试', 'error');
+                    }
+                } else {
+                    addResult('❌ 未找到 ProseMirror 编辑器', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ 基础测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runDragTest() {
+            addResult('🎯 开始拖拽测试...', 'info');
+            
+            try {
+                const iframe = document.getElementById('testFrame');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const iframeWindow = iframe.contentWindow;
+                
+                const proseMirrorDiv = iframeDoc.querySelector('.ProseMirror');
+                if (!proseMirrorDiv) {
+                    addResult('❌ 未找到编辑器，无法进行拖拽测试', 'error');
+                    return;
+                }
+                
+                const paragraphs = proseMirrorDiv.querySelectorAll('p');
+                if (paragraphs.length < 2) {
+                    addResult('❌ 段落数量不足，无法进行拖拽测试', 'error');
+                    return;
+                }
+                
+                // 记录拖拽前的内容
+                const beforeContent = Array.from(paragraphs).map(p => p.textContent?.trim() || '');
+                addResult(`📝 拖拽前内容: ${JSON.stringify(beforeContent)}`, 'info');
+                
+                // 获取第一个和第二个段落的位置
+                const firstP = paragraphs[0];
+                const secondP = paragraphs[1];
+                
+                const firstRect = firstP.getBoundingClientRect();
+                const secondRect = secondP.getBoundingClientRect();
+                
+                addResult(`📐 第一段落位置: x=${firstRect.x}, y=${firstRect.y}`, 'info');
+                addResult(`📐 第二段落位置: x=${secondRect.x}, y=${secondRect.y}`, 'info');
+                
+                // 模拟拖拽事件
+                addResult('🎯 开始模拟拖拽操作...', 'info');
+                
+                // 创建拖拽事件
+                const dragStartEvent = new iframeWindow.DragEvent('dragstart', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: new iframeWindow.DataTransfer()
+                });
+                
+                const dragOverEvent = new iframeWindow.DragEvent('dragover', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dragStartEvent.dataTransfer
+                });
+                
+                const dropEvent = new iframeWindow.DragEvent('drop', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer: dragStartEvent.dataTransfer
+                });
+                
+                // 触发拖拽序列
+                firstP.dispatchEvent(dragStartEvent);
+                addResult('📤 触发 dragstart 事件', 'info');
+                
+                secondP.dispatchEvent(dragOverEvent);
+                addResult('📥 触发 dragover 事件', 'info');
+                
+                secondP.dispatchEvent(dropEvent);
+                addResult('📍 触发 drop 事件', 'info');
+                
+                // 等待DOM更新
+                setTimeout(() => {
+                    // 检查拖拽后的内容
+                    const updatedParagraphs = proseMirrorDiv.querySelectorAll('p');
+                    const afterContent = Array.from(updatedParagraphs).map(p => p.textContent?.trim() || '');
+                    addResult(`📝 拖拽后内容: ${JSON.stringify(afterContent)}`, 'info');
+                    
+                    // 比较内容变化
+                    const contentChanged = JSON.stringify(beforeContent) !== JSON.stringify(afterContent);
+                    
+                    if (contentChanged) {
+                        addResult('🎉 拖拽成功！段落顺序已改变', 'success');
+                        addResult(`📊 变化详情: ${JSON.stringify(beforeContent)} -> ${JSON.stringify(afterContent)}`, 'success');
+                    } else {
+                        addResult('⚠️ 拖拽未改变段落顺序，可能需要其他触发方式', 'warning');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                addResult(`❌ 拖拽测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成后自动运行基础测试
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addResult('🚀 页面加载完成，开始自动验证...', 'info');
+                setTimeout(runBasicTest, 2000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
