@@ -126,13 +126,33 @@ export const DragHandlePlugin = ({
   // 🔧 FIX: 全局清理函数引用，避免内存泄漏
   let globalCleanupListeners: (() => void) | null = null
 
-  function hideHandle() {
+  // 🎯 FIX: 添加防抖隐藏功能，提升跨浏览器稳定性
+  let hideTimer: number | null = null
+
+  function hideHandle(immediate = false) {
     if (!element) {
       return
     }
 
-    element.style.visibility = 'hidden'
-    element.style.pointerEvents = 'none'
+    // 清除之前的定时器
+    if (hideTimer) {
+      clearTimeout(hideTimer)
+      hideTimer = null
+    }
+
+    if (immediate) {
+      element.style.visibility = 'hidden'
+      element.style.pointerEvents = 'none'
+    } else {
+      // 延迟150ms隐藏，避免鼠标快速移动时的闪烁
+      hideTimer = window.setTimeout(() => {
+        if (element) {
+          element.style.visibility = 'hidden'
+          element.style.pointerEvents = 'none'
+        }
+        hideTimer = null
+      }, 150)
+    }
   }
 
   function showHandle() {
@@ -140,8 +160,14 @@ export const DragHandlePlugin = ({
       return
     }
 
+    // 🎯 FIX: 清除隐藏定时器，确保立即显示
+    if (hideTimer) {
+      clearTimeout(hideTimer)
+      hideTimer = null
+    }
+
     if (!editor.isEditable) {
-      hideHandle()
+      hideHandle(true) // 立即隐藏，不使用延迟
       return
     }
 
@@ -272,6 +298,12 @@ export const DragHandlePlugin = ({
       if (globalCleanupListeners) {
         globalCleanupListeners()
         globalCleanupListeners = null
+      }
+
+      // 🎯 清理隐藏定时器
+      if (hideTimer) {
+        clearTimeout(hideTimer)
+        hideTimer = null
       }
 
       // 🎯 销毁现代化指示器
@@ -599,7 +631,7 @@ export const DragHandlePlugin = ({
 
             // If e.target is not inside the wrapper, hide.
             if (e.target && !wrapper.contains(e.relatedTarget as HTMLElement)) {
-              hideHandle()
+              hideHandle() // 使用延迟隐藏，提升用户体验
 
               currentNode = null
               currentNodePos = -1
