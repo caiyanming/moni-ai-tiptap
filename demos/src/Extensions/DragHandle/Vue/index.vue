@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import DragHandleExtension from '@tiptap/extension-drag-handle'
 import { DragHandle } from '@tiptap/extension-drag-handle-vue-3'
 import NodeRange from '@tiptap/extension-node-range'
 import StarterKit from '@tiptap/starter-kit'
@@ -41,6 +42,7 @@ export default {
     this.editor = new Editor({
       extensions: [
         StarterKit,
+        DragHandleExtension, // Add the optimized drag handle extension
         NodeRange.configure({
           // allow to select only on depth 0
           // depth: 0,

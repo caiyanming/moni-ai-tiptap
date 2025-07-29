@@ -73,11 +73,18 @@ export class ModernDragIndicator {
     this.createIndicators()
   }
 
-  show(params: { direction: IndicatorDirection; position: IndicatorPosition; dropPosition: DropPosition }): void {
-    const { direction, position } = params
+  show(params: {
+    direction: IndicatorDirection
+    position: IndicatorPosition
+    dropPosition: DropPosition
+    horizontalPosition?: 'left' | 'center' | 'right'
+    confidence?: number
+  }): void {
+    const { direction, position, horizontalPosition = 'center', confidence = 1.0 } = params
     const indicator = this.getIndicator(direction)
 
-    this.updateIndicatorPosition(indicator, direction, position)
+    this.updateIndicatorPosition(indicator, direction, position, horizontalPosition)
+    this.applyConfidenceVisuals(indicator, confidence)
     this.showIndicator(indicator)
     this.isVisible = true
   }
@@ -171,6 +178,7 @@ export class ModernDragIndicator {
     indicator: HTMLElement,
     direction: IndicatorDirection,
     position: IndicatorPosition,
+    horizontalPosition: 'left' | 'center' | 'right' = 'center',
   ): void {
     const isHorizontal = direction === 'horizontal'
 
@@ -182,6 +190,52 @@ export class ModernDragIndicator {
     }
     if (!isHorizontal && position.height) {
       indicator.style.height = `${position.height}px`
+    }
+
+    // AppFlowy 风格语义化样式
+    this.applySemanticStyles(indicator, direction, horizontalPosition)
+  }
+
+  /**
+   * 应用基于语义位置的样式
+   */
+  private applySemanticStyles(
+    indicator: HTMLElement,
+    direction: IndicatorDirection,
+    horizontalPosition: 'left' | 'center' | 'right',
+  ): void {
+    indicator.className = `moni-drag-indicator moni-drag-indicator--${direction} moni-drag-indicator--${horizontalPosition}`
+
+    // 根据语义位置调整视觉效果
+    switch (horizontalPosition) {
+      case 'left':
+        // 左侧插入 - 断开线条样式 (AppFlowy 风格)
+        indicator.style.borderLeft = '2px solid transparent'
+        break
+      case 'right':
+        // 右侧插入 - 分栏预览样式
+        indicator.style.borderRight = '2px solid transparent'
+        break
+      case 'center':
+      default:
+        // 中心插入 - 完整线条样式
+        indicator.style.border = 'none'
+        break
+    }
+  }
+
+  /**
+   * 根据算法置信度调整视觉反馈
+   */
+  private applyConfidenceVisuals(indicator: HTMLElement, confidence: number): void {
+    const opacity = Math.max(0.5, Math.min(1.0, confidence))
+    indicator.style.opacity = opacity.toString()
+
+    // 高置信度增强视觉效果
+    if (confidence > 0.9) {
+      indicator.style.boxShadow = `0 0 12px rgba(59, 130, 246, ${confidence * 0.6})`
+    } else {
+      indicator.style.boxShadow = this.config.theme.shadow
     }
   }
 

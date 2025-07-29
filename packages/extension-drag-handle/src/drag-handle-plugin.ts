@@ -409,14 +409,16 @@ export const DragHandlePlugin = ({
               const blockElement = findBlockElement(target)
 
               if (blockElement && blockElement !== dragSourceElement) {
-                // 🎯 使用现代化计算器
+                // 🎯 使用 AppFlowy 风格的现代化计算器
                 const result = DropPositionCalculator.calculate(event, blockElement)
 
-                // 🎨 显示指示器
+                // 🎨 显示语义化指示器
                 dragIndicator.show({
                   direction: result.direction,
                   position: result.indicatorPosition,
                   dropPosition: result.dropPosition,
+                  horizontalPosition: result.horizontalPosition, // 新增语义化位置信息
+                  confidence: result.confidence, // 新增算法置信度
                 })
 
                 // 🎯 调用用户自定义回调
@@ -452,10 +454,12 @@ export const DragHandlePlugin = ({
             if (blockElement) {
               const result = DropPositionCalculator.calculate(event, blockElement)
 
-              // 🎯 调用用户自定义回调
+              // 🎯 调用用户自定义回调，增强语义化信息
               const dropInfo: DropInfo = {
                 position: result.dropPosition,
                 targetElement: blockElement,
+                horizontalPosition: result.horizontalPosition, // AppFlowy 风格位置
+                confidence: result.confidence, // 算法置信度
               }
               onDrop?.(event, dropInfo, editor)
             }

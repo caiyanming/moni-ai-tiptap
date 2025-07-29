@@ -1,0 +1,264 @@
+.drag-comparison-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+}
+
+.comparison-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  
+  h1 {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+}
+
+.toggle-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.toggle-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #2563eb;
+    background: #f8faff;
+  }
+  
+  &.active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: white;
+  }
+}
+
+.editor-comparison {
+  margin-bottom: 2rem;
+}
+
+.editor-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.algorithm-info {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+}
+
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.feature {
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.feature-list.optimized .feature {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.feature-list.legacy .feature {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ProseMirror {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 400px;
+  line-height: 1.6;
+  
+  h2 {
+    margin-top: 0;
+    color: #1a1a1a;
+  }
+  
+  p {
+    margin: 0.75rem 0;
+    position: relative;
+    
+    &:hover {
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 4px;
+    }
+  }
+  
+  ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    
+    li {
+      margin: 0.5rem 0;
+    }
+  }
+}
+
+.performance-metrics {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    text-align: center;
+    font-size: 1.25rem;
+  }
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.metric {
+  text-align: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  
+  &.optimized {
+    color: #2563eb;
+  }
+  
+  &.legacy {
+    color: #d97706;
+  }
+}
+
+.test-instructions {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  ol {
+    margin: 0;
+    padding-left: 1.5rem;
+    
+    li {
+      margin: 0.75rem 0;
+      line-height: 1.5;
+      
+      strong {
+        color: #2563eb;
+      }
+    }
+  }
+}
+
+// Drag handle specific styles
+[data-drag-handle] {
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// AppFlowy-style drag indicators
+.drag-indicator {
+  position: absolute;
+  background: #2563eb;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 1000;
+  transition: all 0.2s ease;
+  
+  &.horizontal {
+    height: 2px;
+  }
+  
+  &.vertical {
+    width: 2px;
+  }
+}
+
+// Legacy drag handle styles
+.global-drag-handle {
+  position: absolute;
+  width: 28px;
+  height: 24px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+  }
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  &::after {
+    content: '⋮⋮';
+    font-weight: bold;
+  }
+}

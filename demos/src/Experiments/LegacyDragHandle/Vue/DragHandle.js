@@ -1,3 +1,15 @@
+/**
+ * ⚠️  EXPERIMENTAL/LEGACY DRAG IMPLEMENTATION
+ *
+ * This is a simple experimental drag implementation for learning purposes.
+ *
+ * For production use, please use the optimized implementation:
+ * @tiptap/extension-drag-handle (with AppFlowy-style algorithm)
+ *
+ * DO NOT use this implementation in production or tests.
+ * This code is kept for comparison and upstream compatibility.
+ */
+
 import { Extension } from '@tiptap/core'
 import { NodeSelection, Plugin } from '@tiptap/pm/state'
 

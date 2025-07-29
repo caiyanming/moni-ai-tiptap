@@ -1,5 +1,6 @@
 import './styles.scss'
 
+import DragHandleExtension from '@tiptap/extension-drag-handle'
 import DragHandle from '@tiptap/extension-drag-handle-react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -7,7 +8,10 @@ import React from 'react'
 
 export default () => {
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      DragHandleExtension, // Add the optimized drag handle extension
+    ],
     content: `
       <h1>
         This is a very unique heading.

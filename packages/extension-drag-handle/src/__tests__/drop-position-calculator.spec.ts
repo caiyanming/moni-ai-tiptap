@@ -3,9 +3,34 @@
  * 测试拖拽位置计算的准确性，确保 Notion 级别的流畅体验
  */
 
-import { beforeEach, describe, expect, it } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 
 import { DropPositionCalculator } from '../drop-position-calculator.js'
+
+function createMockDragEvent(clientX: number, clientY: number): DragEvent {
+  return {
+    clientX,
+    clientY,
+    preventDefault: () => {},
+    stopPropagation: () => {},
+    target: null,
+    currentTarget: null,
+    bubbles: true,
+    cancelable: true,
+    defaultPrevented: false,
+    eventPhase: 0,
+    isTrusted: true,
+    timeStamp: Date.now(),
+    type: 'dragover',
+    composedPath: () => [],
+    initEvent: () => {},
+    stopImmediatePropagation: () => {},
+    NONE: 0,
+    CAPTURING_PHASE: 1,
+    AT_TARGET: 2,
+    BUBBLING_PHASE: 3,
+  } as DragEvent
+}
 
 describe('DropPositionCalculator', () => {
   let mockElement: HTMLElement
@@ -41,6 +66,38 @@ describe('DropPositionCalculator', () => {
     }
   })
 
+  describe('AppFlowy 风格水平位置计算', () => {
+    it('应该在88px左边界内检测到 "left" 水平位置', () => {
+      // 测试左边界 (50px left + 40px 距离 < 88px 边界)
+      mockDragEvent = createMockDragEvent(80, 150) // x=80 < left(50) + 88
+
+      const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
+
+      expect(result.horizontalPosition).toBe('left')
+      expect(result.confidence).toBeGreaterThan(0.8) // 左边界置信度
+    })
+
+    it('应该在80%右边界外检测到 "right" 水平位置', () => {
+      // 测试右边界 (x > left + width * 0.8 = 50 + 400 * 0.8 = 370)
+      mockDragEvent = createMockDragEvent(400, 150) // x=400 > 370
+
+      const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
+
+      expect(result.horizontalPosition).toBe('right')
+      expect(result.confidence).toBeGreaterThan(0.7) // 右边界置信度
+    })
+
+    it('应该在中心区域检测到 "center" 水平位置', () => {
+      // 测试中心区域 (88px < x < 80%)
+      mockDragEvent = createMockDragEvent(250, 150) // x=250 在 138-370 范围内
+
+      const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
+
+      expect(result.horizontalPosition).toBe('center')
+      expect(result.confidence).toBeGreaterThan(0.8) // 中心区域语义清晰
+    })
+  })
+
   describe('基础位置计算', () => {
     it('应该在元素上方25%区域内检测到 "above" 位置', () => {
       // 在元素上方20%的位置（应该检测为above）
@@ -49,7 +106,9 @@ describe('DropPositionCalculator', () => {
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
 
       expect(result.dropPosition).toBe('above')
+      expect(result.horizontalPosition).toBe('center') // AppFlowy 风格语义化位置
       expect(result.direction).toBe('horizontal')
+      expect(result.confidence).toBeGreaterThan(0.8) // 置信度检验
       expect(result.indicatorPosition).toEqual({
         x: 50,
         y: 98, // top - 2
@@ -94,13 +153,14 @@ describe('DropPositionCalculator', () => {
       mockElement.setAttribute('data-moni-nestable', 'true')
     })
 
-    it('应该在左侧40px内检测到垂直嵌套指示器', () => {
-      // 在左侧30px位置（应该检测为嵌套）
-      mockDragEvent = createMockDragEvent(80, 150) // x=80, 距离左边缘30px
+    it('应该在中心区域检测到垂直嵌套指示器', () => {
+      // 在中心区域位置（AppFlowy 风格，center 区域支持嵌套）
+      mockDragEvent = createMockDragEvent(250, 150) // x=250, 在 center 区域
 
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
 
       expect(result.dropPosition).toBe('inside')
+      expect(result.horizontalPosition).toBe('center')
       expect(result.direction).toBe('vertical')
       expect(result.indicatorPosition).toEqual({
         x: 48, // left - 2
@@ -109,21 +169,22 @@ describe('DropPositionCalculator', () => {
       })
     })
 
-    it('应该在左侧40px外使用正常的水平指示器', () => {
-      // 在左侧50px位置（超出嵌套区域）
-      mockDragEvent = createMockDragEvent(100, 120) // x=100, 距离左边缘50px
+    it('应该在左侧边界使用正常的水平指示器', () => {
+      // 在左侧边界位置（AppFlowy 风格，left 区域不支持嵌套）
+      mockDragEvent = createMockDragEvent(80, 120) // x=80, 在 left 区域
 
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
 
       expect(result.dropPosition).toBe('above')
+      expect(result.horizontalPosition).toBe('left')
       expect(result.direction).toBe('horizontal')
-      expect(result.indicatorPosition.width).toBe(400)
+      expect(result.indicatorPosition.width).toBe(88) // AppFlowy 风格左边界指示器
     })
 
     it('应该忽略非嵌套元素的左侧区域检测', () => {
       // 移除嵌套属性
       mockElement.removeAttribute('data-moni-nestable')
-      
+
       // 在左侧30px位置
       mockDragEvent = createMockDragEvent(80, 120)
 
@@ -138,7 +199,7 @@ describe('DropPositionCalculator', () => {
   describe('边界情况和精度测试', () => {
     it('应该精确处理25%阈值边界', () => {
       // 测试精确的25%边界
-      const threshold25 = 100 + (100 * 0.25) // y=125
+      const threshold25 = 100 + 100 * 0.25 // y=125
       mockDragEvent = createMockDragEvent(250, threshold25)
 
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
@@ -149,7 +210,7 @@ describe('DropPositionCalculator', () => {
 
     it('应该精确处理75%阈值边界', () => {
       // 测试精确的75%边界
-      const threshold75 = 200 - (100 * 0.25) // y=175
+      const threshold75 = 200 - 100 * 0.25 // y=175
       mockDragEvent = createMockDragEvent(250, threshold75)
 
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
@@ -232,7 +293,7 @@ describe('DropPositionCalculator', () => {
 
     it('应该计算正确的垂直指示器位置', () => {
       mockElement.setAttribute('data-moni-nestable', 'true')
-      mockDragEvent = createMockDragEvent(80, 150)
+      mockDragEvent = createMockDragEvent(250, 150) // 使用中心区域位置支持嵌套
 
       const result = DropPositionCalculator.calculate(mockDragEvent, mockElement)
 
@@ -286,13 +347,13 @@ describe('DropPositionCalculator', () => {
     it('应该模拟嵌套操作的精确检测', () => {
       mockElement.setAttribute('data-moni-nestable', 'true')
 
-      // 模拟从右侧移动到左侧嵌套区域
+      // 模拟 AppFlowy 风格：从右侧边界到中心嵌套区域
       const positions = [
-        { x: 200, y: 150 }, // 在右侧，非嵌套区域
-        { x: 150, y: 150 }, // 移动到中间
-        { x: 100, y: 150 }, // 接近嵌套区域边界
-        { x: 80, y: 150 },  // 进入嵌套区域
-        { x: 60, y: 150 },  // 深入嵌套区域
+        { x: 400, y: 150 }, // 右侧边界区域 - 不支持嵌套
+        { x: 300, y: 150 }, // 中心区域边缘 - 支持嵌套
+        { x: 250, y: 150 }, // 中心区域 - 支持嵌套
+        { x: 200, y: 150 }, // 中心区域 - 支持嵌套
+        { x: 100, y: 150 }, // 左侧边界 - 不支持嵌套
       ]
 
       const results = positions.map(pos => {
@@ -300,38 +361,12 @@ describe('DropPositionCalculator', () => {
         return DropPositionCalculator.calculate(event, mockElement)
       })
 
-      // 验证嵌套检测的准确性
-      expect(results[0].direction).toBe('horizontal')
-      expect(results[1].direction).toBe('horizontal')
-      expect(results[2].direction).toBe('horizontal')
-      expect(results[3].direction).toBe('vertical') // 进入嵌套区域
-      expect(results[4].direction).toBe('vertical') // 深入嵌套区域
+      // 验证 AppFlowy 风格嵌套检测
+      expect(results[0].direction).toBe('horizontal') // 右侧边界，不嵌套
+      expect(results[1].direction).toBe('vertical') // 中心区域，支持嵌套
+      expect(results[2].direction).toBe('vertical') // 中心区域，支持嵌套
+      expect(results[3].direction).toBe('vertical') // 中心区域，支持嵌套
+      expect(results[4].direction).toBe('horizontal') // 左侧边界，不嵌套
     })
   })
 })
-
-// 辅助函数：创建模拟拖拽事件
-function createMockDragEvent(clientX: number, clientY: number): DragEvent {
-  return {
-    clientX,
-    clientY,
-    preventDefault: () => {},
-    stopPropagation: () => {},
-    target: null,
-    currentTarget: null,
-    bubbles: true,
-    cancelable: true,
-    defaultPrevented: false,
-    eventPhase: 0,
-    isTrusted: true,
-    timeStamp: Date.now(),
-    type: 'dragover',
-    composedPath: () => [],
-    initEvent: () => {},
-    stopImmediatePropagation: () => {},
-    NONE: 0,
-    CAPTURING_PHASE: 1,
-    AT_TARGET: 2,
-    BUBBLING_PHASE: 3,
-  } as DragEvent
-}

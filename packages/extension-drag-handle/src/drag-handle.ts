@@ -13,6 +13,8 @@ export interface DropInfo {
   position: 'above' | 'below' | 'inside'
   targetElement: HTMLElement
   targetNode?: Node
+  horizontalPosition?: 'left' | 'center' | 'right' // AppFlowy 风格语义化位置
+  confidence?: number // 算法置信度 (0-1)
 }
 
 export interface DragIndicatorStyles {
