@@ -166,7 +166,7 @@ describe('DragHandleManager', () => {
     }
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // Clean up drag handle manager first
     if (dragHandleManager) {
       try {
@@ -176,14 +176,28 @@ describe('DragHandleManager', () => {
       }
     }
 
-    // Reset DOM state
+    // Wait for any pending DOM operations to complete
+    await new Promise(resolve => {
+      setTimeout(resolve, 10)
+    })
+
+    // Safely clean up DOM elements
+    const elementsToClean = document.querySelectorAll('.drag-handle, .ProseMirror, [data-test]')
+    elementsToClean.forEach(element => {
+      try {
+        if (element.parentElement && element.parentElement.contains(element)) {
+          element.parentElement.removeChild(element)
+        }
+      } catch {
+        // Ignore DOM cleanup errors - element might already be removed
+      }
+    })
+
+    // Reset document body more safely
     document.body.innerHTML = ''
 
-    // Remove any remaining event listeners
-    const events = ['mousemove', 'mouseleave', 'dragstart', 'dragend']
-    events.forEach(eventType => {
-      document.removeEventListener(eventType, () => {})
-    })
+    // Remove any remaining event listeners (note: this approach doesn't actually work)
+    // Better approach: we rely on proper cleanup in destroy() methods
 
     vi.clearAllMocks()
   })

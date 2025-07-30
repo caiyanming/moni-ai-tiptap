@@ -199,9 +199,16 @@ export class DragHandleManager {
     // Set drag image
     event.dataTransfer.setDragImage(dragImage, 0, 0)
 
-    // Clean up drag image
+    // Clean up drag image safely
     setTimeout(() => {
-      document.body.removeChild(dragImage)
+      try {
+        if (dragImage.parentElement && dragImage.parentElement.contains(dragImage)) {
+          dragImage.parentElement.removeChild(dragImage)
+        }
+      } catch {
+        // Ignore DOM cleanup errors - element might already be removed
+        console.debug('DragHandleManager: Drag image already removed during cleanup')
+      }
     }, 0)
   }
 

@@ -1,11 +1,11 @@
-import { describe, expect, it, beforeEach } from 'vitest'
 import { Editor } from '@tiptap/core'
-import { Node } from '@tiptap/pm/model'
+import { Blockquote } from '@tiptap/extension-blockquote'
 import { Document } from '@tiptap/extension-document'
+import { Heading } from '@tiptap/extension-heading'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { Heading } from '@tiptap/extension-heading'
-import { Blockquote } from '@tiptap/extension-blockquote'
+import type { Node } from '@tiptap/pm/model'
+import { beforeEach,describe, expect, it } from 'vitest'
 
 describe('createParagraphNear command - moniBlockId generation', () => {
   let editor: Editor
@@ -25,15 +25,15 @@ describe('createParagraphNear command - moniBlockId generation', () => {
 
   it('should create new paragraph with moniBlockId when called from paragraph', () => {
     editor.commands.setTextSelection(5)
-    
+
     const result = editor.commands.createParagraphNear()
     expect(result).toBe(true)
 
     // Find all paragraphs in the document
     const doc = editor.state.doc
     const paragraphs: Node[] = []
-    
-    doc.descendants((node) => {
+
+    doc.descendants(node => {
       if (node.type.name === 'paragraph') {
         paragraphs.push(node)
       }
@@ -58,14 +58,14 @@ describe('createParagraphNear command - moniBlockId generation', () => {
   it('should create paragraph with moniBlockId near heading', () => {
     editor.commands.setContent('<h1>Main heading</h1>')
     editor.commands.setTextSelection(5)
-    
+
     const result = editor.commands.createParagraphNear()
     expect(result).toBe(true)
 
     const doc = editor.state.doc
     let foundParagraph = false
-    
-    doc.descendants((node) => {
+
+    doc.descendants(node => {
       if (node.type.name === 'paragraph') {
         expect(node.attrs.moniBlockId).toBeTruthy()
         expect(node.attrs.moniBlockId).toMatch(/^block-\d+-[a-z0-9]+$/)
@@ -79,14 +79,14 @@ describe('createParagraphNear command - moniBlockId generation', () => {
   it('should create paragraph with moniBlockId near blockquote', () => {
     editor.commands.setContent('<blockquote><p>Quote content</p></blockquote>')
     editor.commands.setTextSelection(5)
-    
+
     const result = editor.commands.createParagraphNear()
     expect(result).toBe(true)
 
     const doc = editor.state.doc
     const paragraphs: Node[] = []
-    
-    doc.descendants((node) => {
+
+    doc.descendants(node => {
       if (node.type.name === 'paragraph') {
         paragraphs.push(node)
       }
@@ -106,15 +106,15 @@ describe('createParagraphNear command - moniBlockId generation', () => {
     const existingId = 'existing-paragraph-id'
     editor.commands.setContent(`<p data-moni-block-id="${existingId}">Original content</p>`)
     editor.commands.setTextSelection(5)
-    
+
     const result = editor.commands.createParagraphNear()
     expect(result).toBe(true)
 
     const doc = editor.state.doc
     let foundOriginalId = false
     let foundNewId = false
-    
-    doc.descendants((node) => {
+
+    doc.descendants(node => {
       if (node.type.name === 'paragraph') {
         if (node.attrs.moniBlockId === existingId) {
           foundOriginalId = true
@@ -132,45 +132,45 @@ describe('createParagraphNear command - moniBlockId generation', () => {
   it('should handle edge cases gracefully', () => {
     // Test with empty document
     editor.commands.setContent('')
-    
+
     const result = editor.commands.createParagraphNear()
-    
+
     // Should either succeed or fail gracefully
     if (result) {
       const doc = editor.state.doc
-      doc.descendants((node) => {
+      doc.descendants(node => {
         if (node.type.name === 'paragraph') {
           expect(node.attrs.moniBlockId).toBeTruthy()
         }
       })
     }
-    
+
     expect(typeof result).toBe('boolean')
   })
 
   it('should generate unique IDs for multiple calls', () => {
     editor.commands.setTextSelection(5)
-    
+
     // Create multiple paragraphs
     editor.commands.createParagraphNear()
     editor.commands.createParagraphNear()
     editor.commands.createParagraphNear()
-    
+
     const doc = editor.state.doc
     const paragraphIds: string[] = []
-    
-    doc.descendants((node) => {
+
+    doc.descendants(node => {
       if (node.type.name === 'paragraph' && node.attrs.moniBlockId) {
         paragraphIds.push(node.attrs.moniBlockId)
       }
     })
 
     expect(paragraphIds.length).toBeGreaterThanOrEqual(2)
-    
+
     // All IDs should be unique
     const uniqueIds = new Set(paragraphIds)
     expect(uniqueIds.size).toBe(paragraphIds.length)
-    
+
     // All IDs should match the expected format
     paragraphIds.forEach(id => {
       expect(id).toMatch(/^block-\d+-[a-z0-9]+$/)
@@ -186,22 +186,39 @@ describe('createParagraphNear command - moniBlockId generation', () => {
       </blockquote>
       <p>Last paragraph</p>
     `)
-    
-    // Position in the middle of a paragraph
-    editor.commands.setTextSelection(25)
-    
+
+    // Position in the first paragraph (after "First paragraph")
+    // Find the first paragraph and position cursor at its end
+    const doc = editor.state.doc
+    let firstParagraphEnd = -1
+
+    doc.descendants((node, pos) => {
+      if (node.type.name === 'paragraph' && node.textContent === 'First paragraph' && firstParagraphEnd === -1) {
+        firstParagraphEnd = pos + node.nodeSize - 1 // Position at end of paragraph
+        return false // Stop traversal
+      }
+      return true
+    })
+
+    if (firstParagraphEnd > 0) {
+      editor.commands.setTextSelection(firstParagraphEnd)
+    } else {
+      // Fallback: position after heading
+      editor.commands.setTextSelection(8) // After "Title" heading
+    }
+
     const result = editor.commands.createParagraphNear()
     expect(result).toBe(true)
 
     // Count paragraphs and verify all have moniBlockId
-    const doc = editor.state.doc
+    const finalDoc = editor.state.doc
     let paragraphCount = 0
-    
-    doc.descendants((node) => {
+
+    finalDoc.descendants(node => {
       if (node.type.name === 'paragraph') {
         expect(node.attrs.moniBlockId).toBeTruthy()
         expect(node.attrs.moniBlockId).toMatch(/^block-\d+-[a-z0-9]+$/)
-        paragraphCount++
+        paragraphCount += 1
       }
     })
 
