@@ -191,6 +191,8 @@ export class StreamOperationManager {
   private isProcessing = false
   private isPaused = false
   private processingTimer: number | null = null
+  // ✅ 新增：操作去重集合，使用稳定的operationId防止重复处理
+  private processedOperationIds = new Set<string>()
 
   constructor(view: EditorView, schema: Schema, options: Partial<StreamOperationOptions> = {}) {
     this.view = view
@@ -221,26 +223,43 @@ export class StreamOperationManager {
   }
 
   /**
-   * 批量添加需要确认的操作
+   * 批量添加需要确认的操作（带去重功能）
    *
    * 设计原则：
-   * 1. 批量处理 - 一次性处理多个操作，提高性能
-   * 2. 原子性 - 要么全部成功，要么全部失败
+   * 1. 稳定ID去重 - 使用稳定的operationId防止重复处理同一操作
+   * 2. 批量处理 - 一次性处理多个操作，提高性能
    * 3. 容量检查 - 确保不超过队列容量限制
+   * 4. 详细日志 - 提供详细的去重和处理日志
    */
   public queueOperations(operations: StreamOperation[]): void {
-    console.log(`[StreamOperationManager] 开始批量队列操作:`, operations.length)
+    // ✅ 第1步：去重过滤，只处理未处理过的操作
+    const newOperations = operations.filter(operation => {
+      if (this.processedOperationIds.has(operation.moniOperationId)) {
+        console.log(`[StreamOperationManager] 跳过重复操作: ${operation.moniOperationId}`)
+        return false
+      }
+      return true
+    })
 
+    if (newOperations.length === 0) {
+      console.log(`[StreamOperationManager] 所有 ${operations.length} 个操作都已处理，跳过`)
+      return
+    }
+
+    console.log(`[StreamOperationManager] 过滤后待处理操作: ${newOperations.length}/${operations.length}`)
+
+    // ✅ 第2步：容量检查
     const pendingCount = this.getPendingOperations().length
     const remainingCapacity = this.options.maxQueueSize - pendingCount
 
-    if (operations.length > remainingCapacity) {
-      throw new Error('Not enough queue capacity for batch operations')
+    if (newOperations.length > remainingCapacity) {
+      throw new Error(`Not enough queue capacity: need ${newOperations.length}, available ${remainingCapacity}`)
     }
 
+    // ✅ 第3步：批量处理新操作
     let successCount = 0
-    operations.forEach((operation, index) => {
-      console.log(`[StreamOperationManager] 处理操作 ${index + 1}/${operations.length}:`, {
+    newOperations.forEach((operation, index) => {
+      console.log(`[StreamOperationManager] 处理操作 ${index + 1}/${newOperations.length}:`, {
         type: operation.type,
         operationId: operation.moniOperationId,
         blockId: operation.moniBlockId,
@@ -248,11 +267,13 @@ export class StreamOperationManager {
 
       const success = this.renderDiffPreview(operation)
       if (success) {
+        // ✅ 第4步：标记为已处理
+        this.processedOperationIds.add(operation.moniOperationId)
         successCount += 1
       }
     })
 
-    console.log(`[StreamOperationManager] 批量队列操作完成: ${successCount}/${operations.length} 成功`)
+    console.log(`[StreamOperationManager] 批量队列操作完成: ${successCount}/${newOperations.length} 成功`)
   }
 
   /**
@@ -271,18 +292,6 @@ export class StreamOperationManager {
         pendingNodes.push(node)
       }
     })
-
-    console.log(`[StreamOperationManager] getPendingOperations: 找到 ${pendingNodes.length} 个待处理节点`)
-    if (pendingNodes.length > 0) {
-      pendingNodes.forEach((node, index) => {
-        console.log(`[StreamOperationManager] 待处理节点 ${index + 1}:`, {
-          operationId: node.attrs.diffOperationId,
-          blockId: node.attrs.moniBlockId,
-          diffType: node.attrs.diffType,
-          nodeType: node.type.name,
-        })
-      })
-    }
 
     return pendingNodes
   }
@@ -343,7 +352,7 @@ export class StreamOperationManager {
 
     const { node, position } = nodeInfo
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     tr.setNodeMarkup(position, undefined, {
       ...node.attrs,
       diffStatus: 'approved',
@@ -370,7 +379,12 @@ export class StreamOperationManager {
 
     const { node, position } = nodeInfo
 
-    const { tr } = this.view.state
+    // 检查操作是否已经被rejected或approved
+    if (node.attrs.diffStatus === 'rejected' || node.attrs.diffStatus === 'approved') {
+      return false
+    }
+
+    const tr = this.view.state.tr
     tr.setNodeMarkup(position, undefined, {
       ...node.attrs,
       diffStatus: 'rejected',
@@ -399,7 +413,7 @@ export class StreamOperationManager {
       return true
     }
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     let hasChanges = false
 
     pendingNodes.forEach(node => {
@@ -435,7 +449,7 @@ export class StreamOperationManager {
       return true
     }
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     let hasChanges = false
 
     pendingNodes.forEach(node => {
@@ -543,6 +557,44 @@ export class StreamOperationManager {
   }
 
   /**
+   * 获取已处理的操作ID列表（调试用）
+   *
+   * 设计原则：
+   * 1. 调试支持 - 用于调试和监控已处理操作
+   * 2. 只读访问 - 返回副本，不暴露内部Set
+   * 3. 开发工具 - 在浏览器控制台中查看状态
+   */
+  public getProcessedOperations(): string[] {
+    return Array.from(this.processedOperationIds)
+  }
+
+  /**
+   * 清理已处理操作记录（调试用）
+   *
+   * 设计原则：
+   * 1. 手动清理 - 允许手动清理去重记录
+   * 2. 调试支持 - 用于测试和调试场景
+   * 3. 谨慎使用 - 只在明确知道后果时使用
+   */
+  public clearProcessedOperations(): void {
+    const count = this.processedOperationIds.size
+    this.processedOperationIds.clear()
+    console.log(`[StreamOperationManager] 清理了 ${count} 个已处理操作记录`)
+  }
+
+  /**
+   * 检查操作是否已处理（调试用）
+   *
+   * 设计原则：
+   * 1. 状态查询 - 检查特定操作是否已处理
+   * 2. 调试支持 - 用于调试重复处理问题
+   * 3. 公开接口 - 暴露给上层使用
+   */
+  public isOperationProcessed(operationId: string): boolean {
+    return this.processedOperationIds.has(operationId)
+  }
+
+  /**
    * 销毁管理器
    *
    * 设计原则：
@@ -553,6 +605,8 @@ export class StreamOperationManager {
   public destroy(): void {
     this.pause()
     this.clearAllOperations()
+    // ✅ 清理去重记录，防止内存泄漏
+    this.processedOperationIds.clear()
   }
 
   // ==================== 私有方法 ====================
@@ -668,7 +722,7 @@ export class StreamOperationManager {
       return false
     }
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     const nodeSize = node.nodeSize
 
     tr.delete(position, position + nodeSize)
@@ -720,7 +774,7 @@ export class StreamOperationManager {
     }
 
     const { node, position } = nodeInfo
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
 
     // 1. 设置原始block的diff状态（显示为要被替换的内容）
     tr.setNodeMarkup(position, undefined, {
@@ -739,7 +793,8 @@ export class StreamOperationManager {
     }
 
     // 为新block设置diff属性
-    const newBlockWithDiff = newBlock.type.create(
+    const nodeType = this.schema.nodes[newBlock.type.name] || this.schema.nodes.paragraph
+    const newBlockWithDiff = nodeType.create(
       {
         ...newBlock.attrs,
         diffMode: true,
@@ -783,10 +838,11 @@ export class StreamOperationManager {
       return false
     }
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
 
     // 为新block设置diff属性
-    const newBlockWithDiff = newBlock.type.create(
+    const nodeType = this.schema.nodes[newBlock.type.name] || this.schema.nodes.paragraph
+    const newBlockWithDiff = nodeType.create(
       {
         ...newBlock.attrs,
         diffMode: true,
@@ -797,19 +853,31 @@ export class StreamOperationManager {
       newBlock.content,
     )
 
-    // 确定插入位置
+    // 🔥 修复：正确的插入位置计算
     let insertPosition: number
-    if (operation.moniBlockId === 'document-root' || operation.moniBlockId === '') {
+    if (operation.moniBlockId === '13814000-1dd2-11b2-8080-808080808080') {
+      // 插入到文档开头
       insertPosition = 0
     } else if (operation.type === BlockOperationType.APPEND) {
-      insertPosition = this.view.state.doc.content.size
+      // 🔥 修复：APPEND操作应该插入到文档末尾，使用正确的块级位置计算
+      const doc = this.view.state.doc
+      // 找到最后一个块级节点的结束位置
+      let lastBlockEnd = 0
+      doc.descendants((node, pos) => {
+        if (node.isBlock && pos > lastBlockEnd) {
+          lastBlockEnd = pos + node.nodeSize
+        }
+      })
+      insertPosition = lastBlockEnd
     } else {
+      // INSERT操作：在指定block后插入
       const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
       if (!nodeInfo) {
         console.warn(`[StreamOperationManager] 找不到目标block: ${operation.moniBlockId}`)
         return false
       }
-      insertPosition = nodeInfo.position
+      // 在目标block后插入
+      insertPosition = nodeInfo.position + nodeInfo.node.nodeSize
     }
 
     console.log(`[StreamOperationManager] 插入位置: ${insertPosition}, 文档大小: ${this.view.state.doc.content.size}`)
@@ -841,7 +909,7 @@ export class StreamOperationManager {
     }
 
     const { node, position } = nodeInfo
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
 
     // 设置要删除的block的diff状态
     tr.setNodeMarkup(position, undefined, {
@@ -866,9 +934,9 @@ export class StreamOperationManager {
    * 3. 状态清理 - 清理所有diff相关状态
    */
   private revertOperation(moniOperationId: string): void {
-    console.log(`[StreamOperationManager] 开始撤销操作: ${moniOperationId}`)
+    console.log(`[StreamOperationManager] 撤销操作: ${moniOperationId}`)
 
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     const { doc } = this.view.state
 
     // 收集所有与此操作相关的节点
@@ -946,7 +1014,7 @@ export class StreamOperationManager {
    * 3. 事务安全 - 使用单独的事务确保操作原子性
    */
   private clearRemainingTempNodes(moniOperationId: string): void {
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     const { doc } = this.view.state
     let hasRemainingNodes = false
 
@@ -1008,7 +1076,7 @@ export class StreamOperationManager {
    * 3. 状态恢复 - 恢复正常显示状态
    */
   private clearDiffState(moniOperationId: string): void {
-    const { tr } = this.view.state
+    const tr = this.view.state.tr
     let hasChanges = false
 
     // 查找并清理原始block的diff状态
