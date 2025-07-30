@@ -6,8 +6,8 @@ import { Plugin } from '@tiptap/pm/state'
 import { CommandManager } from './CommandManager.js'
 import type { Editor } from './Editor.js'
 import { createChainableState } from './helpers/createChainableState.js'
-import { getHTMLFromFragment } from './helpers/getHTMLFromFragment.js'
 import { processPastedHTML } from './helpers/generateMoniBlockId.js'
+import { getHTMLFromFragment } from './helpers/getHTMLFromFragment.js'
 import type { CanCommands, ChainedCommands, ExtendedRegExpMatchArray, Range, SingleCommands } from './types.js'
 import { isNumber } from './utilities/isNumber.js'
 import { isRegExp } from './utilities/isRegExp.js'
@@ -300,17 +300,17 @@ export function pasteRulesPlugin(props: { editor: Editor; rules: PasteRule[] }):
                   // Copy other data from original clipboard
                   const originalData = (event as ClipboardEvent).clipboardData
                   if (originalData) {
-                    for (const type of originalData.types) {
+                    originalData.types.forEach(type => {
                       if (type !== 'text/html') {
                         const data = originalData.getData(type)
                         newClipboardData.setData(type, data)
                       }
-                    }
+                    })
                   }
                   // Replace clipboard data
                   Object.defineProperty(event, 'clipboardData', {
                     value: newClipboardData,
-                    writable: false
+                    writable: false,
                   })
                 } catch (error) {
                   console.warn('[MoniAI] Failed to update clipboard data:', error)

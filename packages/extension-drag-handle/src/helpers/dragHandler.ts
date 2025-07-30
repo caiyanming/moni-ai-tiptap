@@ -68,13 +68,11 @@ export function dragHandler(event: DragEvent, editor: Editor) {
     return
   }
 
-  const { tr } = view.state
   const wrapper = document.createElement('div')
   const from = ranges[0].$from.pos
   const to = ranges[ranges.length - 1].$to.pos
 
   const selection = NodeRangeSelection.create(view.state.doc, from, to)
-  const slice = selection.content()
 
   ranges.forEach(range => {
     const element = view.nodeDOM(range.$from.pos) as HTMLElement
@@ -94,6 +92,7 @@ export function dragHandler(event: DragEvent, editor: Editor) {
   // 不设置 view.dragging，让我们的drop handler处理实际移动
   // view.dragging = { slice, move: true }
 
+  const { tr } = view.state
   tr.setSelection(selection)
 
   view.dispatch(tr)

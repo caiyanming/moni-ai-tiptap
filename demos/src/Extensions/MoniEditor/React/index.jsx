@@ -1,15 +1,15 @@
 import './styles.scss'
 
+import { generateMoniBlockId } from '@tiptap/core'
 import DragHandle from '@tiptap/extension-drag-handle'
 import HiddenBlock from '@tiptap/extension-hidden-block'
-import { EditorContent, useEditor } from '@tiptap/react'
+import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import React, { useState, useCallback, useRef } from 'react'
-import { generateMoniBlockId } from '@tiptap/core'
+import React, { useCallback, useRef,useState } from 'react'
 
-import MoniEditor from './MoniEditor'
-import DebugPanel from './DebugPanel'
-import StreamSimulator from './StreamSimulator'
+import DebugPanel from './DebugPanel.jsx'
+import MoniEditor from './MoniEditor.jsx'
+import StreamSimulator from './StreamSimulator.jsx'
 
 const initialContent = `
 <h1 data-type="heading" data-level="1" data-moni-block-id="block-header-1">MoniAI TipTap Editor Demo</h1>
@@ -32,48 +32,59 @@ export default () => {
   const [isSimulating, setIsSimulating] = useState(false)
   const editorRef = useRef(null)
 
-  const handleAddBlock = useCallback((options) => {
-    console.log('🎯 [DragHandle] Add block:', options)
-    
-    // Create a new paragraph block with auto-generated ID
-    const blockId = generateMoniBlockId()
-    const newContent = `<p data-type="paragraph" data-moni-block-id="${blockId}">New paragraph added via drag handle +</p>`
-    
-    if (options.position !== undefined) {
-      editor?.chain().focus().insertContentAt(options.position, newContent).run()
-    } else {
-      editor?.chain().focus().insertContent(newContent).run()
-    }
-  }, [])
+  const [editorInstance, setEditorInstance] = useState(null)
 
-  const handleDragStart = useCallback((event, editor) => {
+  const handleAddBlock = useCallback(
+    options => {
+      console.log('🎯 [DragHandle] Add block:', options)
+
+      if (!editorInstance) {return}
+
+      // Create a new paragraph block with auto-generated ID
+      const blockId = generateMoniBlockId()
+      const newContent = `<p data-type="paragraph" data-moni-block-id="${blockId}">New paragraph added via drag handle +</p>`
+
+      if (options.position !== undefined) {
+        editorInstance.chain().focus().insertContentAt(options.position, newContent).run()
+      } else {
+        editorInstance.chain().focus().insertContent(newContent).run()
+      }
+    },
+    [editorInstance],
+  )
+
+  const handleDragStart = useCallback(event => {
     console.log('🚀 [DragHandle] Drag started')
     event.dataTransfer.effectAllowed = 'move'
   }, [])
 
-  const handleDrop = useCallback((event, dropInfo, editor) => {
+  const handleDrop = useCallback((event, dropInfo) => {
     console.log('📥 [DragHandle] Drop completed:', dropInfo)
   }, [])
 
-  const handleStreamOperation = useCallback((operation) => {
+  const handleStreamOperation = useCallback(operation => {
     console.log('🔄 [StreamOperationManager] New operation:', operation)
     setStreamOperations(prev => [...prev, { ...operation, id: Date.now() }])
   }, [])
 
-  const executeOperation = useCallback((operation, editorInstance) => {
-    if (!editorInstance || !editorInstance.view) return
-    
+  const executeOperation = useCallback((operation, editor) => {
+    if (!editor || !editor.view) {return}
+
     switch (operation.type) {
       case 'insert':
-        editorInstance.chain().focus().insertContentAt(operation.position || editorInstance.state.selection.from, operation.content).run()
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(operation.position || editor.state.selection.from, operation.content)
+          .run()
         break
       case 'update':
         if (operation.targetId) {
           // Find and update the target block
           const targetElement = document.querySelector(`[data-moni-block-id="${operation.targetId}"]`)
           if (targetElement) {
-            const pos = editorInstance.view.posAtDOM(targetElement, 0)
-            editorInstance.chain().focus().setTextSelection(pos).insertContent(operation.content).run()
+            const pos = editor.view.posAtDOM(targetElement, 0)
+            editor.chain().focus().setTextSelection(pos).insertContent(operation.content).run()
           }
         }
         break
@@ -81,25 +92,35 @@ export default () => {
         if (operation.targetId) {
           const targetElement = document.querySelector(`[data-moni-block-id="${operation.targetId}"]`)
           if (targetElement) {
-            const pos = editorInstance.view.posAtDOM(targetElement, 0)
-            editorInstance.chain().focus().setTextSelection(pos).deleteNode(operation.nodeType || 'paragraph').run()
+            const pos = editor.view.posAtDOM(targetElement, 0)
+            editor
+              .chain()
+              .focus()
+              .setTextSelection(pos)
+              .deleteNode(operation.nodeType || 'paragraph')
+              .run()
           }
         }
         break
+      default:
+        console.warn('Unknown operation type:', operation.type)
     }
   }, [])
-  
-  const handleApproveOperation = useCallback((operationId) => {
-    const operation = streamOperations.find(op => op.id === operationId)
-    if (operation) {
-      executeOperation(operation, editorRef.current)
-    }
-    
-    // Remove the operation from pending
-    setStreamOperations(prev => prev.filter(op => op.id !== operationId))
-  }, [streamOperations, executeOperation])
 
-  const handleRejectOperation = useCallback((operationId) => {
+  const handleApproveOperation = useCallback(
+    operationId => {
+      const operation = streamOperations.find(op => op.id === operationId)
+      if (operation) {
+        executeOperation(operation, editorRef.current)
+      }
+
+      // Remove the operation from pending
+      setStreamOperations(prev => prev.filter(op => op.id !== operationId))
+    },
+    [streamOperations, executeOperation],
+  )
+
+  const handleRejectOperation = useCallback(operationId => {
     setStreamOperations(prev => prev.filter(op => op.id !== operationId))
   }, [])
 
@@ -119,8 +140,7 @@ export default () => {
           keepAttributes: true,
         },
       }),
-      
-      
+
       DragHandle.configure({
         showIndicators: true,
         onAddBlock: handleAddBlock,
@@ -141,7 +161,7 @@ export default () => {
           },
         },
       }),
-      
+
       HiddenBlock.configure({
         hideFromDOM: true,
         HTMLAttributes: {
@@ -162,6 +182,7 @@ export default () => {
   React.useEffect(() => {
     if (editor) {
       editorRef.current = editor
+      setEditorInstance(editor)
     }
   }, [editor])
 
@@ -186,12 +207,8 @@ export default () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            MoniAI TipTap Editor Demo
-          </h1>
-          <p className="text-gray-600">
-            Demonstrating DragHandle, HiddenBlock, and StreamOperationManager extensions
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">MoniAI TipTap Editor Demo</h1>
+          <p className="text-gray-600">Demonstrating DragHandle, HiddenBlock, and StreamOperationManager extensions</p>
         </div>
 
         {/* Controls */}
@@ -199,8 +216,8 @@ export default () => {
           <button
             onClick={toggleDebugMode}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              debugMode 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              debugMode
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
                 : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
           >
@@ -234,17 +251,13 @@ export default () => {
         {/* Stream Operations Status */}
         {streamOperations.length > 0 && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="font-medium text-yellow-800 mb-2">
-              🔄 Pending AI Operations ({streamOperations.length})
-            </h3>
+            <h3 className="font-medium text-yellow-800 mb-2">🔄 Pending AI Operations ({streamOperations.length})</h3>
             <div className="space-y-2">
               {streamOperations.map(op => (
                 <div key={op.id} className="flex items-center justify-between bg-white p-3 rounded border">
                   <div className="flex-1">
                     <span className="font-medium text-sm">{op.type.toUpperCase()}</span>
-                    {op.description && (
-                      <span className="ml-2 text-gray-600 text-sm">{op.description}</span>
-                    )}
+                    {op.description && <span className="ml-2 text-gray-600 text-sm">{op.description}</span>}
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -269,11 +282,7 @@ export default () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Editor */}
           <div className="lg:col-span-3">
-            <MoniEditor 
-              editor={editor}
-              onStreamOperation={handleStreamOperation}
-              isSimulating={isSimulating}
-            />
+            <MoniEditor editor={editor} onStreamOperation={handleStreamOperation} isSimulating={isSimulating} />
           </div>
 
           {/* Sidebar */}
@@ -287,12 +296,7 @@ export default () => {
             />
 
             {/* Debug Panel */}
-            {debugMode && (
-              <DebugPanel 
-                editor={editor}
-                streamOperations={streamOperations}
-              />
-            )}
+            {debugMode && <DebugPanel editor={editor} streamOperations={streamOperations} />}
           </div>
         </div>
 
@@ -301,9 +305,7 @@ export default () => {
           <p>
             <strong>MoniAI TipTap Editor Demo</strong> - Testing custom extensions and upstream fixes
           </p>
-          <p className="text-sm mt-2">
-            Built with TipTap v3.0.0-beta.22 (MoniAI Fork) + React 18 + Tailwind CSS
-          </p>
+          <p className="text-sm mt-2">Built with TipTap v3.0.0-beta.22 (MoniAI Fork) + React 18 + Tailwind CSS</p>
         </div>
       </div>
     </div>

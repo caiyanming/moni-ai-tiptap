@@ -3,8 +3,8 @@ import { NodeSelection, TextSelection } from '@tiptap/pm/state'
 import { canSplit } from '@tiptap/pm/transform'
 
 import { defaultBlockAt } from '../helpers/defaultBlockAt.js'
-import { getSplittedAttributes } from '../helpers/getSplittedAttributes.js'
 import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
+import { getSplittedAttributes } from '../helpers/getSplittedAttributes.js'
 import type { RawCommands } from '../types.js'
 
 function ensureMarks(state: EditorState, splittableMarks?: string[]) {
@@ -38,7 +38,7 @@ export const splitBlock: RawCommands['splitBlock'] =
     const { $from, $to } = selection
     const extensionAttributes = editor.extensionManager.attributes
     const baseAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs)
-    
+
     // Keep the existing ID from the original block (don't generate a new one yet)
     const originalAttributes = baseAttributes
 
@@ -97,11 +97,10 @@ export const splitBlock: RawCommands['splitBlock'] =
         }
 
         tr.split(tr.mapping.map($from.pos), 1, types)
-        
+
         // After split, ensure the new block has a unique moniBlockId
         // The split creates two blocks, and we need to make sure they have different IDs
-        const splitPos = tr.mapping.map($from.pos)
-        
+
         // Ensure unique moniBlockIds for all blocks after split
         // Find and fix any duplicate IDs that may have been created by the split
         let foundDuplicate = false
@@ -109,15 +108,13 @@ export const splitBlock: RawCommands['splitBlock'] =
           if (node.isBlock && node.attrs.moniBlockId) {
             // Look for another block node with the same ID
             tr.doc.descendants((otherNode, otherPos) => {
-              if (otherNode.isBlock && 
-                  otherPos !== pos && 
-                  otherNode.attrs.moniBlockId === node.attrs.moniBlockId) {
+              if (otherNode.isBlock && otherPos !== pos && otherNode.attrs.moniBlockId === node.attrs.moniBlockId) {
                 // Fix the second occurrence (the newly created block)
                 if (!foundDuplicate && otherPos > pos) {
                   const newId = ensureMoniBlockId({}).moniBlockId
                   tr.setNodeMarkup(otherPos, otherNode.type, {
                     ...otherNode.attrs,
-                    moniBlockId: newId
+                    moniBlockId: newId,
                   })
                   foundDuplicate = true
                 }

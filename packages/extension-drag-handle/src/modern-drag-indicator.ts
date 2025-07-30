@@ -81,12 +81,12 @@ export class ModernDragIndicator {
     confidence?: number
   }): void {
     const { direction, position, horizontalPosition = 'center', confidence = 1.0 } = params
-    
+
     // Validate position values - skip showing if invalid
     if (!this.isValidPosition(position, direction)) {
       return
     }
-    
+
     const indicator = this.getIndicator(direction)
 
     // Hide the other indicator when showing one
@@ -242,7 +242,7 @@ export class ModernDragIndicator {
    */
   private applyConfidenceVisuals(indicator: HTMLElement, confidence: number): void {
     // Don't set opacity here - let showIndicator handle it to use theme opacity
-    
+
     // 高置信度增强视觉效果
     if (confidence > 0.9) {
       indicator.style.boxShadow = `0 0 12px rgba(59, 130, 246, ${confidence * 0.6})`
@@ -253,10 +253,10 @@ export class ModernDragIndicator {
 
   private showIndicator(indicator: HTMLElement): void {
     indicator.style.display = 'block'
-    
+
     // Set styles synchronously for immediate visibility
     indicator.style.opacity = this.config.theme.opacity.toString()
-    
+
     // Don't add scale transform - tests expect only translate
     // The transform should already be set by updateIndicatorPosition
 
@@ -297,7 +297,7 @@ export class ModernDragIndicator {
 
   private isValidPosition(position: IndicatorPosition, direction: IndicatorDirection): boolean {
     // Check for NaN or invalid values
-    if (isNaN(position.x) || isNaN(position.y)) {
+    if (Number.isNaN(position.x) || Number.isNaN(position.y)) {
       return false
     }
 
@@ -308,18 +308,15 @@ export class ModernDragIndicator {
 
     // Check dimension based on direction
     if (direction === 'horizontal') {
-      return position.width != null && position.width > 0 && !isNaN(position.width)
-    } else {
-      return position.height != null && position.height > 0 && !isNaN(position.height)
-    }
+      return position.width != null && position.width > 0 && !Number.isNaN(position.width)
+    } 
+      return position.height != null && position.height > 0 && !Number.isNaN(position.height)
+    
   }
 }
 
 // Overloaded function signatures for createDragIndicator
-export function createDragIndicator(
-  view: EditorView,
-  config: IndicatorConfig,
-): ModernDragIndicator
+export function createDragIndicator(view: EditorView, config: IndicatorConfig): ModernDragIndicator
 
 export function createDragIndicator(
   view: EditorView,
