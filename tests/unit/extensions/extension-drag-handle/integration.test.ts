@@ -1,10 +1,10 @@
 import { Editor } from '@tiptap/core'
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Document } from '../../../extension-document/src/document.js'
-import { Paragraph } from '../../../extension-paragraph/src/paragraph.js'
-import { Text } from '../../../extension-text/src/text.js'
-import { DragHandle } from '../drag-handle.js'
+import { Document } from '@tiptap/extension-document'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Text } from '@tiptap/extension-text'
+import { DragHandle } from '@tiptap/extension-drag-handle'
 
 describe('DragHandle Integration Tests', () => {
   let editor: Editor
@@ -19,11 +19,11 @@ describe('DragHandle Integration Tests', () => {
         Paragraph,
         Text,
         DragHandle.configure({
-          onAddBlock: jest.fn(),
-          onDragStart: jest.fn(),
-          onDragOver: jest.fn(),
-          onDrop: jest.fn(),
-          onClick: jest.fn(),
+          onAddBlock: vi.fn(),
+          onDragStart: vi.fn(),
+          onDragOver: vi.fn(),
+          onDrop: vi.fn(),
+          onClick: vi.fn(),
         }),
       ],
     })
@@ -74,7 +74,7 @@ describe('DragHandle Integration Tests', () => {
 
   describe('Real-world Scenarios', () => {
     it('should handle adding blocks in complex document structure', () => {
-      const onAddBlock = jest.fn()
+      const onAddBlock = vi.fn()
 
       // 重新配置编辑器以使用真实的回调
       const testEditor = new Editor({
@@ -102,10 +102,10 @@ describe('DragHandle Integration Tests', () => {
     })
 
     it('should handle drag and drop operations correctly', () => {
-      const onDragStart = jest.fn()
-      const onDragOver = jest.fn()
-      const onDrop = jest.fn()
-      const onClick = jest.fn()
+      const onDragStart = vi.fn()
+      const onDragOver = vi.fn()
+      const onDrop = vi.fn()
+      const onClick = vi.fn()
 
       const testEditor = new Editor({
         element: document.createElement('div'),
@@ -115,7 +115,7 @@ describe('DragHandle Integration Tests', () => {
           Paragraph,
           Text,
           DragHandle.configure({
-            onAddBlock: jest.fn(),
+            onAddBlock: vi.fn(),
             onDragStart,
             onDragOver,
             onDrop,
@@ -139,7 +139,7 @@ describe('DragHandle Integration Tests', () => {
     })
 
     it('should maintain performance under load', () => {
-      const onDragOver = jest.fn()
+      const onDragOver = vi.fn()
 
       const testEditor = new Editor({
         element: document.createElement('div'),
@@ -149,7 +149,7 @@ describe('DragHandle Integration Tests', () => {
           Paragraph,
           Text,
           DragHandle.configure({
-            onAddBlock: jest.fn(),
+            onAddBlock: vi.fn(),
             onDragOver,
           }),
         ],
@@ -168,7 +168,7 @@ describe('DragHandle Integration Tests', () => {
     })
 
     it('should handle drag handle click events correctly', () => {
-      const onClick = jest.fn()
+      const onClick = vi.fn()
 
       const testEditor = new Editor({
         element: document.createElement('div'),
@@ -178,7 +178,7 @@ describe('DragHandle Integration Tests', () => {
           Paragraph,
           Text,
           DragHandle.configure({
-            onAddBlock: jest.fn(),
+            onAddBlock: vi.fn(),
             onClick,
           }),
         ],
@@ -203,7 +203,7 @@ describe('DragHandle Integration Tests', () => {
 
   describe('Error Handling and Edge Cases', () => {
     it('should handle missing DOM elements gracefully', () => {
-      const onAddBlock = jest.fn()
+      const onAddBlock = vi.fn()
 
       const testEditor = new Editor({
         element: document.createElement('div'),
@@ -227,7 +227,7 @@ describe('DragHandle Integration Tests', () => {
     })
 
     it('should handle invalid events gracefully', () => {
-      const onDragStart = jest.fn()
+      const onDragStart = vi.fn()
 
       const testEditor = new Editor({
         element: document.createElement('div'),
@@ -237,9 +237,9 @@ describe('DragHandle Integration Tests', () => {
           Paragraph,
           Text,
           DragHandle.configure({
-            onAddBlock: jest.fn(),
+            onAddBlock: vi.fn(),
             onDragStart,
-            onClick: jest.fn(),
+            onClick: vi.fn(),
           }),
         ],
       })
@@ -268,7 +268,7 @@ describe('DragHandle Integration Tests', () => {
           Paragraph,
           Text,
           DragHandle.configure({
-            onAddBlock: jest.fn(),
+            onAddBlock: vi.fn(),
           }),
         ],
       })

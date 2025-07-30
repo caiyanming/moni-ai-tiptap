@@ -1,8 +1,9 @@
 import type { ParseOptions } from '@tiptap/pm/model'
 import { DOMParser, Fragment, Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 
-import type { Content } from '../types.js'
+import type { Content, JSONContent } from '../types.js'
 import { elementFromString } from '../utilities/elementFromString.js'
+import { processPastedHTML } from './generateMoniBlockId.js'
 
 export type CreateNodeFromContentOptions = {
   slice?: boolean
@@ -40,10 +41,10 @@ export function createNodeFromContent(
 
       // if the JSON Content is an array of nodes, create a fragment for each node
       if (isArrayContent) {
-        return Fragment.fromArray(content.map(item => schema.nodeFromJSON(item)))
+        return Fragment.fromArray((content as JSONContent[]).map(item => schema.nodeFromJSON(item)))
       }
 
-      const node = schema.nodeFromJSON(content)
+      const node = schema.nodeFromJSON(content as JSONContent)
 
       if (options.errorOnInvalidContent) {
         node.check()
@@ -62,6 +63,8 @@ export function createNodeFromContent(
   }
 
   if (isTextContent) {
+    // Process HTML content to add moniBlockId to block elements
+    content = processPastedHTML(content as string)
     // Check for invalid content
     if (options.errorOnInvalidContent) {
       let hasInvalidContent = false

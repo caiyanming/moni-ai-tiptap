@@ -2,6 +2,7 @@ import type { NodeType } from '@tiptap/pm/model'
 
 import type { InputRuleFinder } from '../InputRule.js'
 import { InputRule } from '../InputRule.js'
+import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import type { ExtendedRegExpMatchArray } from '../types.js'
 import { callOrReturn } from '../utilities/callOrReturn.js'
 
@@ -30,7 +31,8 @@ export function nodeInputRule(config: {
   return new InputRule({
     find: config.find,
     handler: ({ state, range, match }) => {
-      const attributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const baseAttributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const attributes = config.type.isBlock ? ensureMoniBlockId(baseAttributes) : baseAttributes
       const { tr } = state
       const start = range.from
       let end = range.to
@@ -57,7 +59,7 @@ export function nodeInputRule(config: {
       } else if (match[0]) {
         const insertionStart = config.type.isInline ? start : start - 1
 
-        tr.insert(insertionStart, config.type.create(attributes)).delete(tr.mapping.map(start), tr.mapping.map(end))
+        tr.insert(insertionStart, newNode).delete(tr.mapping.map(start), tr.mapping.map(end))
       }
 
       tr.scrollIntoView()

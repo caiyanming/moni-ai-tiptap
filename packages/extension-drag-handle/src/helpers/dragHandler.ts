@@ -90,8 +90,9 @@ export function dragHandler(event: DragEvent, editor: Editor) {
   event.dataTransfer.clearData()
   event.dataTransfer.setDragImage(wrapper, 0, 0)
 
-  // tell ProseMirror the dragged content
-  view.dragging = { slice, move: true }
+  // 🎯 NOTION风格：禁用ProseMirror标准拖拽，使用我们的自定义系统
+  // 不设置 view.dragging，让我们的drop handler处理实际移动
+  // view.dragging = { slice, move: true }
 
   tr.setSelection(selection)
 

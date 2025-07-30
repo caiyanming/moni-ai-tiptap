@@ -7,6 +7,7 @@ import { CommandManager } from './CommandManager.js'
 import type { Editor } from './Editor.js'
 import { createChainableState } from './helpers/createChainableState.js'
 import { getHTMLFromFragment } from './helpers/getHTMLFromFragment.js'
+import { processPastedHTML } from './helpers/generateMoniBlockId.js'
 import type { CanCommands, ChainedCommands, ExtendedRegExpMatchArray, Range, SingleCommands } from './types.js'
 import { isNumber } from './utilities/isNumber.js'
 import { isRegExp } from './utilities/isRegExp.js'
@@ -287,6 +288,35 @@ export function pasteRulesPlugin(props: { editor: Editor; rules: PasteRule[] }):
             pasteEvent = event as ClipboardEvent
 
             isPastedFromProseMirror = !!html?.includes('data-pm-slice')
+
+            // Process pasted HTML to add moniBlockId to blocks
+            if (html && !isPastedFromProseMirror) {
+              const processedHTML = processPastedHTML(html)
+              if (processedHTML !== html) {
+                // Update clipboard data with processed HTML
+                try {
+                  const newClipboardData = new DataTransfer()
+                  newClipboardData.setData('text/html', processedHTML)
+                  // Copy other data from original clipboard
+                  const originalData = (event as ClipboardEvent).clipboardData
+                  if (originalData) {
+                    for (const type of originalData.types) {
+                      if (type !== 'text/html') {
+                        const data = originalData.getData(type)
+                        newClipboardData.setData(type, data)
+                      }
+                    }
+                  }
+                  // Replace clipboard data
+                  Object.defineProperty(event, 'clipboardData', {
+                    value: newClipboardData,
+                    writable: false
+                  })
+                } catch (error) {
+                  console.warn('[MoniAI] Failed to update clipboard data:', error)
+                }
+              }
+            }
 
             return false
           },

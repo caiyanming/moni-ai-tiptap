@@ -1,10 +1,10 @@
 import { Editor } from '@tiptap/core'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { Document } from '../../../extension-document/src/document.js'
-import { Paragraph } from '../../../extension-paragraph/src/paragraph.js'
-import { Text } from '../../../extension-text/src/text.js'
-import { DragHandle } from '../drag-handle.js'
+import { Document } from '@tiptap/extension-document'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Text } from '@tiptap/extension-text'
+import { DragHandle } from '@tiptap/extension-drag-handle'
 
 describe('DragHandle Extension', () => {
   let editor: Editor

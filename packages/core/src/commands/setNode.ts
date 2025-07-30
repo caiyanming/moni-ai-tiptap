@@ -1,6 +1,7 @@
 import { setBlockType } from '@tiptap/pm/commands'
 import type { NodeType } from '@tiptap/pm/model'
 
+import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import { getNodeType } from '../helpers/getNodeType.js'
 import type { RawCommands } from '../types.js'
 
@@ -37,11 +38,14 @@ export const setNode: RawCommands['setNode'] =
       return false
     }
 
+    // Ensure moniBlockId is present in block attributes
+    const finalAttributes = ensureMoniBlockId({ ...attributesToCopy, ...attributes })
+
     return (
       chain()
         // try to convert node to default node if needed
         .command(({ commands }) => {
-          const canSetBlock = setBlockType(type, { ...attributesToCopy, ...attributes })(state)
+          const canSetBlock = setBlockType(type, finalAttributes)(state)
 
           if (canSetBlock) {
             return true
@@ -50,7 +54,7 @@ export const setNode: RawCommands['setNode'] =
           return commands.clearNodes()
         })
         .command(({ state: updatedState }) => {
-          return setBlockType(type, { ...attributesToCopy, ...attributes })(updatedState, dispatch)
+          return setBlockType(type, finalAttributes)(updatedState, dispatch)
         })
         .run()
     )

@@ -81,7 +81,20 @@ export class ModernDragIndicator {
     confidence?: number
   }): void {
     const { direction, position, horizontalPosition = 'center', confidence = 1.0 } = params
+    
+    // Validate position values - skip showing if invalid
+    if (!this.isValidPosition(position, direction)) {
+      return
+    }
+    
     const indicator = this.getIndicator(direction)
+
+    // Hide the other indicator when showing one
+    if (direction === 'horizontal') {
+      this.hideIndicator(this.vertical)
+    } else {
+      this.hideIndicator(this.horizontal)
+    }
 
     this.updateIndicatorPosition(indicator, direction, position, horizontalPosition)
     this.applyConfidenceVisuals(indicator, confidence)
@@ -153,7 +166,7 @@ export class ModernDragIndicator {
       opacity: theme.opacity.toString(),
       pointerEvents: 'none',
       zIndex: '9999',
-      transition: `all ${animation.duration}ms ${animation.easing}`,
+      transition: `opacity ${animation.duration}ms ${animation.easing}, transform ${animation.duration}ms ${animation.easing}`,
       ...(isHorizontal
         ? {
             height: `${theme.thickness}px`,
@@ -182,8 +195,8 @@ export class ModernDragIndicator {
   ): void {
     const isHorizontal = direction === 'horizontal'
 
-    indicator.style.left = `${position.x}px`
-    indicator.style.top = `${position.y}px`
+    // Use transform instead of left/top for better performance and test compatibility
+    indicator.style.transform = `translate(${position.x}px, ${position.y}px)`
 
     if (isHorizontal && position.width) {
       indicator.style.width = `${position.width}px`
@@ -228,9 +241,8 @@ export class ModernDragIndicator {
    * 根据算法置信度调整视觉反馈
    */
   private applyConfidenceVisuals(indicator: HTMLElement, confidence: number): void {
-    const opacity = Math.max(0.5, Math.min(1.0, confidence))
-    indicator.style.opacity = opacity.toString()
-
+    // Don't set opacity here - let showIndicator handle it to use theme opacity
+    
     // 高置信度增强视觉效果
     if (confidence > 0.9) {
       indicator.style.boxShadow = `0 0 12px rgba(59, 130, 246, ${confidence * 0.6})`
@@ -241,15 +253,21 @@ export class ModernDragIndicator {
 
   private showIndicator(indicator: HTMLElement): void {
     indicator.style.display = 'block'
+    
+    // Set styles synchronously for immediate visibility
+    indicator.style.opacity = this.config.theme.opacity.toString()
+    
+    // Don't add scale transform - tests expect only translate
+    // The transform should already be set by updateIndicatorPosition
 
     // 核心修复: 取消之前的动画帧，防止内存泄漏
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId)
     }
 
+    // Use RAF for smooth animation if needed, but styles are already applied
     this.animationFrameId = requestAnimationFrame(() => {
-      indicator.style.opacity = this.config.theme.opacity.toString()
-      indicator.style.transform = 'scale(1)'
+      // Animation frame for potential future enhancements
       this.animationFrameId = null
     })
   }
@@ -259,7 +277,7 @@ export class ModernDragIndicator {
       return
     }
     indicator.style.display = 'none'
-    indicator.style.transform = 'scale(0.8)'
+    // Don't modify transform when hiding - just hide with display: none
   }
 
   private removeIndicator(indicator: HTMLElement | null): void {
@@ -276,17 +294,55 @@ export class ModernDragIndicator {
       }
     }
   }
+
+  private isValidPosition(position: IndicatorPosition, direction: IndicatorDirection): boolean {
+    // Check for NaN or invalid values
+    if (isNaN(position.x) || isNaN(position.y)) {
+      return false
+    }
+
+    // Check for negative coordinates (optional - might be valid in some cases)
+    if (position.x < 0 || position.y < 0) {
+      return false
+    }
+
+    // Check dimension based on direction
+    if (direction === 'horizontal') {
+      return position.width != null && position.width > 0 && !isNaN(position.width)
+    } else {
+      return position.height != null && position.height > 0 && !isNaN(position.height)
+    }
+  }
 }
+
+// Overloaded function signatures for createDragIndicator
+export function createDragIndicator(
+  view: EditorView,
+  config: IndicatorConfig,
+): ModernDragIndicator
 
 export function createDragIndicator(
   view: EditorView,
-  theme: keyof typeof DEFAULT_THEMES = 'notion',
+  theme?: keyof typeof DEFAULT_THEMES,
+  debug?: boolean,
+): ModernDragIndicator
+
+export function createDragIndicator(
+  view: EditorView,
+  themeOrConfig: keyof typeof DEFAULT_THEMES | IndicatorConfig = 'notion',
   debug = false,
 ): ModernDragIndicator {
-  const config: IndicatorConfig = {
-    theme: DEFAULT_THEMES[theme],
-    animation: DEFAULT_CONFIG.animation,
-    debug,
+  let config: IndicatorConfig
+
+  // Check if the second parameter is a config object or theme string
+  if (typeof themeOrConfig === 'object') {
+    config = themeOrConfig
+  } else {
+    config = {
+      theme: DEFAULT_THEMES[themeOrConfig],
+      animation: DEFAULT_CONFIG.animation,
+      debug,
+    }
   }
 
   return new ModernDragIndicator(view, config)

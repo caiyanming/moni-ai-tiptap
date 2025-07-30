@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi Block Selection Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .editor-container {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 16px;
+      min-height: 200px;
+      margin-bottom: 20px;
+    }
+    
+    .tiptap-editor {
+      outline: none;
+    }
+    
+    .tiptap-editor p {
+      margin: 8px 0;
+      padding: 4px;
+      border-radius: 2px;
+      transition: background-color 0.2s;
+    }
+    
+    .tiptap-editor p:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .tiptap-multi-block-selected {
+      background-color: #e3f2fd !important;
+      border: 2px solid #2196f3;
+      outline: none;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+    
+    .control-group label {
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .control-group span {
+      background: white;
+      padding: 2px 6px;
+      border-radius: 2px;
+      border: 1px solid #ccc;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .action-button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .action-button.primary {
+      background: #2196f3;
+      color: white;
+    }
+    
+    .action-button.danger {
+      background: #f44336;
+      color: white;
+    }
+    
+    .action-button.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .action-button:hover {
+      opacity: 0.8;
+    }
+    
+    .action-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .instructions {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .instructions h3 {
+      margin-top: 0;
+      color: #2e7d32;
+    }
+    
+    .instructions ul {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>Multi Block Selection Demo</h1>
+    
+    <div class="instructions">
+      <h3>使用说明</h3>
+      <ul>
+        <li><strong>Ctrl + Click</strong>: 选择/取消选择块</li>
+        <li><strong>Escape</strong>: 清除所有选择</li>
+        <li><strong>Delete/Backspace</strong>: 删除选中的块</li>
+        <li>使用下方按钮进行格式化和其他操作</li>
+      </ul>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label>选择数量:</label>
+        <span data-testid="selection-count">0</span>
+      </div>
+      <div class="control-group">
+        <label>有选择:</label>
+        <span data-testid="has-selection">false</span>
+      </div>
+      <div class="control-group">
+        <label>同构选择:</label>
+        <span data-testid="is-homogeneous">true</span>
+      </div>
+      <div class="control-group">
+        <label>主要类型:</label>
+        <span data-testid="primary-block-type">null</span>
+      </div>
+      <div class="control-group">
+        <label>最大选择:</label>
+        <span data-testid="max-selection-count">10</span>
+      </div>
+    </div>
+    
+    <div class="editor-container">
+      <div class="tiptap-editor" contenteditable="true">
+        <p>这是第一个段落，您可以 Ctrl+Click 来选择它。</p>
+        <p>这是第二个段落，也可以被选择。</p>
+        <p>您可以添加更多内容来测试多块选择功能。</p>
+      </div>
+    </div>
+    
+    <div class="action-buttons">
+      <button class="action-button primary" data-testid="format-bold">加粗</button>
+      <button class="action-button primary" data-testid="format-italic">斜体</button>
+      <button class="action-button primary" data-testid="format-heading">标题</button>
+      <button class="action-button secondary" data-testid="clear-selection">清除选择</button>
+      <button class="action-button danger" data-testid="delete-selected">删除选中</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // 简化的多块选择实现，用于演示和测试
+    class SimpleMultiBlockSelection {
+      constructor(editorElement) {
+        this.editor = editorElement
+        this.selectedBlocks = new Set()
+        this.maxSelectionCount = 10
+        this.enabled = true
+        
+        this.setupEventListeners()
+        this.updateControls()
+      }
+      
+      setupEventListeners() {
+        // 监听 Ctrl+Click 选择
+        this.editor.addEventListener('click', (e) => {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault()
+            const target = e.target.closest('p, h1, h2, h3, h4, h5, h6')
+            if (target && this.editor.contains(target)) {
+              this.toggleSelection(target)
+            }
+          }
+        })
+        
+        // 监听键盘事件
+        this.editor.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && this.selectedBlocks.size > 0) {
+            e.preventDefault()
+            this.clearSelection()
+          } else if ((e.key === 'Delete' || e.key === 'Backspace') && this.selectedBlocks.size > 0) {
+            e.preventDefault()
+            this.deleteSelectedBlocks()
+          }
+        })
+        
+        // 按钮事件监听
+        document.addEventListener('click', (e) => {
+          const target = e.target
+          
+          if (target.matches('[data-testid="clear-selection"]')) {
+            this.clearSelection()
+          } else if (target.matches('[data-testid="delete-selected"]')) {
+            this.deleteSelectedBlocks()
+          } else if (target.matches('[data-testid="format-bold"]')) {
+            this.applyFormat('bold')
+          } else if (target.matches('[data-testid="format-italic"]')) {
+            this.applyFormat('italic')
+          } else if (target.matches('[data-testid="format-heading"]')) {
+            this.applyFormat('heading')
+          }
+        })
+      }
+      
+      toggleSelection(element) {
+        if (!this.enabled) return
+        
+        if (this.selectedBlocks.has(element)) {
+          // 取消选择
+          this.selectedBlocks.delete(element)
+          this.removeSelectionStyle(element)
+        } else {
+          // 添加选择
+          if (this.selectedBlocks.size >= this.maxSelectionCount) {
+            return
+          }
+          
+          this.selectedBlocks.add(element)
+          this.addSelectionStyle(element)
+        }
+        
+        this.updateControls()
+        this.dispatchSelectionChangeEvent()
+      }
+      
+      clearSelection() {
+        this.selectedBlocks.forEach(element => {
+          this.removeSelectionStyle(element)
+        })
+        this.selectedBlocks.clear()
+        this.updateControls()
+        this.dispatchSelectionChangeEvent()
+      }
+      
+      deleteSelectedBlocks() {
+        if (this.selectedBlocks.size === 0) return
+        
+        // 按文档顺序删除（从后往前）
+        const elements = Array.from(this.selectedBlocks)
+          .sort((a, b) => {
+            const aRect = a.getBoundingClientRect()
+            const bRect = b.getBoundingClientRect()
+            return bRect.top - aRect.top // 从下往上删除
+          })
+        
+        elements.forEach(element => {
+          element.remove()
+        })
+        
+        this.selectedBlocks.clear()
+        this.updateControls()
+        this.dispatchSelectionChangeEvent()
+      }
+      
+      applyFormat(format) {
+        if (this.selectedBlocks.size === 0) return
+        
+        this.selectedBlocks.forEach(element => {
+          switch (format) {
+            case 'bold':
+              element.style.fontWeight = element.style.fontWeight === 'bold' ? 'normal' : 'bold'
+              break
+            case 'italic':
+              element.style.fontStyle = element.style.fontStyle === 'italic' ? 'normal' : 'italic'
+              break
+            case 'heading':
+              if (element.tagName === 'P') {
+                const heading = document.createElement('h2')
+                heading.innerHTML = element.innerHTML
+                heading.className = element.className
+                element.parentNode.replaceChild(heading, element)
+                
+                // 更新选择集合中的引用
+                this.selectedBlocks.delete(element)
+                this.selectedBlocks.add(heading)
+                this.addSelectionStyle(heading)
+              }
+              break
+          }
+        })
+        
+        this.dispatchFormatApplyEvent(format)
+      }
+      
+      addSelectionStyle(element) {
+        element.classList.add('tiptap-multi-block-selected')
+        element.setAttribute('data-multi-block-selected', 'true')
+      }
+      
+      removeSelectionStyle(element) {
+        element.classList.remove('tiptap-multi-block-selected')
+        element.removeAttribute('data-multi-block-selected')
+      }
+      
+      updateControls() {
+        document.querySelector('[data-testid="selection-count"]').textContent = this.selectedBlocks.size
+        document.querySelector('[data-testid="has-selection"]').textContent = this.selectedBlocks.size > 0
+        
+        // 检测同构选择
+        const blockTypes = new Set()
+        this.selectedBlocks.forEach(element => {
+          blockTypes.add(element.tagName.toLowerCase())
+        })
+        
+        const isHomogeneous = blockTypes.size <= 1
+        const primaryType = blockTypes.size === 1 ? Array.from(blockTypes)[0] : null
+        
+        document.querySelector('[data-testid="is-homogeneous"]').textContent = isHomogeneous
+        document.querySelector('[data-testid="primary-block-type"]').textContent = primaryType || 'null'
+      }
+      
+      dispatchSelectionChangeEvent() {
+        window.dispatchEvent(new CustomEvent('multiBlockSelectionChange', {
+          detail: {
+            selectedBlocks: Array.from(this.selectedBlocks),
+            selectionCount: this.selectedBlocks.size,
+            hasSelection: this.selectedBlocks.size > 0
+          }
+        }))
+      }
+      
+      dispatchFormatApplyEvent(format) {
+        window.dispatchEvent(new CustomEvent('multiBlockFormatApply', {
+          detail: {
+            format,
+            selectedBlocks: Array.from(this.selectedBlocks)
+          }
+        }))
+      }
+    }
+    
+    // 初始化多块选择功能
+    const editorElement = document.querySelector('.tiptap-editor')
+    const multiBlockSelection = new SimpleMultiBlockSelection(editorElement)
+    
+    // 使多块选择实例全局可访问，便于测试
+    window.multiBlockSelection = multiBlockSelection
+  </script>
+</body>
+</html>

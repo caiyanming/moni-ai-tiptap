@@ -1,5 +1,6 @@
 export * from './combineTransactionSteps.js'
 export * from './createChainableState.js'
+export * from './generateMoniBlockId.js'
 export * from './createDocument.js'
 export * from './createNodeFromContent.js'
 export * from './defaultBlockAt.js'

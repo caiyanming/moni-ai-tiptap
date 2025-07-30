@@ -1,4 +1,5 @@
 import { mergeAttributes, Node, textblockTypeInputRule } from '@tiptap/core'
+import { ensureMoniBlockId } from '@tiptap/core'
 
 /**
  * The heading level options.
@@ -60,6 +61,7 @@ export const Heading = Node.create<HeadingOptions>({
 
   defining: true,
 
+
   addAttributes() {
     return {
       // 🔥 标题特有属性
@@ -69,7 +71,7 @@ export const Heading = Node.create<HeadingOptions>({
       },
       // 🔥 核心块标识属性
       moniBlockId: {
-        default: null,
+        default: () => ensureMoniBlockId({}).moniBlockId,
         parseHTML: element => element.getAttribute('data-moni-block-id'),
         renderHTML: attributes => {
           if (attributes.moniBlockId) {

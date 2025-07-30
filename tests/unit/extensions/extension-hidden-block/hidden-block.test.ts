@@ -4,7 +4,7 @@ import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { HiddenBlock, HiddenBlockUtils, NULL_UUID } from '../index.js'
+import { HiddenBlock, HiddenBlockUtils, NULL_UUID } from '@tiptap/extension-hidden-block'
 
 describe('HiddenBlock Extension', () => {
   let editor: Editor

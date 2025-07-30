@@ -2,6 +2,7 @@ import type { NodeType } from '@tiptap/pm/model'
 
 import type { InputRuleFinder } from '../InputRule.js'
 import { InputRule } from '../InputRule.js'
+import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import type { ExtendedRegExpMatchArray } from '../types.js'
 import { callOrReturn } from '../utilities/callOrReturn.js'
 
@@ -21,7 +22,8 @@ export function textblockTypeInputRule(config: {
     find: config.find,
     handler: ({ state, range, match }) => {
       const $start = state.doc.resolve(range.from)
-      const attributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const baseAttributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const attributes = ensureMoniBlockId(baseAttributes)
 
       if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), config.type)) {
         return null

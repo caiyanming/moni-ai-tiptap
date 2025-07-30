@@ -251,12 +251,14 @@ export class MoniDragPlugin {
   }
 
   private handleDrop(view: EditorView, event: DragEvent): boolean {
-    event.preventDefault()
-
     const dragData = this.extractDragData(event)
     if (!dragData) {
+      // 🔧 FIX: 如果不是Moni块数据，不要阻止默认的ProseMirror拖拽处理
       return false
     }
+
+    // 只有在确定可以处理Moni块拖拽时才阻止默认行为
+    event.preventDefault()
 
     const target = event.target as HTMLElement
     const targetBlockElement = this.findBlockElement(target)

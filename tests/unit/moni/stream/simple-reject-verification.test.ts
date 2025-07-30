@@ -5,8 +5,9 @@
  */
 
 import { StreamOperationManager } from '@tiptap/core'
+import { createMockStreamOperation } from './test-utils.js'
 import { JSDOM } from 'jsdom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // 设置DOM环境
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
@@ -20,6 +21,9 @@ describe('✅ 简化的 Reject 功能验证', () => {
 
   beforeEach(() => {
     deleteCallCount = 0
+    
+    // 在测试开始前设置 fake timers
+    vi.useFakeTimers()
 
     const mockTransaction = {
       setNodeMarkup: vi.fn(),
@@ -58,8 +62,18 @@ describe('✅ 简化的 Reject 功能验证', () => {
     manager = new StreamOperationManager(mockView, mockSchema)
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('🎯 REJECT操作应该触发删除调用', async () => {
     console.log('📊 测试开始 - 验证reject操作是否调用删除')
+    
+    // 首先添加一个操作
+    manager.queueOperation(createMockStreamOperation({
+      moniOperationId: 'test-op-123',
+      moniBlockId: 'test-block'
+    }))
     
     // 确认删除调用次数初始为0
     expect(deleteCallCount).toBe(0)
@@ -69,8 +83,7 @@ describe('✅ 简化的 Reject 功能验证', () => {
     expect(result).toBe(true)
     console.log('✅ rejectOperation 调用成功')
 
-    // 等待延迟执行的撤销操作
-    vi.useFakeTimers()
+    // 等待延迟执行的撤销操作（fake timers已在beforeEach设置）
     console.log('⏰ 开始等待延迟操作...')
     
     vi.advanceTimersByTime(1000)
@@ -81,16 +94,20 @@ describe('✅ 简化的 Reject 功能验证', () => {
     // 验证删除操作被调用
     expect(deleteCallCount).toBeGreaterThan(0)
     console.log('🎉 测试通过！reject操作确实调用了删除功能')
-
-    vi.useRealTimers()
   })
 
   it('🔍 验证日志输出', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation()
 
+    // 首先添加一个操作
+    manager.queueOperation(createMockStreamOperation({
+      moniOperationId: 'test-op-123',
+      moniBlockId: 'test-block'
+    }))
+
     manager.rejectOperation('test-op-123')
 
-    vi.useFakeTimers() 
+    // fake timers已在beforeEach设置
     vi.advanceTimersByTime(1000)
     await vi.runAllTimersAsync()
 
@@ -99,7 +116,6 @@ describe('✅ 简化的 Reject 功能验证', () => {
       expect.stringContaining('[StreamOperationManager] 撤销操作: test-op-123')
     )
 
-    vi.useRealTimers()
     consoleSpy.mockRestore()
   })
 })

@@ -3,16 +3,17 @@
  * 测试拖拽指示器的视觉状态管理，确保 Notion 级别的流畅体验
  */
 
-import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { EditorView } from '@tiptap/pm/view'
 
-import { ModernDragIndicator, createDragIndicator, DEFAULT_THEMES } from '../modern-drag-indicator.js'
-import type { IndicatorDirection, IndicatorPosition } from '../drop-position-calculator.js'
+import { ModernDragIndicator, createDragIndicator, DEFAULT_THEMES } from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
+import type { IndicatorDirection, IndicatorPosition } from '@tiptap/extension-drag-handle/drop-position-calculator.js'
 
 describe('ModernDragIndicator', () => {
   let mockEditorView: EditorView
   let mockContainer: HTMLElement
   let indicator: ModernDragIndicator
+  let getBoundingClientRectSpy: any
 
   beforeEach(() => {
     // 创建模拟容器
@@ -29,14 +30,40 @@ describe('ModernDragIndicator', () => {
     editorDom.style.height = '100%'
     mockContainer.appendChild(editorDom)
 
+    // 为元素直接定义 getBoundingClientRect 方法
+    const mockRect = () => ({
+      x: 50,
+      y: 100,
+      width: 400,
+      height: 100,
+      top: 100,
+      bottom: 200,
+      left: 50,
+      right: 450,
+      toJSON: vi.fn()
+    })
+
+    // 为 container 和 editorDom 设置 getBoundingClientRect
+    Object.defineProperty(mockContainer, 'getBoundingClientRect', {
+      value: mockRect,
+      writable: true,
+      configurable: true
+    })
+    
+    Object.defineProperty(editorDom, 'getBoundingClientRect', {
+      value: mockRect,
+      writable: true,
+      configurable: true
+    })
+
     // 模拟 EditorView
     mockEditorView = {
       dom: editorDom,
       state: {} as any,
-      dispatch: jest.fn(),
-      focus: jest.fn(),
-      hasFocus: jest.fn(() => true),
-      someProp: jest.fn(),
+      dispatch: vi.fn(),
+      focus: vi.fn(),
+      hasFocus: vi.fn(() => true),
+      someProp: vi.fn(),
     } as unknown as EditorView
 
     // 创建指示器实例
@@ -50,7 +77,8 @@ describe('ModernDragIndicator', () => {
     if (mockContainer.parentNode) {
       mockContainer.parentNode.removeChild(mockContainer)
     }
-    jest.clearAllMocks()
+    vi.clearAllMocks()
+    vi.restoreAllMocks()
   })
 
   describe('指示器创建和初始化', () => {
@@ -207,7 +235,7 @@ describe('ModernDragIndicator', () => {
     })
 
     it('should cleanup animation frames on destroy', () => {
-      const cancelAnimationFrameSpy = jest.spyOn(window, 'cancelAnimationFrame')
+      const cancelAnimationFrameSpy = vi.spyOn(window, 'cancelAnimationFrame')
 
       // 模拟有pending的animation frame
       indicator.show({
@@ -235,6 +263,9 @@ describe('ModernDragIndicator', () => {
 
   describe('主题和样式定制', () => {
     it('should apply custom theme correctly', () => {
+      // 先销毁默认指示器，避免冲突
+      indicator.destroy()
+      
       // 使用自定义主题创建指示器
       const customIndicator = createDragIndicator(mockEditorView, {
         theme: {
@@ -261,6 +292,9 @@ describe('ModernDragIndicator', () => {
     })
 
     it('should respect animation configuration', () => {
+      // 先销毁默认指示器，避免冲突
+      indicator.destroy()
+      
       const customIndicator = createDragIndicator(mockEditorView, {
         theme: DEFAULT_THEMES.notion,
         animation: {
@@ -281,7 +315,7 @@ describe('ModernDragIndicator', () => {
 
   describe('性能和流畅度优化', () => {
     it('should throttle rapid position updates', () => {
-      const requestAnimationFrameSpy = jest.spyOn(window, 'requestAnimationFrame')
+      const requestAnimationFrameSpy = vi.spyOn(window, 'requestAnimationFrame')
 
       // 快速连续更新位置（模拟高频率的mousemove事件）
       for (let i = 0; i < 10; i++) {

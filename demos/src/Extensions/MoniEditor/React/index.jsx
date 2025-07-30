@@ -2,10 +2,10 @@ import './styles.scss'
 
 import DragHandle from '@tiptap/extension-drag-handle'
 import HiddenBlock from '@tiptap/extension-hidden-block'
-import { UniqueID } from '@tiptap/extension-unique-id'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import React, { useState, useCallback, useRef } from 'react'
+import { generateMoniBlockId } from '@tiptap/core'
 
 import MoniEditor from './MoniEditor'
 import DebugPanel from './DebugPanel'
@@ -36,7 +36,7 @@ export default () => {
     console.log('🎯 [DragHandle] Add block:', options)
     
     // Create a new paragraph block with auto-generated ID
-    const blockId = `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const blockId = generateMoniBlockId()
     const newContent = `<p data-type="paragraph" data-moni-block-id="${blockId}">New paragraph added via drag handle +</p>`
     
     if (options.position !== undefined) {
@@ -120,12 +120,6 @@ export default () => {
         },
       }),
       
-      // Add UniqueID extension for block IDs
-      UniqueID.configure({
-        attributeName: 'moniBlockId',  // This maps to data-moni-block-id
-        types: ['paragraph', 'heading', 'bulletList', 'orderedList', 'blockquote', 'codeBlock'],
-        generateID: () => `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      }),
       
       DragHandle.configure({
         showIndicators: true,

@@ -24,7 +24,7 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    expect(html).toBe('<p>Example Text</p>')
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-[a-z0-9]+">Example Text<\/p>/)
   })
 
   it('should generate HTML with multiple paragraphs', () => {
@@ -44,7 +44,7 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    expect(html).toBe('<p>First paragraph</p><p>Second paragraph</p>')
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-[a-z0-9]+">First paragraph<\/p><p data-moni-block-id="block-\d+-[a-z0-9]+">Second paragraph<\/p>/)
   })
 
   it('should handle empty document', () => {
@@ -71,6 +71,6 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    expect(html).toBe('<p></p>')
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-[a-z0-9]+"><\/p>/)
   })
 })

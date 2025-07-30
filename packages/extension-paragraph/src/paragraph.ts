@@ -1,4 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
+import { ensureMoniBlockId } from '@tiptap/core'
 
 export interface ParagraphOptions {
   /**
@@ -40,11 +41,12 @@ export const Paragraph = Node.create<ParagraphOptions>({
 
   content: 'inline*',
 
+
   addAttributes() {
     return {
       // 🔥 核心块标识属性 - 对应 Notion 的 block id
       moniBlockId: {
-        default: null,
+        default: () => ensureMoniBlockId({}).moniBlockId,
         parseHTML: element => element.getAttribute('data-moni-block-id'),
         renderHTML: attributes => {
           if (attributes.moniBlockId) {

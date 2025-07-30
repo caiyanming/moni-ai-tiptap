@@ -396,11 +396,16 @@ export const DragHandlePlugin = ({
         let cleanupListeners: (() => void) | null = null
 
         if (showIndicators) {
-          try {
-            dragIndicator = createDragIndicator(view, 'notion', true)
-          } catch (error) {
-            console.error('🔧 FIX: Failed to create drag indicator:', error)
-            // 如果指示器创建失败，继续运行但不使用指示器
+          // 🔧 FIX: 检查 DOM 是否已连接且编辑器未销毁，避免在组件卸载时创建指示器
+          if (view.dom && view.dom.isConnected && !view.isDestroyed) {
+            try {
+              dragIndicator = createDragIndicator(view, 'notion', true)
+            } catch (error) {
+              console.error('🔧 FIX: Failed to create drag indicator:', error)
+              // 如果指示器创建失败，继续运行但不使用指示器
+              dragIndicator = null
+            }
+          } else {
             dragIndicator = null
           }
 
@@ -476,22 +481,37 @@ export const DragHandlePlugin = ({
           }
 
           const handleDropHandler = (event: DragEvent) => {
-            if (!isDragging) {
+            if (!isDragging || !dragSourceElement) {
               return
             }
+
+            event.preventDefault()
+            event.stopPropagation()
 
             const target = event.target as HTMLElement
             const blockElement = findBlockElement(target)
 
-            if (blockElement) {
+            if (blockElement && blockElement !== dragSourceElement) {
               const result = DropPositionCalculator.calculate(event, blockElement)
 
-              // 🎯 调用用户自定义回调，增强语义化信息
+              // 🎯 NOTION风格：执行实际的节点移动
+              try {
+                const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
+                console.log(`🎯 Notion风格拖拽${success ? '成功' : '失败'}:`, {
+                  source: dragSourceElement.tagName,
+                  target: blockElement.tagName,
+                  position: result.dropPosition
+                })
+              } catch (error) {
+                console.error('🔧 Notion拖拽执行失败:', error)
+              }
+
+              // 🎯 调用用户自定义回调
               const dropInfo: DropInfo = {
                 position: result.dropPosition,
                 targetElement: blockElement,
-                horizontalPosition: result.horizontalPosition, // AppFlowy 风格位置
-                confidence: result.confidence, // 算法置信度
+                horizontalPosition: result.horizontalPosition,
+                confidence: result.confidence,
               }
               onDrop?.(event, dropInfo, editor)
             }
@@ -501,6 +521,89 @@ export const DragHandlePlugin = ({
             dragSourceElement = null
             dragIndicator?.hide()
           }
+
+          // 🎯 NOTION风格：更可靠的节点移动实现
+          const executeNotionStyleMove = (sourceElement: HTMLElement, targetElement: HTMLElement, position: 'above' | 'below' | 'inside'): boolean => {
+            try {
+              // 找到对应的ProseMirror位置
+              const sourcePos = view.posAtDOM(sourceElement, 0)
+              const targetPos = view.posAtDOM(targetElement, 0)
+
+              if (sourcePos === -1 || targetPos === -1) {
+                console.warn('无法找到DOM对应的ProseMirror位置')
+                return false
+              }
+
+              const { state } = view
+              const { doc, tr } = state
+
+              // 找到包含的块级节点
+              const sourceResolve = doc.resolve(sourcePos)
+              const targetResolve = doc.resolve(targetPos)
+
+              // 找到最近的块级节点位置
+              const sourceBlockPos = findBlockPosition(sourceResolve)
+              const targetBlockPos = findBlockPosition(targetResolve)
+
+              if (sourceBlockPos === null || targetBlockPos === null) {
+                console.warn('无法找到块级节点位置')
+                return false
+              }
+
+              const sourceNode = doc.nodeAt(sourceBlockPos.pos)
+              if (!sourceNode) {
+                console.warn('无法找到源节点')
+                return false
+              }
+
+              // 计算插入位置
+              let insertPos: number
+              if (position === 'above') {
+                insertPos = targetBlockPos.pos
+              } else if (position === 'below') {
+                insertPos = targetBlockPos.pos + targetBlockPos.size
+              } else {
+                return false // 暂不支持inside
+              }
+
+              // 执行移动：先删除，再插入
+              const deleteFrom = sourceBlockPos.pos
+              const deleteTo = sourceBlockPos.pos + sourceBlockPos.size
+
+              let newTr = tr.delete(deleteFrom, deleteTo)
+
+              // 调整插入位置（如果删除位置在插入位置之前）
+              let adjustedInsertPos = insertPos
+              if (deleteFrom < insertPos) {
+                adjustedInsertPos = insertPos - sourceBlockPos.size
+              }
+
+              // 插入节点
+              newTr = newTr.insert(adjustedInsertPos, sourceNode)
+
+              // 应用事务
+              view.dispatch(newTr)
+
+              return true
+            } catch (error) {
+              console.error('executeNotionStyleMove详细错误:', error)
+              return false
+            }
+          }
+
+          // 辅助函数：找到块级节点的位置和大小
+          const findBlockPosition = (resolve: any): { pos: number; size: number } | null => {
+            // 向上查找块级节点
+            for (let depth = resolve.depth; depth >= 0; depth--) {
+              const node = resolve.node(depth)
+              if (node.isBlock && depth > 0) { // 排除document节点
+                const pos = resolve.start(depth)
+                return { pos, size: node.nodeSize }
+              }
+            }
+            return null
+          }
+
 
           const handleDragEnd = () => {
             isDragging = false

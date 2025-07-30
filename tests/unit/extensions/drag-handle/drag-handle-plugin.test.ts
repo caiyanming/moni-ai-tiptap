@@ -1,9 +1,10 @@
 import { Editor } from '@tiptap/core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { Document } from '@tiptap/extension-document'
-import { DragHandlePlugin } from '@tiptap/extension-drag-handle'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { DragHandlePlugin } from '@tiptap/extension-drag-handle/drag-handle-plugin.js'
 
 describe('DragHandlePlugin', () => {
   let editor: Editor
@@ -104,7 +105,7 @@ describe('DragHandlePlugin', () => {
         onAddBlock: vi.fn(),
       })
 
-      expect(plugin.plugin.key).toBeDefined()
+      expect(plugin.plugin.spec.key).toBeDefined()
     })
 
     it('should accept compute position config', () => {
@@ -259,7 +260,7 @@ describe('DragHandlePlugin', () => {
         onAddBlock: vi.fn(),
       })
 
-      expect(plugin.plugin.key).toBeDefined()
+      expect(plugin.plugin.spec.key).toBeDefined()
     })
 
     it('should handle plugin state', () => {

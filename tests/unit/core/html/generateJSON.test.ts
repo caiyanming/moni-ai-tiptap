@@ -17,7 +17,7 @@ describe('generateJSON', () => {
         {
           type: 'paragraph',
           attrs: expect.objectContaining({
-            moniBlockId: null,
+            moniBlockId: expect.stringMatching(/^block-\d+-[a-z0-9]+$/),
             moniDragEnabled: true,
             moniDragHandle: true,
             moniDragType: 'block',

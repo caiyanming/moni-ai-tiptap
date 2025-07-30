@@ -1,9 +1,10 @@
 import { Editor } from '@tiptap/core'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { Document } from '@tiptap/extension-document'
-import { DragHandle } from '@tiptap/extension-drag-handle'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { DragHandle } from '@tiptap/extension-drag-handle/drag-handle.js'
 
 describe('DragHandle Integration Tests', () => {
   let editor: Editor

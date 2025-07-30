@@ -2,6 +2,7 @@ import type { Node as ProseMirrorNode, NodeType } from '@tiptap/pm/model'
 import { canJoin, findWrapping } from '@tiptap/pm/transform'
 
 import type { Editor } from '../Editor.js'
+import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import type { InputRuleFinder } from '../InputRule.js'
 import { InputRule } from '../InputRule.js'
 import type { ExtendedRegExpMatchArray } from '../types.js'
@@ -34,7 +35,8 @@ export function wrappingInputRule(config: {
   return new InputRule({
     find: config.find,
     handler: ({ state, range, match, chain }) => {
-      const attributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const baseAttributes = callOrReturn(config.getAttributes, undefined, match) || {}
+      const attributes = ensureMoniBlockId(baseAttributes)
       const tr = state.tr.delete(range.from, range.to)
       const $start = tr.doc.resolve(range.from)
       const blockRange = $start.blockRange()
