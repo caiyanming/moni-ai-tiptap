@@ -2,7 +2,7 @@ import { type DragHandleManagerOptions, type Editor, DragHandleManager } from '@
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-// Mock NodeSelection
+// Mock NodeSelection and PluginKey
 vi.mock('@tiptap/pm/state', () => ({
   NodeSelection: {
     create: vi.fn().mockImplementation((doc, pos) => {
@@ -35,6 +35,10 @@ vi.mock('@tiptap/pm/state', () => ({
       }
     }),
   },
+  PluginKey: vi.fn().mockImplementation(name => ({
+    key: name,
+    getState: vi.fn(),
+  })),
 }))
 
 // Mock Editor and related objects

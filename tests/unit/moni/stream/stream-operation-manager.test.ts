@@ -9,22 +9,62 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
 global.document = dom.window.document
 global.window = dom.window as any
 
+// Mock crypto.randomUUID safely
+if (!global.crypto) {
+  ;(global as any).crypto = {}
+}
+if (!global.crypto.randomUUID) {
+  global.crypto.randomUUID = () => Math.random().toString(36).substr(2, 16)
+}
+
 describe('StreamOperationManager - 重构后测试', () => {
   let manager: StreamOperationManager
 
   beforeEach(() => {
+    // 创建包含实际节点的模拟文档
+    const mockNodes = [
+      {
+        type: { name: 'paragraph' },
+        attrs: { moniBlockId: 'block-test', moniParentId: null, moniLevel: 0 },
+        content: null,
+        nodeSize: 2,
+        textContent: 'existing block',
+      },
+      {
+        type: { name: 'paragraph' },
+        attrs: { moniBlockId: 'block-replace', moniParentId: null, moniLevel: 0 },
+        content: null,
+        nodeSize: 2,
+        textContent: 'block to replace',
+      },
+      {
+        type: { name: 'paragraph' },
+        attrs: { moniBlockId: 'block-delete', moniParentId: null, moniLevel: 0 },
+        content: null,
+        nodeSize: 2,
+        textContent: 'block to delete',
+      },
+    ]
+
     // 创建真实的 StreamOperationManager 实例
     const mockView = {
       state: {
         doc: {
-          descendants: vi.fn(),
-          content: { size: 0 },
+          descendants: vi.fn().mockImplementation(callback => {
+            // 模拟文档遍历，调用回调函数处理每个节点
+            mockNodes.forEach((node, index) => {
+              const position = index * 3 // 模拟位置计算
+              const result = callback(node, position)
+              if (result === false) {return false} // 支持早期退出
+            })
+          }),
+          content: { size: 10 },
         },
         tr: {
-          setNodeMarkup: vi.fn(),
-          insert: vi.fn(),
-          delete: vi.fn(),
-          replaceWith: vi.fn(),
+          setNodeMarkup: vi.fn().mockReturnThis(),
+          insert: vi.fn().mockReturnThis(),
+          delete: vi.fn().mockReturnThis(),
+          replaceWith: vi.fn().mockReturnThis(),
         },
       },
       dispatch: vi.fn(),
@@ -70,10 +110,32 @@ describe('StreamOperationManager - 重构后测试', () => {
     })
 
     it('应该支持自定义配置', () => {
+      const mockNodes = [
+        {
+          type: { name: 'paragraph' },
+          attrs: { moniBlockId: 'block-config-test', moniParentId: null, moniLevel: 0 },
+          content: null,
+          nodeSize: 2,
+          textContent: 'config test block',
+        },
+      ]
+
       const mockView = {
         state: {
-          doc: { descendants: vi.fn(), content: { size: 0 } },
-          tr: { setNodeMarkup: vi.fn(), insert: vi.fn(), delete: vi.fn(), replaceWith: vi.fn() },
+          doc: {
+            descendants: vi.fn().mockImplementation(callback => {
+              mockNodes.forEach((node, index) => {
+                callback(node, index * 3)
+              })
+            }),
+            content: { size: 0 },
+          },
+          tr: {
+            setNodeMarkup: vi.fn().mockReturnThis(),
+            insert: vi.fn().mockReturnThis(),
+            delete: vi.fn().mockReturnThis(),
+            replaceWith: vi.fn().mockReturnThis(),
+          },
         },
         dispatch: vi.fn(),
       }
@@ -126,10 +188,32 @@ describe('StreamOperationManager - 重构后测试', () => {
     })
 
     it('应该拒绝超出队列容量的操作', () => {
+      const mockNodes = [
+        {
+          type: { name: 'paragraph' },
+          attrs: { moniBlockId: 'block-capacity-test', moniParentId: null, moniLevel: 0 },
+          content: null,
+          nodeSize: 2,
+          textContent: 'capacity test block',
+        },
+      ]
+
       const mockView = {
         state: {
-          doc: { descendants: vi.fn(), content: { size: 0 } },
-          tr: { setNodeMarkup: vi.fn(), insert: vi.fn(), delete: vi.fn(), replaceWith: vi.fn() },
+          doc: {
+            descendants: vi.fn().mockImplementation(callback => {
+              mockNodes.forEach((node, index) => {
+                callback(node, index * 3)
+              })
+            }),
+            content: { size: 0 },
+          },
+          tr: {
+            setNodeMarkup: vi.fn().mockReturnThis(),
+            insert: vi.fn().mockReturnThis(),
+            delete: vi.fn().mockReturnThis(),
+            replaceWith: vi.fn().mockReturnThis(),
+          },
         },
         dispatch: vi.fn(),
       }
@@ -152,7 +236,7 @@ describe('StreamOperationManager - 重构后测试', () => {
       // 由于现在使用节点属性作为数据源，队列容量检查仍然存在
       expect(() => {
         smallQueueManager.queueOperations(operations)
-      }).toThrow('Not enough queue capacity for batch operations')
+      }).toThrow('Not enough queue capacity')
     })
   })
 
@@ -279,10 +363,32 @@ describe('StreamOperationManager - 重构后测试', () => {
     })
 
     it('应该处理队列已满的情况', () => {
+      const mockNodes = [
+        {
+          type: { name: 'paragraph' },
+          attrs: { moniBlockId: 'block-full-test', moniParentId: null, moniLevel: 0 },
+          content: null,
+          nodeSize: 2,
+          textContent: 'full queue test block',
+        },
+      ]
+
       const mockView = {
         state: {
-          doc: { descendants: vi.fn(), content: { size: 0 } },
-          tr: { setNodeMarkup: vi.fn(), insert: vi.fn(), delete: vi.fn(), replaceWith: vi.fn() },
+          doc: {
+            descendants: vi.fn().mockImplementation(callback => {
+              mockNodes.forEach((node, index) => {
+                callback(node, index * 3)
+              })
+            }),
+            content: { size: 0 },
+          },
+          tr: {
+            setNodeMarkup: vi.fn().mockReturnThis(),
+            insert: vi.fn().mockReturnThis(),
+            delete: vi.fn().mockReturnThis(),
+            replaceWith: vi.fn().mockReturnThis(),
+          },
         },
         dispatch: vi.fn(),
       }

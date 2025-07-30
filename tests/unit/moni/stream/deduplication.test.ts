@@ -1,5 +1,5 @@
 /**
- * 简化版 StreamOperationManager 去重功能测试
+ * StreamOperationManager 去重功能测试
  *
  * 测试目标：
  * 1. 验证稳定ID的去重功能
@@ -7,88 +7,63 @@
  * 3. 验证调试接口的正确性
  */
 
-import type { StreamOperation } from '@tiptap/core'
-import { BlockOperationStatus, BlockOperationType, StreamOperationManager } from '@tiptap/core'
-import { JSDOM } from 'jsdom'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Schema } from '@tiptap/pm/model'
+import { EditorState } from '@tiptap/pm/state'
+import { EditorView } from '@tiptap/pm/view'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { cleanupDOM } from './test-utils.js'
+import type { StreamOperation } from '../../../../packages/core/src/StreamOperationManager.js'
+import {
+  BlockOperationStatus,
+  BlockOperationType,
+  StreamOperationManager,
+} from '../../../../packages/core/src/StreamOperationManager.js'
 
-// 设置DOM环境
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
-global.document = dom.window.document
-global.window = dom.window as any
-
-// Mock crypto.randomUUID safely
-if (!global.crypto) {
-  ;(global as any).crypto = {}
-}
-if (!global.crypto.randomUUID) {
-  global.crypto.randomUUID = () => Math.random().toString(36).substr(2, 16)
-}
+// 创建基础schema用于测试
+const schema = new Schema({
+  nodes: {
+    doc: { content: 'paragraph*' },
+    paragraph: {
+      content: 'text*',
+      attrs: {
+        moniBlockId: { default: null },
+        moniParentId: { default: null },
+        moniLevel: { default: 0 },
+        diffMode: { default: false },
+        diffStatus: { default: null },
+        diffOperationId: { default: null },
+        diffType: { default: null },
+      },
+      toDOM: () => ['p', 0],
+      parseDOM: [{ tag: 'p' }],
+    },
+    text: {},
+  },
+})
 
 describe('StreamOperationManager Deduplication', () => {
+  let view: EditorView
   let streamManager: StreamOperationManager
   let mockOperations: StreamOperation[]
 
   beforeEach(() => {
-    // 创建简化的模拟环境
-    const mockNodes = [
-      {
-        type: { name: 'paragraph' },
-        attrs: { moniBlockId: 'test-block-1', moniParentId: null, moniLevel: 0 },
-        content: null,
-        nodeSize: 2,
-        textContent: 'Initial content',
-      },
-    ]
+    // 设置测试环境
+    const doc = schema.node('doc', {}, [
+      schema.node('paragraph', { moniBlockId: 'test-block-1' }, [schema.text('Initial content')]),
+    ])
 
-    const mockView = {
-      state: {
-        doc: {
-          descendants: vi.fn().mockImplementation(callback => {
-            mockNodes.forEach((node, index) => {
-              const position = index * 3
-              callback(node, position)
-            })
-          }),
-          content: { size: 10 },
-        },
-        tr: {
-          setNodeMarkup: vi.fn().mockReturnThis(),
-          insert: vi.fn().mockReturnThis(),
-          delete: vi.fn().mockReturnThis(),
-          replaceWith: vi.fn().mockReturnThis(),
-        },
-      },
-      dispatch: vi.fn(),
-    }
+    const state = EditorState.create({ doc, schema })
+    const mockElement = document.createElement('div')
 
-    const mockSchema = {
-      nodes: {
-        paragraph: {
-          create: vi.fn().mockReturnValue({
-            type: { name: 'paragraph' },
-            attrs: {},
-            content: null,
-            nodeSize: 2,
-            textContent: 'test',
-          }),
-        },
+    view = new EditorView(mockElement, {
+      state,
+      dispatchTransaction: tr => {
+        const newState = view.state.apply(tr)
+        view.updateState(newState)
       },
-      text: vi.fn().mockReturnValue({
-        type: { name: 'text' },
-        attrs: {},
-        content: null,
-        nodeSize: 1,
-        textContent: 'test',
-      }),
-    }
-
-    streamManager = new StreamOperationManager(mockView as any, mockSchema as any, {
-      maxQueueSize: 100,
-      operationInterval: 50,
     })
+
+    streamManager = new StreamOperationManager(view, schema)
 
     // 创建测试操作数据
     mockOperations = [
@@ -116,10 +91,8 @@ describe('StreamOperationManager Deduplication', () => {
   })
 
   afterEach(() => {
-    if (streamManager && typeof streamManager.destroy === 'function') {
-      streamManager.destroy()
-    }
-    cleanupDOM()
+    streamManager.destroy()
+    view.destroy()
   })
 
   it('应该正确处理新操作', () => {
@@ -131,13 +104,11 @@ describe('StreamOperationManager Deduplication', () => {
     // 验证操作被标记为已处理
     expect(streamManager.isOperationProcessed('stream1_block1_op_0')).toBe(true)
     expect(streamManager.isOperationProcessed('stream1_block2_op_1')).toBe(true)
-
-    const processedOps = streamManager.getProcessedOperations()
-    expect(processedOps).toContain('stream1_block1_op_0')
-    expect(processedOps).toContain('stream1_block2_op_1')
+    expect(streamManager.getProcessedOperations()).toEqual(['stream1_block1_op_0', 'stream1_block2_op_1'])
 
     // 验证日志输出
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('过滤后待处理操作: 2/2'))
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('批量队列操作完成: 2/2 成功'))
 
     consoleLogSpy.mockRestore()
   })
@@ -183,6 +154,7 @@ describe('StreamOperationManager Deduplication', () => {
     // 验证混合处理日志
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('跳过重复操作: stream1_block1_op_0'))
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('过滤后待处理操作: 1/2'))
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('批量队列操作完成: 1/1 成功'))
 
     // 验证最终状态
     expect(streamManager.getProcessedOperations()).toHaveLength(2)

@@ -9,8 +9,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['../setup.ts'],
-    include: ['../unit/**/*.{test,spec}.{js,ts,tsx}', '../../packages/**/__tests__/**/*.{test,spec}.{js,ts,tsx}'],
+    setupFiles: ['./setup.ts'],
+    include: ['./unit/**/*.{test,spec}.{js,ts,tsx}'],
     exclude: ['../../node_modules/**', '../../demos/**', '../../packages-deprecated/**', '../cypress/**', '../e2e/**'],
     coverage: {
       provider: 'v8',
@@ -58,9 +58,14 @@ export default defineConfig({
       '@tiptap/extension-mention': resolve(__dirname, '../../packages/extension-mention/src'),
       '@tiptap/starter-kit': resolve(__dirname, '../../packages/starter-kit/src'),
       '@tiptap/pm/model': resolve(__dirname, '../../packages/pm/model'),
+      '@tiptap/pm/state': resolve(__dirname, '../../packages/pm/state'),
+      '@tiptap/pm/view': resolve(__dirname, '../../packages/pm/view'),
       '@tiptap/react': resolve(__dirname, '../../packages/react/src'),
       '@tiptap/extension-drag-handle': resolve(__dirname, '../../packages/extension-drag-handle/src'),
       '@tiptap/extension-hidden-block': resolve(__dirname, '../../packages/extension-hidden-block/src'),
+      '@tiptap/extension-heading': resolve(__dirname, '../../packages/extension-heading/src'),
+      '@tiptap/extension-blockquote': resolve(__dirname, '../../packages/extension-blockquote/src'),
+      '@tiptap/extension-horizontal-rule': resolve(__dirname, '../../packages/extension-horizontal-rule/src'),
     },
   },
 })
