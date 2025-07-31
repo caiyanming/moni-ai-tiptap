@@ -1,9 +1,4 @@
-import type { 
-  DocumentStylePreset, 
-  SemanticStyle, 
-  CSSVariableMap,
-  MoniGlobalStyleAttributes 
-} from '@tiptap/core'
+import type { CSSVariableMap, DocumentStylePreset, MoniGlobalStyleAttributes,SemanticStyle } from '@tiptap/core'
 
 /**
  * 样式工具函数集 - 提供样式计算、CSS 变量注入等功能
@@ -58,8 +53,8 @@ export function presetToCSSVariables(preset: DocumentStylePreset): CSSVariableMa
  * @param target 目标元素，默认为 document.documentElement
  */
 export function injectCSSVariables(
-  variables: Partial<CSSVariableMap>, 
-  target: HTMLElement = document.documentElement
+  variables: Partial<CSSVariableMap>,
+  target: HTMLElement = document.documentElement,
 ): void {
   Object.entries(variables).forEach(([property, value]) => {
     if (value !== undefined && value !== null) {
@@ -73,10 +68,7 @@ export function injectCSSVariables(
  * @param variableNames 要清除的变量名列表
  * @param target 目标元素
  */
-export function clearCSSVariables(
-  variableNames: string[], 
-  target: HTMLElement = document.documentElement
-): void {
+export function clearCSSVariables(variableNames: string[], target: HTMLElement = document.documentElement): void {
   variableNames.forEach(name => {
     target.style.removeProperty(name)
   })
@@ -111,15 +103,15 @@ export function semanticStyleToInlineCSS(style: SemanticStyle): string {
 export function generateGlobalStyleAttributes(
   preset: DocumentStylePreset,
   semanticType: keyof DocumentStylePreset['semantic'],
-  styleVersion: number
+  styleVersion: number,
 ): MoniGlobalStyleAttributes {
   const semanticStyle = preset.semantic[semanticType]
-  
+
   return {
     moniGlobalFontFamily: preset.typography.fontFamily,
     moniGlobalFontSize: preset.typography.fontSize,
     moniSemanticStyle: JSON.stringify(semanticStyle),
-    moniStyleVersion: styleVersion
+    moniStyleVersion: styleVersion,
   }
 }
 
@@ -166,7 +158,7 @@ export function parseGlobalStyleAttributes(attributes: Partial<MoniGlobalStyleAt
  */
 export function mergeSemanticStyles(...styles: (SemanticStyle | undefined)[]): SemanticStyle {
   return styles.reduce<SemanticStyle>((merged, style) => {
-    if (!style) return merged
+    if (!style) {return merged}
     return { ...merged, ...style }
   }, {} as SemanticStyle)
 }
@@ -181,7 +173,7 @@ export function mergeSemanticStyles(...styles: (SemanticStyle | undefined)[]): S
 export function computeFinalStyle(
   baseStyle: SemanticStyle,
   overrides?: Partial<SemanticStyle>,
-  globalFont?: { fontFamily?: string; fontSize?: number }
+  globalFont?: { fontFamily?: string; fontSize?: number },
 ): SemanticStyle {
   let finalStyle = { ...baseStyle }
 
@@ -208,11 +200,7 @@ export function computeFinalStyle(
  * @param styleVersion 样式版本
  * @returns 缓存键字符串
  */
-export function generateStyleCacheKey(
-  preset: DocumentStylePreset,
-  semanticType: string,
-  styleVersion: number
-): string {
+export function generateStyleCacheKey(preset: DocumentStylePreset, semanticType: string, styleVersion: number): string {
   return `${preset.name}-${semanticType}-${styleVersion}`
 }
 
@@ -232,30 +220,38 @@ function formatCSSValue(property: string, value: any): string {
   if (typeof value === 'number') {
     // 需要单位的属性
     const pixelProperties = [
-      'fontSize', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
-      'padding', 'borderRadius', 'width', 'height', 'top', 'left', 'right', 'bottom'
+      'fontSize',
+      'marginTop',
+      'marginBottom',
+      'marginLeft',
+      'marginRight',
+      'padding',
+      'borderRadius',
+      'width',
+      'height',
+      'top',
+      'left',
+      'right',
+      'bottom',
     ]
-    
+
     if (pixelProperties.includes(property)) {
       return `${value}px`
     }
-    
+
     // 无单位数值
     return value.toString()
   }
-  
+
   return String(value)
 }
 
 /**
  * 防抖函数 - 用于样式更新优化
  */
-export function debounce<T extends (...args: any[]) => void>(
-  func: T,
-  delay: number
-): (...args: Parameters<T>) => void {
+export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout | null = null
-  
+
   return (...args: Parameters<T>) => {
     if (timeoutId) {
       clearTimeout(timeoutId)
@@ -271,19 +267,19 @@ export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') {
     return obj
   }
-  
+
   if (obj instanceof Date) {
     return new Date(obj.getTime()) as any
   }
-  
+
   if (Array.isArray(obj)) {
     return obj.map(item => deepClone(item)) as any
   }
-  
+
   const cloned = {} as T
   Object.keys(obj).forEach(key => {
-    (cloned as any)[key] = deepClone((obj as any)[key])
+    ;(cloned as any)[key] = deepClone((obj as any)[key])
   })
-  
+
   return cloned
 }

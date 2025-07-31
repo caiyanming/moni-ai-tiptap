@@ -506,7 +506,7 @@ export type DOMOutputSpecArray =
 
 /**
  * MoniAI 文档样式配置接口 - 支持类似 Microsoft Word 的文档级样式管理
- * 
+ *
  * 设计理念：
  * - 基于 MoniAI 橙色主题的现代教育风格
  * - 支持语义化样式（title, heading1, heading2, paragraph 等）
@@ -520,7 +520,7 @@ export interface DocumentStylePreset {
   displayName: string
   /** 样式预设描述 */
   description: string
-  
+
   /** 排版设置 */
   typography: {
     /** 字体族 - 默认 "Inter", "Source Han Sans SC", -apple-system, sans-serif */
@@ -539,7 +539,7 @@ export interface DocumentStylePreset {
       base: number
     }
   }
-  
+
   /** 颜色主题 */
   colors: {
     /** 主文本颜色 */
@@ -559,7 +559,7 @@ export interface DocumentStylePreset {
     /** 错误状态颜色 */
     error: string
   }
-  
+
   /** 间距设置 */
   spacing: {
     /** 块级元素间距 (px) */
@@ -569,7 +569,7 @@ export interface DocumentStylePreset {
     /** 列表缩进 (px) */
     listIndent: number
   }
-  
+
   /** 语义化样式定义 */
   semantic: {
     /** 文档标题样式 */
@@ -653,7 +653,7 @@ export interface DocumentStyleState {
 
 /**
  * 全局样式属性 - 用于节点属性扩展
- * 
+ *
  * 这些属性将被添加到所有 InlineDiff 系列扩展中：
  * - InlineDiffParagraph, InlineDiffHeading, InlineDiffBulletList 等
  */
@@ -677,7 +677,7 @@ export interface CSSVariableMap {
   '--moni-font-size': string
   '--moni-line-height': string
   '--moni-letter-spacing': string
-  
+
   // 颜色变量
   '--moni-color-text': string
   '--moni-color-text-secondary': string
@@ -687,12 +687,12 @@ export interface CSSVariableMap {
   '--moni-color-success': string
   '--moni-color-warning': string
   '--moni-color-error': string
-  
+
   // 间距变量
   '--moni-spacing-block': string
   '--moni-spacing-paragraph': string
   '--moni-spacing-list-indent': string
-  
+
   // 语义样式变量 (动态生成)
   [key: `--moni-semantic-${string}`]: string
 }

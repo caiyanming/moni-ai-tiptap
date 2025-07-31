@@ -49,7 +49,7 @@ export function processPastedHTML(html: string): string {
 
     // Block-level elements that should have moniBlockId
     const blockElements = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'ul', 'ol', 'li', 'div']
-    
+
     blockElements.forEach(tagName => {
       const elements = temp.querySelectorAll(tagName)
       elements.forEach(element => {

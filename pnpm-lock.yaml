@@ -556,11 +556,10 @@ importers:
         version: link:../core
 
   packages/extension-document-style:
-    dependencies:
+    devDependencies:
       '@tiptap/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.3.5(jiti@2.4.2)(postcss@8.5.1)(typescript@5.7.3)(yaml@2.7.0)
@@ -894,14 +893,13 @@ importers:
         version: link:../core
 
   packages/extension-stream-style:
-    dependencies:
+    devDependencies:
       '@tiptap/core':
         specifier: workspace:*
         version: link:../core
       '@tiptap/extension-document-style':
         specifier: workspace:*
         version: link:../extension-document-style
-    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.3.5(jiti@2.4.2)(postcss@8.5.1)(typescript@5.7.3)(yaml@2.7.0)

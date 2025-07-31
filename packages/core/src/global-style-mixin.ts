@@ -2,7 +2,7 @@ import type { MoniGlobalStyleAttributes } from './types.js'
 
 /**
  * MoniAI 全局样式混入 - 为所有块扩展提供统一的样式处理功能
- * 
+ *
  * 使用方法：
  * 1. 在扩展的 addAttributes() 中调用 addGlobalStyleAttributes()
  * 2. 在扩展的 renderHTML() 中调用 generateInlineStyleForNode()
@@ -15,7 +15,7 @@ import type { MoniGlobalStyleAttributes } from './types.js'
 export function addGlobalStyleAttributes() {
   return {
     // ============ 🎨 MoniAI 全局样式属性 ============
-    
+
     /**
      * 全局字体族 - 覆盖文档默认字体
      * 通过 DocumentStyleExtension 设置和管理
@@ -90,10 +90,7 @@ export function addGlobalStyleAttributes() {
  * @param additionalContext 额外上下文（如标题级别等）
  * @returns CSS 样式字符串
  */
-export function generateInlineStyleForNode(
-  attributes: any, 
-  additionalContext?: any
-): string | null {
+export function generateInlineStyleForNode(attributes: any, additionalContext?: any): string | null {
   const styleProperties: string[] = []
 
   // 应用全局字体族
@@ -139,18 +136,29 @@ function formatCSSValue(property: string, value: any): string {
   if (typeof value === 'number') {
     // 需要单位的属性
     const pixelProperties = [
-      'fontSize', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
-      'padding', 'borderRadius', 'width', 'height', 'top', 'left', 'right', 'bottom'
+      'fontSize',
+      'marginTop',
+      'marginBottom',
+      'marginLeft',
+      'marginRight',
+      'padding',
+      'borderRadius',
+      'width',
+      'height',
+      'top',
+      'left',
+      'right',
+      'bottom',
     ]
-    
+
     if (pixelProperties.includes(property)) {
       return `${value}px`
     }
-    
+
     // 无单位数值
     return value.toString()
   }
-  
+
   return String(value)
 }
 
@@ -174,6 +182,6 @@ export function extractGlobalStyleAttributes(attributes: any): MoniGlobalStyleAt
     moniGlobalFontFamily: attributes.moniGlobalFontFamily || null,
     moniGlobalFontSize: attributes.moniGlobalFontSize || null,
     moniSemanticStyle: attributes.moniSemanticStyle || null,
-    moniStyleVersion: attributes.moniStyleVersion || 1
+    moniStyleVersion: attributes.moniStyleVersion || 1,
   }
 }
