@@ -1,0 +1,57 @@
+{
+  "name": "@tiptap/extension-document-style",
+  "description": "MoniAI Global Document Style Extension - provides Word-like document-level style management",
+  "version": "3.0.0-beta.22",
+  "homepage": "https://tiptap.dev",
+  "keywords": [
+    "tiptap",
+    "editor",
+    "styling",
+    "document",
+    "moni",
+    "prosemirror"
+  ],
+  "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@tiptap/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  },
+  "peerDependencies": {
+    "@tiptap/core": "^3.0.0-beta.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ueberdosis/tiptap.git",
+    "directory": "packages/extension-document-style"
+  },
+  "bugs": {
+    "url": "https://github.com/ueberdosis/tiptap/issues"
+  }
+}

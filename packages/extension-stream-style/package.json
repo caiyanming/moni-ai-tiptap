@@ -1,0 +1,59 @@
+{
+  "name": "@tiptap/extension-stream-style",
+  "description": "MoniAI Stream Style Intelligence Extension - coordinates AI stream operations with document styling",
+  "version": "3.0.0-beta.22",
+  "homepage": "https://tiptap.dev",
+  "keywords": [
+    "tiptap",
+    "editor",
+    "styling",
+    "stream",
+    "ai",
+    "moni",
+    "prosemirror"
+  ],
+  "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "sponsor": {
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "@tiptap/core": "workspace:*",
+    "@tiptap/extension-document-style": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0"
+  },
+  "peerDependencies": {
+    "@tiptap/core": "^3.0.0-beta.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ueberdosis/tiptap.git",
+    "directory": "packages/extension-stream-style"
+  },
+  "bugs": {
+    "url": "https://github.com/ueberdosis/tiptap/issues"
+  }
+}

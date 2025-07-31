@@ -502,6 +502,229 @@ export type DOMOutputSpecArray =
   | [string, Record<string, any>, DOMOutputSpecArray | 0]
   | [string, DOMOutputSpecArray]
 
+// ============ 🎨 MoniAI 全局样式系统类型定义 ============
+
+/**
+ * MoniAI 文档样式配置接口 - 支持类似 Microsoft Word 的文档级样式管理
+ * 
+ * 设计理念：
+ * - 基于 MoniAI 橙色主题的现代教育风格
+ * - 支持语义化样式（title, heading1, heading2, paragraph 等）
+ * - 提供 CSS 变量注入机制，实现高性能样式更新
+ * - 兼容现有 Moni Block 系统和 InlineDiff 功能
+ */
+export interface DocumentStylePreset {
+  /** 样式预设唯一标识 */
+  name: string
+  /** 样式预设显示名称 */
+  displayName: string
+  /** 样式预设描述 */
+  description: string
+  
+  /** 排版设置 */
+  typography: {
+    /** 字体族 - 默认 "Inter", "Source Han Sans SC", -apple-system, sans-serif */
+    fontFamily: string
+    /** 基础字体大小 (px) - 默认 16 */
+    fontSize: number
+    /** 行高 - 默认 1.6 */
+    lineHeight: number
+    /** 字符间距 - 默认 '0.01em' */
+    letterSpacing: string
+    /** 字体缩放比例配置 */
+    scale: {
+      /** 缩放比例 - 默认 1.25 (四度音阶) */
+      ratio: number
+      /** 基础字体大小 */
+      base: number
+    }
+  }
+  
+  /** 颜色主题 */
+  colors: {
+    /** 主文本颜色 */
+    text: string
+    /** 次要文本颜色 */
+    textSecondary: string
+    /** 背景颜色 */
+    background: string
+    /** 强调色 - MoniAI 橙色 #f97316 */
+    accent: string
+    /** 高亮背景色 */
+    highlight: string
+    /** 成功状态颜色 */
+    success: string
+    /** 警告状态颜色 */
+    warning: string
+    /** 错误状态颜色 */
+    error: string
+  }
+  
+  /** 间距设置 */
+  spacing: {
+    /** 块级元素间距 (px) */
+    blockSpacing: number
+    /** 段落间距 (px) */
+    paragraphSpacing: number
+    /** 列表缩进 (px) */
+    listIndent: number
+  }
+  
+  /** 语义化样式定义 */
+  semantic: {
+    /** 文档标题样式 */
+    title: SemanticStyle
+    /** 一级标题样式 */
+    heading1: SemanticStyle
+    /** 二级标题样式 */
+    heading2: SemanticStyle
+    /** 三级标题样式 */
+    heading3: SemanticStyle
+    /** 四级标题样式 */
+    heading4: SemanticStyle
+    /** 五级标题样式 */
+    heading5: SemanticStyle
+    /** 六级标题样式 */
+    heading6: SemanticStyle
+    /** 正文段落样式 */
+    paragraph: SemanticStyle
+    /** 引用块样式 */
+    blockquote: SemanticStyle
+    /** 代码块样式 */
+    codeBlock: SemanticStyle
+    /** 行内代码样式 */
+    inlineCode: SemanticStyle
+    /** 有序列表样式 */
+    orderedList: SemanticStyle
+    /** 无序列表样式 */
+    bulletList: SemanticStyle
+    /** 列表项样式 */
+    listItem: SemanticStyle
+  }
+}
+
+/**
+ * 语义化样式定义
+ */
+export interface SemanticStyle {
+  /** 字体大小 (px) */
+  fontSize?: number
+  /** 字体粗细 */
+  fontWeight?: number | string
+  /** 行高 */
+  lineHeight?: number
+  /** 字符间距 */
+  letterSpacing?: string
+  /** 颜色 */
+  color?: string
+  /** 上边距 (px) */
+  marginTop?: number
+  /** 下边距 (px) */
+  marginBottom?: number
+  /** 左边距 (px) */
+  marginLeft?: number
+  /** 右边距 (px) */
+  marginRight?: number
+  /** 内边距 (px) */
+  padding?: number
+  /** 背景颜色 */
+  backgroundColor?: string
+  /** 边框 */
+  border?: string
+  /** 圆角 */
+  borderRadius?: number
+  /** 其他 CSS 属性 */
+  [key: string]: any
+}
+
+/**
+ * 文档全局样式状态
+ */
+export interface DocumentStyleState {
+  /** 当前应用的样式预设 */
+  currentPreset: DocumentStylePreset | null
+  /** 样式版本号 - 用于强制重新渲染 */
+  styleVersion: number
+  /** 自定义 CSS 变量映射 */
+  cssVariables: Record<string, string>
+  /** 是否已注入 CSS 变量 */
+  isInjected: boolean
+}
+
+/**
+ * 全局样式属性 - 用于节点属性扩展
+ * 
+ * 这些属性将被添加到所有 InlineDiff 系列扩展中：
+ * - InlineDiffParagraph, InlineDiffHeading, InlineDiffBulletList 等
+ */
+export interface MoniGlobalStyleAttributes {
+  /** 全局字体族 - 覆盖文档默认字体 */
+  moniGlobalFontFamily: string | null
+  /** 全局字体大小 - 覆盖文档默认字体大小 */
+  moniGlobalFontSize: number | null
+  /** 语义样式对象 - JSON 字符串形式存储 */
+  moniSemanticStyle: string | null
+  /** 样式版本 - 用于强制重新渲染 */
+  moniStyleVersion: number
+}
+
+/**
+ * CSS 变量映射表 - 用于性能优化的 CSS 变量注入
+ */
+export interface CSSVariableMap {
+  // 基础变量
+  '--moni-font-family': string
+  '--moni-font-size': string
+  '--moni-line-height': string
+  '--moni-letter-spacing': string
+  
+  // 颜色变量
+  '--moni-color-text': string
+  '--moni-color-text-secondary': string
+  '--moni-color-background': string
+  '--moni-color-accent': string
+  '--moni-color-highlight': string
+  '--moni-color-success': string
+  '--moni-color-warning': string
+  '--moni-color-error': string
+  
+  // 间距变量
+  '--moni-spacing-block': string
+  '--moni-spacing-paragraph': string
+  '--moni-spacing-list-indent': string
+  
+  // 语义样式变量 (动态生成)
+  [key: `--moni-semantic-${string}`]: string
+}
+
+/**
+ * 样式传播选项
+ */
+export interface StylePropagationOptions {
+  /** 是否传播到所有块 */
+  propagateToAllBlocks?: boolean
+  /** 是否传播到特定块类型 */
+  targetNodeTypes?: string[]
+  /** 是否更新样式版本 */
+  updateStyleVersion?: boolean
+  /** 传播延迟 (ms) - 用于批量更新优化 */
+  debounceDelay?: number
+}
+
+/**
+ * AI 流式操作样式配置
+ */
+export interface StreamStyleConfig {
+  /** 是否自动应用文档样式到 AI 生成内容 */
+  autoApplyDocumentStyle: boolean
+  /** 是否在插入时继承父级样式 */
+  inheritParentStyle: boolean
+  /** 样式应用优先级 */
+  stylePriority: 'document' | 'parent' | 'content'
+  /** 是否缓存样式计算结果 */
+  enableStyleCache: boolean
+}
+
 export type Content = HTMLContent | JSONContent | JSONContent[] | null
 
 export type CommandProps = {

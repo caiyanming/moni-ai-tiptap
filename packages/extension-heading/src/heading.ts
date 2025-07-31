@@ -1,5 +1,7 @@
 import { mergeAttributes, Node, textblockTypeInputRule } from '@tiptap/core'
 import { ensureMoniBlockId } from '@tiptap/core'
+import type { MoniGlobalStyleAttributes } from '@tiptap/core'
+import { addGlobalStyleAttributes, generateInlineStyleForNode } from '@tiptap/core'
 
 /**
  * The heading level options.
@@ -165,6 +167,9 @@ export const Heading = Node.create<HeadingOptions>({
           return {}
         },
       },
+
+      // ============ 🎨 MoniAI 全局样式属性 ============
+      ...addGlobalStyleAttributes(),
     }
   },
 
@@ -179,7 +184,15 @@ export const Heading = Node.create<HeadingOptions>({
     const hasLevel = this.options.levels.includes(node.attrs.level)
     const level = hasLevel ? node.attrs.level : this.options.levels[0]
 
-    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0]
+    // 🎨 应用全局样式 - 生成行内样式
+    const inlineStyle = generateInlineStyleForNode(HTMLAttributes, { level })
+    const finalAttributes = mergeAttributes(
+      this.options.HTMLAttributes, 
+      HTMLAttributes,
+      inlineStyle ? { style: inlineStyle } : {}
+    )
+
+    return [`h${level}`, finalAttributes, 0]
   },
 
   addCommands() {

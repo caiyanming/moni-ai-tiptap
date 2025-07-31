@@ -27,6 +27,9 @@ export * from './SmartDragCalculator.js'
 // Block Stream System
 export * from './StreamOperationManager.js'
 
+// 🎨 MoniAI 全局样式系统
+export * from './global-style-mixin.js'
+
 // eslint-disable-next-line
 export interface Commands<ReturnType = any> {}
 

@@ -66,6 +66,8 @@ export default defineConfig({
       '@tiptap/extension-heading': resolve(__dirname, '../../packages/extension-heading/src'),
       '@tiptap/extension-blockquote': resolve(__dirname, '../../packages/extension-blockquote/src'),
       '@tiptap/extension-horizontal-rule': resolve(__dirname, '../../packages/extension-horizontal-rule/src'),
+      '@tiptap/extension-document-style': resolve(__dirname, '../../packages/extension-document-style/src'),
+      '@tiptap/extension-stream-style': resolve(__dirname, '../../packages/extension-stream-style/src'),
     },
   },
 })
