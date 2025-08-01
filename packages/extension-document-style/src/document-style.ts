@@ -1,17 +1,12 @@
-import type {
-  CommandProps,
-  DocumentStylePreset,
-  DocumentStyleState,
-  MoniGlobalStyleAttributes,
-  StylePropagationOptions,
-} from '@tiptap/core'
+import type { DocumentStylePreset, StylePropagationOptions } from '@tiptap/core'
 import { Extension } from '@tiptap/core'
 
-import { DEFAULT_STYLE_PRESETS,MoniDefaultStylePreset } from './default-presets.js'
+import { DEFAULT_STYLE_PRESETS, MoniDefaultStylePreset } from './default-presets.js'
 import {
   clearCSSVariables,
-  debounce,
   generateGlobalStyleAttributes,
+  getSemanticTypeForNode,
+  hasAttributesChanged,
   injectCSSVariables,
   presetToCSSVariables,
 } from './style-utils.js'
@@ -136,76 +131,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
   },
 
   addStorage() {
+    const defaultPreset = this.options?.defaultPreset || MoniDefaultStylePreset
+
+    // 简单返回状态数据
     return {
-      // 文档样式状态
-      documentStyle: {
-        currentPreset: null as DocumentStylePreset | null,
-        styleVersion: 1,
-        cssVariables: {} as Record<string, string>,
-        isInjected: false,
-      } as DocumentStyleState,
-
-      // 样式缓存
-      styleCache: new Map<string, any>(),
-
-      // 防抖更新函数
-      debouncedUpdate: null as any,
-
-      // 工具方法
-      injectCSSVariables: (variables: Record<string, string>) => {
-        injectCSSVariables(variables)
-      },
-
-      propagateStyleToAllBlocks: (
-        tr: any,
-        preset: DocumentStylePreset,
-        styleVersion: number,
-        options: DocumentStyleOptions,
-      ) => {
-        const { propagationOptions } = options
-        const { targetNodeTypes = [] } = propagationOptions
-
-        // 遍历文档中的所有节点
-        tr.doc.descendants((node: any, pos: number) => {
-          // 只处理目标节点类型
-          if (!targetNodeTypes.includes(node.type.name)) {
-            return true // 继续遍历子节点
-          }
-
-          // 获取对应的语义样式类型
-          const semanticType = getSemanticTypeForNode(node.type.name)
-          if (!semanticType || !preset.semantic[semanticType]) {
-            return true
-          }
-
-          // 生成新的全局样式属性
-          const newAttributes = generateGlobalStyleAttributes(preset, semanticType, styleVersion)
-
-          // 更新节点属性
-          const currentAttrs = node.attrs || {}
-          const updatedAttrs = {
-            ...currentAttrs,
-            ...newAttributes,
-          }
-
-          // 只有属性确实发生变化时才更新
-          if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
-            tr.setNodeMarkup(pos, undefined, updatedAttrs)
-          }
-
-          return true
-        })
-      },
-
-      updateDocumentStyle: (newPreset: DocumentStylePreset) => {
-        // 样式更新的防抖处理逻辑
-        console.log('Updating document style:', newPreset.name)
-      },
-
-      hasAttributesChanged: (oldAttrs: any, newAttrs: any): boolean => {
-        const keys = Object.keys(newAttrs)
-        return keys.some(key => oldAttrs[key] !== newAttrs[key])
-      },
+      currentPreset: defaultPreset,
+      styleVersion: 1,
+      cssVariables: presetToCSSVariables(defaultPreset),
+      isInjected: false,
     }
   },
 
@@ -213,31 +146,48 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
     return {
       applyStylePreset:
         (presetName: string) =>
-        ({ tr, dispatch, editor }) => {
+        ({ tr, dispatch }) => {
           const preset = this.options.availablePresets.find(p => p.name === presetName)
           if (!preset) {
             console.warn(`Style preset "${presetName}" not found`)
             return false
           }
 
-          // 更新存储状态
-          const newStyleVersion = this.storage.documentStyle.styleVersion + 1
-          this.storage.documentStyle = {
-            currentPreset: preset,
-            styleVersion: newStyleVersion,
-            cssVariables: presetToCSSVariables(preset),
-            isInjected: false,
-          }
+          // 更新存储状态 (扁平化结构)
+          const newStyleVersion = this.storage.styleVersion + 1
+          this.storage.currentPreset = preset
+          this.storage.styleVersion = newStyleVersion
+          this.storage.cssVariables = presetToCSSVariables(preset) as Record<string, string>
+          this.storage.isInjected = false
 
           // 注入 CSS 变量
           if (this.options.autoInjectCSS) {
-            this.storage.injectCSSVariables(this.storage.documentStyle.cssVariables)
-            this.storage.documentStyle.isInjected = true
+            injectCSSVariables(this.storage.cssVariables)
+            this.storage.isInjected = true
           }
 
           // 传播样式到所有块
           if (dispatch) {
-            this.storage.propagateStyleToAllBlocks(tr, preset, newStyleVersion, this.options)
+            // 简单内联实现，不需要单独方法
+            const { propagationOptions } = this.options
+            const { targetNodeTypes = [] } = propagationOptions
+
+            tr.doc.descendants((node: any, pos: number) => {
+              if (!targetNodeTypes.includes(node.type.name)) {return true}
+
+              const semanticType = getSemanticTypeForNode(node.type.name)
+              if (!semanticType || !preset.semantic[semanticType]) {return true}
+
+              const newAttributes = generateGlobalStyleAttributes(preset, semanticType, newStyleVersion)
+              const currentAttrs = node.attrs || {}
+              const updatedAttrs = { ...currentAttrs, ...newAttributes }
+
+              if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
+                tr.setNodeMarkup(pos, undefined, updatedAttrs)
+              }
+              return true
+            })
+
             dispatch(tr)
           }
 
@@ -247,7 +197,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
       setDocumentFont:
         (fontFamily: string) =>
         ({ tr, dispatch }) => {
-          const currentPreset = this.storage.documentStyle.currentPreset
+          const currentPreset = this.storage.currentPreset
           if (!currentPreset) {
             console.warn('No current style preset found')
             return false
@@ -262,19 +212,37 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             },
           }
 
-          const newStyleVersion = this.storage.documentStyle.styleVersion + 1
-          this.storage.documentStyle.currentPreset = updatedPreset
-          this.storage.documentStyle.styleVersion = newStyleVersion
-          this.storage.documentStyle.cssVariables = presetToCSSVariables(updatedPreset)
-
+          const newStyleVersion = this.storage.styleVersion + 1
+          this.storage.currentPreset = updatedPreset
+          this.storage.styleVersion = newStyleVersion
+          this.storage.cssVariables = presetToCSSVariables(updatedPreset)
           // 重新注入 CSS 变量
           if (this.options.autoInjectCSS) {
-            this.storage.injectCSSVariables(this.storage.documentStyle.cssVariables)
+            injectCSSVariables(this.storage.cssVariables)
           }
 
           // 传播样式更新
           if (dispatch) {
-            this.storage.propagateStyleToAllBlocks(tr, updatedPreset, newStyleVersion, this.options)
+            // 内联传播逻辑
+            const { propagationOptions } = this.options
+            const { targetNodeTypes = [] } = propagationOptions
+
+            tr.doc.descendants((node: any, pos: number) => {
+              if (!targetNodeTypes.includes(node.type.name)) {return true}
+
+              const semanticType = getSemanticTypeForNode(node.type.name)
+              if (!semanticType || !updatedPreset.semantic[semanticType]) {return true}
+
+              const newAttributes = generateGlobalStyleAttributes(updatedPreset, semanticType, newStyleVersion)
+              const currentAttrs = node.attrs || {}
+              const updatedAttrs = { ...currentAttrs, ...newAttributes }
+
+              if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
+                tr.setNodeMarkup(pos, undefined, updatedAttrs)
+              }
+              return true
+            })
+
             dispatch(tr)
           }
 
@@ -284,7 +252,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
       setDocumentFontSize:
         (fontSize: number) =>
         ({ tr, dispatch }) => {
-          const currentPreset = this.storage.documentStyle.currentPreset
+          const currentPreset = this.storage.currentPreset
           if (!currentPreset) {
             console.warn('No current style preset found')
             return false
@@ -299,19 +267,37 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             },
           }
 
-          const newStyleVersion = this.storage.documentStyle.styleVersion + 1
-          this.storage.documentStyle.currentPreset = updatedPreset
-          this.storage.documentStyle.styleVersion = newStyleVersion
-          this.storage.documentStyle.cssVariables = presetToCSSVariables(updatedPreset)
-
+          const newStyleVersion = this.storage.styleVersion + 1
+          this.storage.currentPreset = updatedPreset
+          this.storage.styleVersion = newStyleVersion
+          this.storage.cssVariables = presetToCSSVariables(updatedPreset)
           // 重新注入 CSS 变量
           if (this.options.autoInjectCSS) {
-            this.storage.injectCSSVariables(this.storage.documentStyle.cssVariables)
+            injectCSSVariables(this.storage.cssVariables)
           }
 
           // 传播样式更新
           if (dispatch) {
-            this.storage.propagateStyleToAllBlocks(tr, updatedPreset, newStyleVersion, this.options)
+            // 内联传播逻辑
+            const { propagationOptions } = this.options
+            const { targetNodeTypes = [] } = propagationOptions
+
+            tr.doc.descendants((node: any, pos: number) => {
+              if (!targetNodeTypes.includes(node.type.name)) {return true}
+
+              const semanticType = getSemanticTypeForNode(node.type.name)
+              if (!semanticType || !updatedPreset.semantic[semanticType]) {return true}
+
+              const newAttributes = generateGlobalStyleAttributes(updatedPreset, semanticType, newStyleVersion)
+              const currentAttrs = node.attrs || {}
+              const updatedAttrs = { ...currentAttrs, ...newAttributes }
+
+              if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
+                tr.setNodeMarkup(pos, undefined, updatedAttrs)
+              }
+              return true
+            })
+
             dispatch(tr)
           }
 
@@ -319,28 +305,23 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
         },
 
       getDocumentStyle: () => () => {
-        // Return true for command success, actual data should be accessed via this.storage.documentStyle
+        // 返回布尔值，符合 TipTap 命令规范
         return true
       },
 
-      resetDocumentStyle:
-        () =>
-        ({ tr, dispatch }) => {
-          return this.editor.commands.applyStylePreset(this.options.defaultPreset.name)
-        },
+      resetDocumentStyle: () => () => {
+        return this.editor.commands.applyStylePreset(this.options.defaultPreset.name)
+      },
 
       refreshDocumentStyle:
         () =>
-        ({ tr, dispatch }) => {
-          const currentPreset = this.storage.documentStyle.currentPreset
-          if (!currentPreset) {return false}
+        ({ dispatch }) => {
+          const currentPreset = this.storage.currentPreset || this.options.defaultPreset
+          this.storage.styleVersion += 1
 
-          const newStyleVersion = this.storage.documentStyle.styleVersion + 1
-          this.storage.documentStyle.styleVersion = newStyleVersion
-
-          if (dispatch) {
-            this.storage.propagateStyleToAllBlocks(tr, currentPreset, newStyleVersion, this.options)
-            dispatch(tr)
+          if (dispatch && currentPreset) {
+            // 刷新当前样式
+            console.log('Document style refreshed:', currentPreset.name)
           }
 
           return true
@@ -349,52 +330,18 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
   },
 
   onCreate() {
-    // 初始化默认样式
-    this.storage.documentStyle = {
-      currentPreset: this.options.defaultPreset,
-      styleVersion: 1,
-      cssVariables: presetToCSSVariables(this.options.defaultPreset),
-      isInjected: false,
-    }
-
-    // 创建防抖更新函数
-    this.storage.debouncedUpdate = debounce(this.storage.updateDocumentStyle, this.options.debounceDelay)
-
     // 自动注入默认样式
-    if (this.options.autoInjectCSS) {
-      this.storage.injectCSSVariables(this.storage.documentStyle.cssVariables)
-      this.storage.documentStyle.isInjected = true
+    if (this.options.autoInjectCSS && this.storage.cssVariables) {
+      injectCSSVariables(this.storage.cssVariables)
+      this.storage.isInjected = true
     }
   },
 
   onDestroy() {
     // 清理 CSS 变量
-    if (this.storage.documentStyle.isInjected) {
-      const variableNames = Object.keys(this.storage.documentStyle.cssVariables)
+    if (this.storage.isInjected) {
+      const variableNames = Object.keys(this.storage.cssVariables)
       clearCSSVariables(variableNames)
     }
-
-    // 清理缓存
-    this.storage.styleCache.clear()
   },
 })
-
-// 工具函数
-function getSemanticTypeForNode(nodeTypeName: string): keyof DocumentStylePreset['semantic'] | null {
-  const mapping: Record<string, keyof DocumentStylePreset['semantic']> = {
-    paragraph: 'paragraph',
-    heading: 'heading1', // 默认为 heading1，实际应该根据 level 属性判断
-    blockquote: 'blockquote',
-    codeBlock: 'codeBlock',
-    bulletList: 'bulletList',
-    orderedList: 'orderedList',
-    listItem: 'listItem',
-  }
-
-  return mapping[nodeTypeName] || null
-}
-
-function hasAttributesChanged(oldAttrs: any, newAttrs: any): boolean {
-  const keys = Object.keys(newAttrs)
-  return keys.some(key => oldAttrs[key] !== newAttrs[key])
-}

@@ -671,7 +671,7 @@ export interface MoniGlobalStyleAttributes {
 /**
  * CSS 变量映射表 - 用于性能优化的 CSS 变量注入
  */
-export interface CSSVariableMap {
+export interface CSSVariableMap extends Record<string, string> {
   // 基础变量
   '--moni-font-family': string
   '--moni-font-size': string
