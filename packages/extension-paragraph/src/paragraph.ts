@@ -1,3 +1,4 @@
+import type { NodeAttributes } from '@tiptap/core'
 import {
   addGlobalStyleAttributes,
   ensureMoniBlockId,
@@ -158,7 +159,7 @@ export const Paragraph = Node.create<ParagraphOptions>({
 
   renderHTML({ HTMLAttributes }) {
     // 🎨 应用全局样式 - 生成行内样式
-    const inlineStyle = generateInlineStyleForNode(HTMLAttributes)
+    const inlineStyle = generateInlineStyleForNode(HTMLAttributes as NodeAttributes)
     const finalAttributes = mergeAttributes(
       this.options.HTMLAttributes,
       HTMLAttributes,

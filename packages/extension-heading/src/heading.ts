@@ -1,3 +1,4 @@
+import type { NodeAttributes } from '@tiptap/core'
 import {
   addGlobalStyleAttributes,
   ensureMoniBlockId,
@@ -188,7 +189,7 @@ export const Heading = Node.create<HeadingOptions>({
     const level = hasLevel ? node.attrs.level : this.options.levels[0]
 
     // 🎨 应用全局样式 - 生成行内样式
-    const inlineStyle = generateInlineStyleForNode(HTMLAttributes, { level })
+    const inlineStyle = generateInlineStyleForNode(HTMLAttributes as NodeAttributes, { level })
     const finalAttributes = mergeAttributes(
       this.options.HTMLAttributes,
       HTMLAttributes,

@@ -607,6 +607,8 @@ export interface DocumentStylePreset {
  * 语义化样式定义
  */
 export interface SemanticStyle {
+  /** 字体族 */
+  fontFamily?: string
   /** 字体大小 (px) */
   fontSize?: number
   /** 字体粗细 */
@@ -631,6 +633,8 @@ export interface SemanticStyle {
   backgroundColor?: string
   /** 边框 */
   border?: string
+  /** 左边框 */
+  borderLeft?: string
   /** 圆角 */
   borderRadius?: number
   /** 文本对齐 */
