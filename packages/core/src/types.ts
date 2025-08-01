@@ -633,8 +633,21 @@ export interface SemanticStyle {
   border?: string
   /** 圆角 */
   borderRadius?: number
-  /** 其他 CSS 属性 */
-  [key: string]: any
+  /** 文本对齐 */
+  textAlign?: 'left' | 'center' | 'right' | 'justify'
+  /** 文本装饰 */
+  textDecoration?: string
+  /** 字体样式 */
+  fontStyle?: 'normal' | 'italic' | 'oblique'
+  /** 宽度 */
+  width?: number | string
+  /** 高度 */
+  height?: number | string
+  /** 定位相关 */
+  top?: number
+  left?: number
+  right?: number
+  bottom?: number
 }
 
 /**
@@ -666,6 +679,39 @@ export interface MoniGlobalStyleAttributes {
   moniSemanticStyle: string | null
   /** 样式版本 - 用于强制重新渲染 */
   moniStyleVersion: number
+}
+
+/**
+ * 节点属性接口 - 包含所有可能的节点属性
+ */
+export interface NodeAttributes extends MoniGlobalStyleAttributes {
+  /** 节点ID */
+  id?: string
+  /** 节点类别 */
+  class?: string
+  /** 其他 HTML 属性 */
+  [key: string]: unknown
+}
+
+/**
+ * 渲染HTML属性回调函数参数
+ */
+export interface RenderHTMLAttributes extends MoniGlobalStyleAttributes {
+  [key: string]: unknown
+}
+
+/**
+ * 样式生成上下文 - 额外的样式相关信息
+ */
+export interface StyleContext {
+  /** 标题级别 (1-6) */
+  level?: number
+  /** 列表层级 */
+  listLevel?: number
+  /** 是否为嵌套元素 */
+  isNested?: boolean
+  /** 父节点类型 */
+  parentType?: string
 }
 
 /**

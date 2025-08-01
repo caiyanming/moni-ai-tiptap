@@ -1,4 +1,4 @@
-export { AcademicStylePreset, DEFAULT_STYLE_PRESETS,MoniDefaultStylePreset } from './default-presets.js'
+export { AcademicStylePreset, DEFAULT_STYLE_PRESETS, MoniDefaultStylePreset } from './default-presets.js'
 export type { DocumentStyleOptions } from './document-style.js'
 export { DocumentStyleExtension } from './document-style.js'
 export {

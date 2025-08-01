@@ -1,7 +1,10 @@
-import { mergeAttributes, Node } from '@tiptap/core'
-import { ensureMoniBlockId } from '@tiptap/core'
-import type { MoniGlobalStyleAttributes } from '@tiptap/core'
-import { addGlobalStyleAttributes, generateInlineStyleForNode } from '@tiptap/core'
+import {
+  addGlobalStyleAttributes,
+  ensureMoniBlockId,
+  generateInlineStyleForNode,
+  mergeAttributes,
+  Node,
+} from '@tiptap/core'
 
 export interface ParagraphOptions {
   /**
@@ -42,7 +45,6 @@ export const Paragraph = Node.create<ParagraphOptions>({
   group: 'block',
 
   content: 'inline*',
-
 
   addAttributes() {
     return {
@@ -158,11 +160,11 @@ export const Paragraph = Node.create<ParagraphOptions>({
     // 🎨 应用全局样式 - 生成行内样式
     const inlineStyle = generateInlineStyleForNode(HTMLAttributes)
     const finalAttributes = mergeAttributes(
-      this.options.HTMLAttributes, 
+      this.options.HTMLAttributes,
       HTMLAttributes,
-      inlineStyle ? { style: inlineStyle } : {}
+      inlineStyle ? { style: inlineStyle } : {},
     )
-    
+
     return ['p', finalAttributes, 0]
   },
 

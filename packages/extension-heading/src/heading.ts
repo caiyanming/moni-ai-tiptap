@@ -1,7 +1,11 @@
-import { mergeAttributes, Node, textblockTypeInputRule } from '@tiptap/core'
-import { ensureMoniBlockId } from '@tiptap/core'
-import type { MoniGlobalStyleAttributes } from '@tiptap/core'
-import { addGlobalStyleAttributes, generateInlineStyleForNode } from '@tiptap/core'
+import {
+  addGlobalStyleAttributes,
+  ensureMoniBlockId,
+  generateInlineStyleForNode,
+  mergeAttributes,
+  Node,
+  textblockTypeInputRule,
+} from '@tiptap/core'
 
 /**
  * The heading level options.
@@ -62,7 +66,6 @@ export const Heading = Node.create<HeadingOptions>({
   group: 'block',
 
   defining: true,
-
 
   addAttributes() {
     return {
@@ -187,9 +190,9 @@ export const Heading = Node.create<HeadingOptions>({
     // 🎨 应用全局样式 - 生成行内样式
     const inlineStyle = generateInlineStyleForNode(HTMLAttributes, { level })
     const finalAttributes = mergeAttributes(
-      this.options.HTMLAttributes, 
+      this.options.HTMLAttributes,
       HTMLAttributes,
-      inlineStyle ? { style: inlineStyle } : {}
+      inlineStyle ? { style: inlineStyle } : {},
     )
 
     return [`h${level}`, finalAttributes, 0]

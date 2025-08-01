@@ -1,6 +1,11 @@
+import type { Content, DocumentStylePreset, StreamStyleConfig } from '@tiptap/core'
 import { Extension } from '@tiptap/core'
-import type { StreamStyleConfig, DocumentStylePreset, MoniGlobalStyleAttributes } from '@tiptap/core'
 import { generateGlobalStyleAttributes } from '@tiptap/extension-document-style'
+
+/**
+ * 内容类型定义
+ */
+type ContentType = 'paragraph' | 'heading' | 'blockquote' | 'codeBlock' | 'bulletList' | 'orderedList' | 'listItem'
 
 export interface StreamStyleOptions {
   /**
@@ -32,7 +37,7 @@ declare module '@tiptap/core' {
       /**
        * 为 AI 生成的内容应用文档样式
        */
-      insertContentWithDocumentStyle: (content: any, targetPosition?: number, contentType?: string) => ReturnType
+      insertContentWithDocumentStyle: (content: unknown, targetPosition?: number, contentType?: string) => ReturnType
 
       /**
        * 为现有内容应用文档样式
@@ -42,12 +47,12 @@ declare module '@tiptap/core' {
       /**
        * 智能推断内容类型并应用样式
        */
-      inferAndApplyStyle: (content: any, context?: { parentType?: string; siblings?: any[] }) => ReturnType
+      inferAndApplyStyle: (content: unknown, context?: { parentType?: string; siblings?: unknown[] }) => ReturnType
 
       /**
        * 获取推荐的内容样式
        */
-      getRecommendedStyle: (contentType: string, context?: any) => ReturnType
+      getRecommendedStyle: (contentType: ContentType) => ReturnType
 
       /**
        * 清除样式缓存
@@ -94,7 +99,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
   addStorage() {
     return {
       // 样式缓存
-      styleCache: new Map<string, any>(),
+      styleCache: new Map<string, unknown>(),
 
       // 推断缓存
       inferenceCache: new Map<string, string>(),
@@ -111,31 +116,31 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
   addCommands() {
     return {
       insertContentWithDocumentStyle:
-        (content: any, targetPosition?: number, contentType?: string) =>
-        ({ tr, dispatch, editor }) => {
+        (content: unknown) =>
+        ({ editor }) => {
           // 获取 DocumentStyleExtension 的当前预设
           const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
           if (!documentStyleExt || !this.options.config.autoApplyDocumentStyle) {
             // 回退到普通插入
-            return editor.commands.insertContent(content)
+            return editor.commands.insertContent(content as Content)
           }
 
           try {
             const currentPreset = documentStyleExt.storage.documentStyle.currentPreset
             if (!currentPreset) {
-              return editor.commands.insertContent(content)
+              return editor.commands.insertContent(content as Content)
             }
 
             // 简化处理，直接插入内容
-            return editor.commands.insertContent(content)
+            return editor.commands.insertContent(content as Content)
           } catch (error) {
             console.warn('StreamStyleIntelligence: Error applying styles, falling back to normal insert:', error)
-            return editor.commands.insertContent(content)
+            return editor.commands.insertContent(content as Content)
           }
         },
 
       applyDocumentStyleToContent:
-        (from: number, to: number, contentType: string) =>
+        (from: number, to: number) =>
         ({ tr, dispatch, editor }) => {
           const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
           if (!documentStyleExt) {
@@ -177,74 +182,76 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
         },
 
       inferAndApplyStyle:
-        (content: any, context?: { parentType?: string; siblings?: any[] }) =>
-        ({ tr, dispatch, editor }) => {
+        (content: unknown) =>
+        ({ editor }) => {
           if (!this.options.enableStyleInference) {
-            return editor.commands.insertContent(content)
+            return editor.commands.insertContent(content as Content)
           }
 
           try {
             // 简化处理
-            this.storage.stats.inferenceCount++
+            this.storage.stats.inferenceCount += 1
 
             // 应用推断的样式
-            return editor.commands.insertContentWithDocumentStyle(content, undefined, 'paragraph')
+            return editor.commands.insertContentWithDocumentStyle(content as Content)
           } catch (error) {
             console.warn('StreamStyleIntelligence: Error in inference and apply:', error)
-            return editor.commands.insertContent(content)
+            return editor.commands.insertContent(content as Content)
           }
         },
 
-      getRecommendedStyle: (contentType: string, context?: any) => () => {
-        const documentStyleExt = this.editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
-        if (!documentStyleExt) {
-          return null
-        }
-
-        const currentPreset = documentStyleExt.storage.documentStyle.currentPreset
-        if (!currentPreset) {
-          return null
-        }
-
-        try {
-          // 生成缓存键
-          const cacheKey = `${currentPreset.name}-${contentType}-${documentStyleExt.storage.documentStyle.styleVersion}`
-
-          // 检查缓存
-          if (this.storage.styleCache.has(cacheKey)) {
-            this.storage.stats.cacheHits++
-            return this.storage.styleCache.get(cacheKey)
+      getRecommendedStyle:
+        (contentType: ContentType) =>
+        ({ editor }) => {
+          const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
+          if (!documentStyleExt) {
+            return false
           }
 
-          // 生成样式属性
-          const semanticType =
-            this.options.contentStyleMapping[contentType] || (contentType as keyof DocumentStylePreset['semantic'])
-          if (!currentPreset.semantic[semanticType]) {
-            return null
+          const currentPreset = documentStyleExt.storage.documentStyle.currentPreset
+          if (!currentPreset) {
+            return false
           }
 
-          const styleAttributes = generateGlobalStyleAttributes(
-            currentPreset,
-            semanticType,
-            documentStyleExt.storage.documentStyle.styleVersion,
-          )
+          try {
+            // 生成缓存键
+            const cacheKey = `${currentPreset.name}-${contentType}-${documentStyleExt.storage.documentStyle.styleVersion}`
 
-          // 缓存结果
-          this.storage.stats.cacheMisses++
-          this.storage.styleCache.set(cacheKey, styleAttributes)
+            // 检查缓存
+            if (this.storage.styleCache.has(cacheKey)) {
+              this.storage.stats.cacheHits += 1
+              return true
+            }
 
-          // 限制缓存大小
-          if (this.storage.styleCache.size > this.options.maxCacheSize) {
-            const firstKey = this.storage.styleCache.keys().next().value
-            this.storage.styleCache.delete(firstKey)
+            // 生成样式属性
+            const semanticType =
+              this.options.contentStyleMapping[contentType] || (contentType as keyof DocumentStylePreset['semantic'])
+            if (!currentPreset.semantic[semanticType]) {
+              return false
+            }
+
+            const styleAttributes = generateGlobalStyleAttributes(
+              currentPreset,
+              semanticType,
+              documentStyleExt.storage.documentStyle.styleVersion,
+            )
+
+            // 缓存结果
+            this.storage.stats.cacheMisses += 1
+            this.storage.styleCache.set(cacheKey, styleAttributes)
+
+            // 限制缓存大小
+            if (this.storage.styleCache.size > this.options.maxCacheSize) {
+              const firstKey = this.storage.styleCache.keys().next().value
+              this.storage.styleCache.delete(firstKey)
+            }
+
+            return true
+          } catch (error) {
+            console.warn('StreamStyleIntelligence: Error getting recommended style:', error)
+            return false
           }
-
-          return styleAttributes
-        } catch (error) {
-          console.warn('StreamStyleIntelligence: Error getting recommended style:', error)
-          return null
-        }
-      },
+        },
 
       clearStyleCache: () => () => {
         this.storage.styleCache.clear()

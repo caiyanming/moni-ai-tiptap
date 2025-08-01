@@ -101,7 +101,7 @@ export class DropPositionCalculator {
       const isInPixelNestArea = x < rect.left + NEST_THRESHOLD
       const isInCenterRegion = horizontalPosition === 'center'
       const isInMiddleVertical = y >= topThreshold && y <= bottomThreshold
-      
+
       // Apply nesting in middle vertical region with dual conditions:
       if (isInMiddleVertical) {
         // 1. Legacy 40px threshold (for drag-smoothness-integration tests)
@@ -117,13 +117,13 @@ export class DropPositionCalculator {
             confidence: baseConfidence * 1.1,
           }
         }
-        
-        // 2. Center region semantic nesting (for drop-position-calculator tests) 
+
+        // 2. Center region semantic nesting (for drop-position-calculator tests)
         // Use a progressive threshold that starts deeper in the center region
         const distanceFromLeft = x - rect.left
         const centerStart = this.LEFT_BOUNDARY_PX // 88px
         const centerNestingThreshold = centerStart + 80 // Start nesting at 168px from left edge
-        
+
         if (isInCenterRegion && distanceFromLeft >= centerNestingThreshold) {
           return {
             dropPosition: 'inside',

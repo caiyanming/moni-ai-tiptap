@@ -1,8 +1,8 @@
 import type { NodeType } from '@tiptap/pm/model'
 
+import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import type { InputRuleFinder } from '../InputRule.js'
 import { InputRule } from '../InputRule.js'
-import { ensureMoniBlockId } from '../helpers/generateMoniBlockId.js'
 import type { ExtendedRegExpMatchArray } from '../types.js'
 import { callOrReturn } from '../utilities/callOrReturn.js'
 
