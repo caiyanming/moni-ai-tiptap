@@ -173,10 +173,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             const { targetNodeTypes = [] } = propagationOptions
 
             tr.doc.descendants((node: any, pos: number) => {
-              if (!targetNodeTypes.includes(node.type.name)) {return true}
+              if (!targetNodeTypes.includes(node.type.name)) {
+                return true
+              }
 
               const semanticType = getSemanticTypeForNode(node.type.name)
-              if (!semanticType || !preset.semantic[semanticType]) {return true}
+              if (!semanticType || !(semanticType in preset.semantic)) {
+                return true
+              }
 
               const newAttributes = generateGlobalStyleAttributes(preset, semanticType, newStyleVersion)
               const currentAttrs = node.attrs || {}
@@ -228,10 +232,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             const { targetNodeTypes = [] } = propagationOptions
 
             tr.doc.descendants((node: any, pos: number) => {
-              if (!targetNodeTypes.includes(node.type.name)) {return true}
+              if (!targetNodeTypes.includes(node.type.name)) {
+                return true
+              }
 
               const semanticType = getSemanticTypeForNode(node.type.name)
-              if (!semanticType || !updatedPreset.semantic[semanticType]) {return true}
+              if (!semanticType || !(semanticType in updatedPreset.semantic)) {
+                return true
+              }
 
               const newAttributes = generateGlobalStyleAttributes(updatedPreset, semanticType, newStyleVersion)
               const currentAttrs = node.attrs || {}
@@ -283,10 +291,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             const { targetNodeTypes = [] } = propagationOptions
 
             tr.doc.descendants((node: any, pos: number) => {
-              if (!targetNodeTypes.includes(node.type.name)) {return true}
+              if (!targetNodeTypes.includes(node.type.name)) {
+                return true
+              }
 
               const semanticType = getSemanticTypeForNode(node.type.name)
-              if (!semanticType || !updatedPreset.semantic[semanticType]) {return true}
+              if (!semanticType || !(semanticType in updatedPreset.semantic)) {
+                return true
+              }
 
               const newAttributes = generateGlobalStyleAttributes(updatedPreset, semanticType, newStyleVersion)
               const currentAttrs = node.attrs || {}

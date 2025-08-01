@@ -1,8 +1,35 @@
-import type { CSSVariableMap, DocumentStylePreset, MoniGlobalStyleAttributes,SemanticStyle } from '@tiptap/core'
+import type { CSSVariableMap, DocumentStylePreset, MoniGlobalStyleAttributes, SemanticStyle } from '@tiptap/core'
 
 /**
  * 样式工具函数集 - 提供样式计算、CSS 变量注入等功能
  */
+
+/**
+ * 将字符串转换为 kebab-case 格式
+ * @param str 输入字符串
+ * @returns kebab-case 格式的字符串
+ */
+function kebabCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)
+}
+
+/**
+ * 格式化 CSS 值
+ * @param property CSS 属性名
+ * @param value 属性值
+ * @returns 格式化后的 CSS 值字符串
+ */
+function formatCSSValue(property: string, value: any): string {
+  if (typeof value === 'number') {
+    // 需要单位的属性
+    const unitProperties = ['fontSize', 'marginTop', 'marginBottom', 'lineHeight']
+    if (unitProperties.includes(property)) {
+      return property === 'lineHeight' ? value.toString() : `${value}px`
+    }
+    return value.toString()
+  }
+  return String(value)
+}
 
 /**
  * 将样式预设转换为 CSS 变量映射
@@ -158,7 +185,9 @@ export function parseGlobalStyleAttributes(attributes: Partial<MoniGlobalStyleAt
  */
 export function mergeSemanticStyles(...styles: (SemanticStyle | undefined)[]): SemanticStyle {
   return styles.reduce<SemanticStyle>((merged, style) => {
-    if (!style) {return merged}
+    if (!style) {
+      return merged
+    }
     return { ...merged, ...style }
   }, {} as SemanticStyle)
 }
@@ -204,53 +233,11 @@ export function generateStyleCacheKey(preset: DocumentStylePreset, semanticType:
   return `${preset.name}-${semanticType}-${styleVersion}`
 }
 
-// ======== 内部工具函数 ========
-
-/**
- * 将驼峰命名转换为短横线命名
- */
-function kebabCase(str: string): string {
-  return str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
-}
-
-/**
- * 格式化 CSS 值，处理数字单位等
- */
-function formatCSSValue(property: string, value: any): string {
-  if (typeof value === 'number') {
-    // 需要单位的属性
-    const pixelProperties = [
-      'fontSize',
-      'marginTop',
-      'marginBottom',
-      'marginLeft',
-      'marginRight',
-      'padding',
-      'borderRadius',
-      'width',
-      'height',
-      'top',
-      'left',
-      'right',
-      'bottom',
-    ]
-
-    if (pixelProperties.includes(property)) {
-      return `${value}px`
-    }
-
-    // 无单位数值
-    return value.toString()
-  }
-
-  return String(value)
-}
-
 /**
  * 防抖函数 - 用于样式更新优化
  */
 export function debounce<T extends (...args: any[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
 
   return (...args: Parameters<T>) => {
     if (timeoutId) {
@@ -282,4 +269,58 @@ export function deepClone<T>(obj: T): T {
   })
 
   return cloned
+}
+
+/**
+ * 节点名称到语义类型的映射
+ * 根据 TipTap 节点类型名称获取对应的文档样式语义类型
+ */
+const NODE_TYPE_TO_SEMANTIC_TYPE: Record<string, keyof DocumentStylePreset['semantic']> = {
+  paragraph: 'paragraph',
+  heading: 'heading1',
+  blockquote: 'blockquote',
+  codeBlock: 'codeBlock',
+  bulletList: 'bulletList',
+  orderedList: 'orderedList',
+  listItem: 'listItem',
+  // 可以根据需要扩展其他节点类型映射
+}
+
+/**
+ * 根据节点类型名称获取对应的语义类型
+ * @param nodeTypeName TipTap 节点类型名称
+ * @returns 对应的语义类型，如果未找到则返回 null
+ */
+export function getSemanticTypeForNode(nodeTypeName: string): keyof DocumentStylePreset['semantic'] | null {
+  return NODE_TYPE_TO_SEMANTIC_TYPE[nodeTypeName] || null
+}
+
+/**
+ * 检查两个属性对象是否发生了变化
+ * 用于优化样式应用，仅在属性真正变化时才更新节点
+ * @param currentAttrs 当前属性对象
+ * @param updatedAttrs 更新后的属性对象
+ * @returns 如果属性发生变化则返回 true，否则返回 false
+ */
+export function hasAttributesChanged(currentAttrs: Record<string, any>, updatedAttrs: Record<string, any>): boolean {
+  // 快速检查：如果引用相同，则没有变化
+  if (currentAttrs === updatedAttrs) {
+    return false
+  }
+
+  // 如果一个为空另一个不为空，则有变化
+  if (!currentAttrs || !updatedAttrs) {
+    return true
+  }
+
+  // 比较属性数量
+  const currentKeys = Object.keys(currentAttrs)
+  const updatedKeys = Object.keys(updatedAttrs)
+
+  if (currentKeys.length !== updatedKeys.length) {
+    return true
+  }
+
+  // 逐个比较属性值
+  return updatedKeys.some(key => currentAttrs[key] !== updatedAttrs[key])
 }
