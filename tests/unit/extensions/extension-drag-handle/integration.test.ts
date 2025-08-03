@@ -1,10 +1,9 @@
 import { Editor } from '@tiptap/core'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { Document } from '@tiptap/extension-document'
+import { DragHandle } from '@tiptap/extension-drag-handle'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { DragHandle } from '@tiptap/extension-drag-handle'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('DragHandle Integration Tests', () => {
   let editor: Editor
@@ -296,11 +295,15 @@ describe('DragHandle Integration Tests', () => {
         if (dragHandle) {
           expect(dragHandle.getAttribute('aria-label')).toBeTruthy()
           expect(dragHandle.getAttribute('title')).toBeTruthy()
+          // 🎯 检查 Moni 系统专用属性
+          expect(dragHandle.getAttribute('data-moni-menu-drag')).toBe('true')
         }
 
         if (addButton) {
           expect(addButton.getAttribute('aria-label')).toBeTruthy()
           expect(addButton.getAttribute('title')).toBeTruthy()
+          // 🎯 检查 Moni 系统专用属性
+          expect(addButton.getAttribute('data-moni-menu-add')).toBe('true')
         }
       }
     })

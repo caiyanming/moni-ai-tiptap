@@ -9,7 +9,7 @@ export const defaultComputePositionConfig: ComputePositionConfig = {
   placement: 'left', // 使用'left'而非'left-start'来实现垂直居中对齐
   strategy: 'absolute',
   middleware: [
-    offset(10), // 正值让手柄在左侧外部保持适当间距
+    offset(-4), // 从原倵10减少14，让手柄容器往右移动14px
   ],
 }
 
@@ -114,7 +114,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         Object.assign(container.style, {
           display: 'flex',
           alignItems: 'center',
-          gap: '4px',
+          gap: '0px',
           padding: '2px',
           borderRadius: '4px',
           backgroundColor: 'transparent',
@@ -129,6 +129,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         dragHandle.draggable = true
         dragHandle.setAttribute('aria-label', 'Drag to reorder')
         dragHandle.setAttribute('title', 'Drag to reorder')
+        // 🎯 添加 Moni 系统专用属性
+        dragHandle.setAttribute('data-moni-menu-drag', 'true')
 
         Object.assign(dragHandle.style, {
           width: '18px',
@@ -166,6 +168,8 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         addButton.classList.add('add-block-button')
         addButton.setAttribute('aria-label', 'Add block')
         addButton.setAttribute('title', 'Add block')
+        // 🎯 添加 Moni 系统专用属性
+        addButton.setAttribute('data-moni-menu-add', 'true')
 
         Object.assign(addButton.style, {
           width: '18px',

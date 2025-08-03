@@ -1,10 +1,9 @@
 import { Editor } from '@tiptap/core'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { Document } from '@tiptap/extension-document'
+import { DragHandle } from '@tiptap/extension-drag-handle/drag-handle.js'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { DragHandle } from '@tiptap/extension-drag-handle/drag-handle.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('DragHandle Extension', () => {
   let editor: Editor
@@ -178,18 +177,22 @@ describe('DragHandle Extension', () => {
       if (dragHandleExtension && dragHandleExtension.options.render) {
         const renderResult = dragHandleExtension.options.render()
 
-        // 检查拖拽手柄的无障碍属性
+        // 检查拖拽手柄的无障碍属性和 Moni 系统属性
         const dragHandle = renderResult.querySelector('.drag-handle')
         if (dragHandle) {
           expect(dragHandle.getAttribute('aria-label')).toBe('Drag to reorder')
           expect(dragHandle.getAttribute('title')).toBe('Drag to reorder')
+          // 🎯 检查 Moni 系统专用属性
+          expect(dragHandle.getAttribute('data-moni-menu-drag')).toBe('true')
         }
 
-        // 检查+号按钮的无障碍属性
+        // 检查+号按钮的无障碍属性和 Moni 系统属性
         const addButton = renderResult.querySelector('.add-block-button')
         if (addButton) {
           expect(addButton.getAttribute('aria-label')).toBe('Add block')
           expect(addButton.getAttribute('title')).toBe('Add block')
+          // 🎯 检查 Moni 系统专用属性
+          expect(addButton.getAttribute('data-moni-menu-add')).toBe('true')
         }
       }
     })
