@@ -439,12 +439,37 @@ export const DragHandlePlugin = ({
             position: 'above' | 'below' | 'inside',
           ): boolean => {
             try {
-              // 找到对应的ProseMirror位置
-              const sourcePos = view.posAtDOM(sourceElement, 0)
-              const targetPos = view.posAtDOM(targetElement, 0)
+              // 🔧 FIX: 改进DOM到ProseMirror位置的查找逻辑
+              // 通过 data-moni-block-id 查找对应的ProseMirror节点
+              const sourceMoniBlockId = sourceElement.getAttribute('data-moni-block-id')
+              const targetMoniBlockId = targetElement.getAttribute('data-moni-block-id')
+
+              if (!sourceMoniBlockId || !targetMoniBlockId) {
+                console.warn('无法找到 moni-block-id 属性')
+                return false
+              }
+
+              // 尝试多种方式查找ProseMirror位置
+              let sourcePos = view.posAtDOM(sourceElement, 0)
+              let targetPos = view.posAtDOM(targetElement, 0)
+
+              // 如果直接查找失败，尝试查找子元素
+              if (sourcePos === -1) {
+                const sourceChild = sourceElement.querySelector('[data-type]') || sourceElement.firstElementChild
+                if (sourceChild) {
+                  sourcePos = view.posAtDOM(sourceChild as HTMLElement, 0)
+                }
+              }
+
+              if (targetPos === -1) {
+                const targetChild = targetElement.querySelector('[data-type]') || targetElement.firstElementChild
+                if (targetChild) {
+                  targetPos = view.posAtDOM(targetChild as HTMLElement, 0)
+                }
+              }
 
               if (sourcePos === -1 || targetPos === -1) {
-                console.warn('无法找到DOM对应的ProseMirror位置')
+                console.warn('改进查找后仍无法找到DOM对应的ProseMirror位置', { sourcePos, targetPos })
                 return false
               }
 
@@ -583,12 +608,17 @@ export const DragHandlePlugin = ({
 
               // 🎯 NOTION风格：执行实际的节点移动
               try {
-                const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
-                console.log(`🎯 Notion风格拖拽${success ? '成功' : '失败'}:`, {
-                  source: dragSourceElement.tagName,
-                  target: blockElement.tagName,
-                  position: result.dropPosition,
-                })
+                // 🔧 FIX: 暂时跳过 'inside' 位置的实际移动，专注修复指示器显示
+                if (result.dropPosition === 'inside') {
+                  console.log('🎯 [临时] 跳过 inside 位置的节点移动，待后续实现')
+                } else {
+                  const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
+                  console.log(`🎯 Notion风格拖拽${success ? '成功' : '失败'}:`, {
+                    source: dragSourceElement.tagName,
+                    target: blockElement.tagName,
+                    position: result.dropPosition,
+                  })
+                }
               } catch (error) {
                 console.error('🔧 Notion拖拽执行失败:', error)
               }

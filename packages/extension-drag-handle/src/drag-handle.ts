@@ -109,14 +109,14 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         const container = document.createElement('div')
         container.classList.add('drag-handle-container')
 
-        // 设置容器样式和属性
-        container.draggable = true
+        // 设置容器样式和属性 - 🔧 FIX: 移除容器的 draggable 属性避免事件冲突
+        // container.draggable = true  // 注释掉，只允许手柄本身拖拽
         Object.assign(container.style, {
           display: 'flex',
           alignItems: 'center',
           gap: '0px',
-          padding: '2px',
-          borderRadius: '4px',
+          padding: '1px', // 🎯 FIX: 减少padding，更像Notion
+          borderRadius: '3px', // 🎯 FIX: 稍微减少圆角
           backgroundColor: 'transparent',
           transition: 'background-color 0.15s ease',
           // 🎯 确保容器在最上层，避免被代码块背景或列表线条覆盖
@@ -133,16 +133,21 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         dragHandle.setAttribute('data-moni-menu-drag', 'true')
 
         Object.assign(dragHandle.style, {
-          width: '18px',
-          height: '18px',
+          width: '14px', // 🎯 FIX: 减少尺寸，更像Notion
+          height: '14px', // 🎯 FIX: 减少尺寸，更像Notion
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '2px',
-          padding: '3px',
+          gridTemplateColumns: 'repeat(2, 1fr)', // 2列
+          gridTemplateRows: 'repeat(3, 1fr)', // 🔧 FIX: 明确设置3行（6个点=2列x3行）
+          gap: '1.5px', // 🎯 FIX: 减少间距，更紧凑
+          padding: '2px', // 🎯 FIX: 减少内边距
           cursor: 'grab',
-          borderRadius: '3px',
+          borderRadius: '2px', // 🎯 FIX: 稍微减少圆角
           backgroundColor: 'transparent',
           transition: 'background-color 0.15s ease',
+          // 🔧 FIX: 确保网格内容居中对齐
+          alignItems: 'center',
+          justifyItems: 'center',
+          placeItems: 'center', // 同时处理水平和垂直居中
         })
 
         // 设置 CSS 自定义属性
@@ -154,11 +159,15 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           const dot = document.createElement('div')
           dot.classList.add('grid-dot')
           Object.assign(dot.style, {
-            width: '2px',
-            height: '2px',
+            width: '1.5px', // 🎯 FIX: 减少点的大小，更精致
+            height: '1.5px', // 🎯 FIX: 减少点的大小，更精致
             backgroundColor: '#9ca3af',
             borderRadius: '50%',
             transition: 'background-color 0.15s ease',
+            // 🔧 FIX: 确保小圆点在网格单元格中居中
+            margin: '0',
+            justifySelf: 'center',
+            alignSelf: 'center',
           })
           dragHandle.appendChild(dot)
         }
@@ -172,16 +181,16 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         addButton.setAttribute('data-moni-menu-add', 'true')
 
         Object.assign(addButton.style, {
-          width: '18px',
-          height: '18px',
+          width: '14px', // 🎯 FIX: 与拖拽手柄保持一致的尺寸
+          height: '14px', // 🎯 FIX: 与拖拽手柄保持一致的尺寸
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          borderRadius: '3px',
+          borderRadius: '2px', // 🎯 FIX: 与拖拽手柄保持一致
           backgroundColor: 'transparent',
           color: '#9ca3af',
-          fontSize: '14px',
+          fontSize: '12px', // 🎯 FIX: 稍微减小字体
           fontWeight: 'bold',
           transition: 'all 0.15s ease',
         })

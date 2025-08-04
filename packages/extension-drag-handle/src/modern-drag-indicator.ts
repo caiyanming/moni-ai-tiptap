@@ -80,14 +80,25 @@ export class ModernDragIndicator {
     horizontalPosition?: 'left' | 'center' | 'right'
     confidence?: number
   }): void {
-    const { direction, position, horizontalPosition = 'center', confidence = 1.0 } = params
+    const { direction, position, dropPosition, horizontalPosition = 'center', confidence = 1.0 } = params
+
+    // 🔧 DEBUG: 添加调试日志
+    console.log('🎨 [DragIndicator] show() 调用:', {
+      direction,
+      position,
+      dropPosition,
+      horizontalPosition,
+      confidence,
+    })
 
     // Validate position values - skip showing if invalid
     if (!this.isValidPosition(position, direction)) {
+      console.warn('🚨 [DragIndicator] 位置验证失败:', { position, direction })
       return
     }
 
     const indicator = this.getIndicator(direction)
+    console.log('🎨 [DragIndicator] 获取指示器:', { direction, indicator: !!indicator })
 
     // Hide the other indicator when showing one
     if (direction === 'horizontal') {
@@ -100,6 +111,8 @@ export class ModernDragIndicator {
     this.applyConfidenceVisuals(indicator, confidence)
     this.showIndicator(indicator)
     this.isVisible = true
+
+    console.log('🎨 [DragIndicator] 指示器已显示')
   }
 
   hide(): void {
@@ -301,15 +314,16 @@ export class ModernDragIndicator {
       return false
     }
 
-    // Check for negative coordinates (optional - might be valid in some cases)
-    if (position.x < 0 || position.y < 0) {
-      return false
-    }
+    // 🔧 FIX: 允许负坐标，因为可能在编辑器左侧显示垂直指示器
+    // if (position.x < 0 || position.y < 0) {
+    //   return false
+    // }
 
     // Check dimension based on direction
     if (direction === 'horizontal') {
       return position.width != null && position.width > 0 && !Number.isNaN(position.width)
     }
+    // 🔧 FIX: 对于垂直指示器（inside位置），检查height是否有效
     return position.height != null && position.height > 0 && !Number.isNaN(position.height)
   }
 }
