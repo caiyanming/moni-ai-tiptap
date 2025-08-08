@@ -1,6 +1,6 @@
 /**
  * 🎯 E2E拖拽测试助手类
- * 
+ *
  * 提供统一的拖拽测试工具，包括：
  * - 标准化拖拽操作
  * - 智能等待机制
@@ -8,7 +8,8 @@
  * - 详细错误报告
  */
 
-import { Page, Locator, expect } from '@playwright/test'
+import type { Locator,Page} from '@playwright/test'
+import { expect } from '@playwright/test'
 
 export interface DragTestConfig {
   /** 拖拽操作超时时间 (ms) */
@@ -76,27 +77,27 @@ export class DragTestHelper {
       totalTests: 0,
       passedTests: 0,
       failedTests: 0,
-      errors: []
+      errors: [],
     }
     this.config = {
       timeout: 5000,
       enablePerformanceMonitoring: true,
       animationWaitTime: 300,
       validateIndicators: true,
-      ...config
+      ...config,
     }
   }
 
   async setup(baseUrl = 'http://localhost:3666/src/Extensions/DragHandle/React/') {
     // 导航到测试页面
     await this.page.goto(baseUrl)
-    
+
     // 等待编辑器加载
     await this.proseMirror.waitFor({ state: 'visible', timeout: 10000 })
-    
+
     // 插入标准测试内容
     await this.insertStandardTestContent()
-    
+
     console.log('✅ DragTestHelper 初始化完成')
   }
 
@@ -106,13 +107,13 @@ export class DragTestHelper {
   async performDrag(
     source: Locator | string,
     target: Locator | string,
-    dropInfo?: Partial<DropInfo>
+    dropInfo?: Partial<DropInfo>,
   ): Promise<DragTestResult> {
     const startTime = performance.now()
-    
+
     try {
       // 性能监控开始
-      const performanceData = this.config.enablePerformanceMonitoring 
+      const performanceData = this.config.enablePerformanceMonitoring
         ? await this.startPerformanceMonitoring()
         : undefined
 
@@ -126,7 +127,7 @@ export class DragTestHelper {
 
       // 获取源元素的拖拽手柄
       const dragHandle = await this.findDragHandle(sourceElement)
-      
+
       // 执行拖拽操作
       await this.executeDragOperation(dragHandle, targetElement, dropInfo)
 
@@ -141,25 +142,22 @@ export class DragTestHelper {
       }
 
       // 结束性能监控
-      const performance = performanceData 
-        ? await this.endPerformanceMonitoring(performanceData)
-        : undefined
+      const performance = performanceData ? await this.endPerformanceMonitoring(performanceData) : undefined
 
       const duration = performance.now() - startTime
 
       return {
         success: true,
         duration,
-        performance
+        performance,
       }
-
     } catch (error) {
       const duration = performance.now() - startTime
-      
+
       return {
         success: false,
         duration,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       }
     }
   }
@@ -173,12 +171,12 @@ export class DragTestHelper {
       '[data-moni-menu-drag="true"]',
       '.drag-handle',
       '[draggable="true"]',
-      'svg[data-moni-menu-drag]'
+      'svg[data-moni-menu-drag]',
     ]
 
     for (const selector of handleSelectors) {
       const handle = element.locator(selector).first()
-      
+
       try {
         await expect(handle).toBeVisible({ timeout: 1000 })
         return handle
@@ -194,7 +192,7 @@ export class DragTestHelper {
     // 再次尝试查找手柄
     for (const selector of handleSelectors) {
       const handle = element.locator(selector).first()
-      
+
       try {
         await expect(handle).toBeVisible({ timeout: 500 })
         return handle
@@ -209,7 +207,7 @@ export class DragTestHelper {
   async insertStandardTestContent() {
     await this.proseMirror.click()
     await this.page.keyboard.press('Meta+A') // 全选
-    
+
     const testContent = `# 标准拖拽测试文档
 
 这是第一个段落，用于测试基础拖拽功能。
@@ -237,16 +235,11 @@ export class DragTestHelper {
   }
 
   async dragParagraph(
-    sourceParagraph: Locator, 
-    targetParagraph: Locator, 
-    options: DragOptions = {}
+    sourceParagraph: Locator,
+    targetParagraph: Locator,
+    options: DragOptions = {},
   ): Promise<{ success: boolean; error?: string; details?: any }> {
-    const {
-      dragToPosition = 'below',
-      holdTime = 800,
-      moveSteps = 8,
-      waitAfterDrag = 1000
-    } = options
+    const { dragToPosition = 'below', holdTime = 800, moveSteps = 8, waitAfterDrag = 1000 } = options
 
     try {
       console.log(`🎯 执行拖拽操作（拖拽到${dragToPosition === 'above' ? '上方' : '下方'}）`)
@@ -258,7 +251,7 @@ export class DragTestHelper {
       // Step 2: 等待SVG拖拽手柄可见
       const svgHandle = this.page.locator('svg').first()
       await svgHandle.waitFor({ state: 'visible', timeout: 3000 })
-      
+
       const isVisible = await svgHandle.isVisible()
       if (!isVisible) {
         throw new Error('SVG拖拽手柄未变为可见状态')
@@ -273,26 +266,24 @@ export class DragTestHelper {
       }
 
       const targetX = targetBox.x + targetBox.width / 2
-      const targetY = dragToPosition === 'above' 
-        ? targetBox.y - 5 
-        : targetBox.y + targetBox.height + 5
+      const targetY = dragToPosition === 'above' ? targetBox.y - 5 : targetBox.y + targetBox.height + 5
 
       // Step 4: 执行精确拖拽
-      await this.page.mouse.move(handleBox.x + handleBox.width/2, handleBox.y + handleBox.height/2)
+      await this.page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
       await this.page.waitForTimeout(200)
-      
+
       await this.page.mouse.down()
       await this.page.waitForTimeout(holdTime)
 
       // 分步移动
-      const startX = handleBox.x + handleBox.width/2
-      const startY = handleBox.y + handleBox.height/2
+      const startX = handleBox.x + handleBox.width / 2
+      const startY = handleBox.y + handleBox.height / 2
 
       for (let i = 1; i <= moveSteps; i += 1) {
         const progress = i / moveSteps
         const currentX = startX + (targetX - startX) * progress
         const currentY = startY + (targetY - startY) * progress
-        
+
         await this.page.mouse.move(currentX, currentY)
         await this.page.waitForTimeout(100)
       }
@@ -301,33 +292,32 @@ export class DragTestHelper {
       await this.page.waitForTimeout(waitAfterDrag)
 
       return { success: true, details: { handlePos: handleBox, targetPos: { x: targetX, y: targetY } } }
-
     } catch (error: any) {
       return { success: false, error: error.message }
     }
   }
 
   async verifyDragResult(
-    beforeTexts: string[], 
-    afterTexts: string[], 
-    sourceIndex: number, 
-    targetIndex: number
+    beforeTexts: string[],
+    afterTexts: string[],
+    sourceIndex: number,
+    targetIndex: number,
   ): Promise<{ success: boolean; message: string; details?: Record<string, any> }> {
     const sourceText = beforeTexts[sourceIndex]
     const newSourceIndex = afterTexts.indexOf(sourceText)
-    
+
     if (newSourceIndex === -1) {
       return { success: false, message: '源段落在拖拽后消失' }
     }
-    
+
     if (newSourceIndex === sourceIndex) {
       return { success: false, message: '段落位置未发生变化' }
     }
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       message: `段落从位置${sourceIndex}移动到位置${newSourceIndex}`,
-      details: { oldIndex: sourceIndex, newIndex: newSourceIndex }
+      details: { oldIndex: sourceIndex, newIndex: newSourceIndex },
     }
   }
 
@@ -347,7 +337,7 @@ export class DragTestHelper {
     return {
       isVisible,
       hasValidBounds,
-      details: { boundingBox }
+      details: { boundingBox },
     }
   }
 
@@ -364,13 +354,14 @@ export class DragTestHelper {
   }
 
   getTestSummary() {
-    const successRate = this.testResults.totalTests > 0 
-      ? (this.testResults.passedTests / this.testResults.totalTests * 100).toFixed(2)
-      : '0'
+    const successRate =
+      this.testResults.totalTests > 0
+        ? ((this.testResults.passedTests / this.testResults.totalTests) * 100).toFixed(2)
+        : '0'
 
     return {
       ...this.testResults,
-      successRate: parseFloat(successRate)
+      successRate: parseFloat(successRate),
     }
   }
 
@@ -380,7 +371,7 @@ export class DragTestHelper {
   private async executeDragOperation(
     dragHandle: Locator,
     target: Locator,
-    dropInfo?: Partial<DropInfo>
+    dropInfo?: Partial<DropInfo>,
   ): Promise<void> {
     // 获取源和目标的边界框
     const sourceBox = await dragHandle.boundingBox()
@@ -393,12 +384,12 @@ export class DragTestHelper {
     // 计算拖拽起点和终点
     const sourceCenter = {
       x: sourceBox.x + sourceBox.width / 2,
-      y: sourceBox.y + sourceBox.height / 2
+      y: sourceBox.y + sourceBox.height / 2,
     }
 
     let dropPoint = {
       x: targetBox.x + targetBox.width / 2,
-      y: targetBox.y + targetBox.height / 2
+      y: targetBox.y + targetBox.height / 2,
     }
 
     // 根据dropInfo调整落点位置
@@ -423,18 +414,18 @@ export class DragTestHelper {
     // 执行拖拽操作
     await this.page.mouse.move(sourceCenter.x, sourceCenter.y)
     await this.page.mouse.down()
-    
+
     // 移动到目标位置（分多步移动，模拟真实拖拽）
     const steps = 5
     for (let i = 1; i <= steps; i++) {
       const progress = i / steps
       const intermediateX = sourceCenter.x + (dropPoint.x - sourceCenter.x) * progress
       const intermediateY = sourceCenter.y + (dropPoint.y - sourceCenter.y) * progress
-      
+
       await this.page.mouse.move(intermediateX, intermediateY)
       await this.page.waitForTimeout(20)
     }
-    
+
     await this.page.mouse.up()
   }
 
@@ -452,23 +443,22 @@ export class DragTestHelper {
    */
   private async startPerformanceMonitoring() {
     await this.page.evaluate(() => {
-      (window as any).__dragTestMetrics = {
+      ;(window as any).__dragTestMetrics = {
         startTime: performance.now(),
         domUpdateCount: 0,
-        renderStart: null
+        renderStart: null,
       }
 
       // 监听DOM变化
       const observer = new MutationObserver(() => {
-        (window as any).__dragTestMetrics.domUpdateCount++
+        ;(window as any).__dragTestMetrics.domUpdateCount++
       })
-      
+
       observer.observe(document.body, {
         childList: true,
         subtree: true,
-        attributes: true
+        attributes: true,
       })
-      
       ;(window as any).__dragTestObserver = observer
     })
 
@@ -482,17 +472,17 @@ export class DragTestHelper {
     return await this.page.evaluate(() => {
       const metrics = (window as any).__dragTestMetrics
       const observer = (window as any).__dragTestObserver
-      
+
       if (observer) {
         observer.disconnect()
       }
-      
+
       const endTime = performance.now()
-      
+
       return {
         renderTime: endTime - metrics.startTime,
         animationTime: endTime - metrics.startTime,
-        domUpdates: metrics.domUpdateCount
+        domUpdates: metrics.domUpdateCount,
       }
     })
   }
@@ -503,22 +493,22 @@ export class DragTestHelper {
   async detectMemoryLeaks(): Promise<{ hasLeaks: boolean; report: string }> {
     const report = await this.page.evaluate(() => {
       const dragElements = document.querySelectorAll(
-        '.drag-handle, .drag-indicator, .drop-indicator, [draggable="true"]'
+        '.drag-handle, .drag-indicator, .drop-indicator, [draggable="true"]',
       )
-      
+
       const eventListeners = (window as any).__dragEventListeners?.length || 0
       const observers = (window as any).__dragObservers?.length || 0
-      
+
       return {
         dragElements: dragElements.length,
         eventListeners,
         observers,
-        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0
+        memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
       }
     })
 
     const hasLeaks = report.eventListeners > 0 || report.observers > 0
-    
+
     return {
       hasLeaks,
       report: `内存检测报告:
@@ -526,7 +516,7 @@ export class DragTestHelper {
 - 未清理事件监听器: ${report.eventListeners}
 - 未清理观察器: ${report.observers}
 - JS堆内存使用: ${Math.round(report.memoryUsage / 1024 / 1024)}MB
-- 存在内存泄漏: ${hasLeaks ? '是' : '否'}`
+- 存在内存泄漏: ${hasLeaks ? '是' : '否'}`,
     }
   }
 
@@ -534,10 +524,10 @@ export class DragTestHelper {
   async expectParagraphOrder(expectedOrder: string[]) {
     const paragraphs = await this.getParagraphs()
     const actualTexts = []
-    
+
     for (const p of paragraphs) {
       const text = await this.getParagraphText(p)
-      if (text.trim()) actualTexts.push(text.trim())
+      if (text.trim()) {actualTexts.push(text.trim())}
     }
 
     expect(actualTexts).toEqual(expectedOrder)
@@ -575,7 +565,7 @@ export const dragAssert = {
    */
   async performant(result: DragTestResult, maxDuration: number = 200): Promise<void> {
     expect(result.duration).toBeLessThan(maxDuration)
-    
+
     if (result.performance) {
       expect(result.performance.renderTime).toBeLessThan(100)
       expect(result.performance.domUpdates).toBeLessThan(50)
@@ -587,9 +577,9 @@ export const dragAssert = {
    */
   async noMemoryLeaks(helper: DragTestHelper): Promise<void> {
     const { hasLeaks, report } = await helper.detectMemoryLeaks()
-    
+
     if (hasLeaks) {
       throw new Error(`检测到内存泄漏:\n${report}`)
     }
-  }
+  },
 }

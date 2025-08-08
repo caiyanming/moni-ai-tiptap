@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
+
 import { DragTestHelper } from '../utils/DragTestHelper.js'
 
 /**
@@ -40,7 +41,7 @@ test.describe('拖拽手柄可见性', () => {
       beforeHover,
       afterHover,
       hasValidBounds,
-      boundingBox
+      boundingBox,
     })
   })
 
@@ -53,7 +54,7 @@ test.describe('拖拽手柄可见性', () => {
       const result = await dragHelper.checkSVGHandleVisibility(paragraphs[i])
       results.push({
         index: i,
-        ...result
+        ...result,
       })
 
       // 移开鼠标避免影响下次测试
@@ -67,7 +68,7 @@ test.describe('拖拽手柄可见性', () => {
 
     dragHelper.recordTest('多段落手柄一致性', allHandlesWork, {
       testedParagraphs: results.length,
-      workingHandles: results.filter(r => r.isVisible && r.hasValidBounds).length
+      workingHandles: results.filter(r => r.isVisible && r.hasValidBounds).length,
     })
   })
 
@@ -76,13 +77,13 @@ test.describe('拖拽手柄可见性', () => {
     const proseMirror = page.locator('.ProseMirror')
     await proseMirror.click()
     await page.keyboard.press('Meta+A')
-    
+
     await page.keyboard.type('第一行')
     await page.keyboard.press('Enter')
     await page.keyboard.press('Enter') // 空行1
     await page.keyboard.press('Enter') // 空行2
     await page.keyboard.type('最后一行')
-    
+
     await page.waitForTimeout(1000)
 
     const paragraphs = await proseMirror.locator('p').all()
@@ -97,7 +98,7 @@ test.describe('拖拽手柄可见性', () => {
         const result = await dragHelper.checkSVGHandleVisibility(p)
         emptyLineResults.push({
           lineIndex: i,
-          handleVisible: result.isVisible
+          handleVisible: result.isVisible,
         })
 
         // 移开鼠标避免干扰
@@ -108,9 +109,7 @@ test.describe('拖拽手柄可见性', () => {
 
     // 验证空行手柄行为（允许部分不一致，但大部分应该可见）
     const visibleCount = emptyLineResults.filter(r => r.handleVisible).length
-    const consistencyRate = emptyLineResults.length > 0 
-      ? (visibleCount / emptyLineResults.length) 
-      : 0
+    const consistencyRate = emptyLineResults.length > 0 ? visibleCount / emptyLineResults.length : 0
 
     const emptyLineHandlesWork = consistencyRate >= 0.7 // 至少70%可见
     expect(emptyLineHandlesWork).toBe(true)
@@ -118,7 +117,7 @@ test.describe('拖拽手柄可见性', () => {
     dragHelper.recordTest('空行手柄行为', emptyLineHandlesWork, {
       emptyLineCount: emptyLineResults.length,
       visibleCount,
-      consistencyRate: (consistencyRate * 100).toFixed(1) + '%'
+      consistencyRate: `${(consistencyRate * 100).toFixed(1)  }%`,
     })
   })
 

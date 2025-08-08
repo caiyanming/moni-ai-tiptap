@@ -5,11 +5,13 @@
 ## 📝 脚本说明
 
 ### 基础验证脚本
+
 - **`quick-drag-test.js`** - 快速验证拖拽功能基本可用性
 - **`quick-drag-check.js`** - 快速检查拖拽手柄显示
 - **`quick-validation.js`** - 快速全面验证
 
-### 功能验证脚本  
+### 功能验证脚本
+
 - **`simple-drag-verification.js`** - 简单拖拽功能验证
 - **`correct-drag-verification.js`** - 校验拖拽功能正确性
 - **`real-drag-verification.js`** - 真实场景拖拽验证
@@ -17,6 +19,7 @@
 - **`drag-function-verification.js`** - 详细拖拽功能分析
 
 ### 调试分析脚本
+
 - **`debug-drag.js`** - 拖拽行为调试工具
 - **`debug-drag-loading.js`** - 调试拖拽组件加载问题
 - **`patient-drag-verification.js`** - 耐心等待式验证(处理加载延迟)
@@ -44,8 +47,9 @@ node tests/e2e/scripts/final-drag-verification.js
 ## 🔧 开发指南
 
 这些脚本主要用于：
+
 - 功能开发过程中的快速验证
-- 问题排查和调试分析  
+- 问题排查和调试分析
 - 发布前的功能确认
 - 性能和兼容性测试
 

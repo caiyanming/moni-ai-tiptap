@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
+
 import { DragTestHelper } from '../utils/DragTestHelper'
 
 /**
@@ -26,7 +27,7 @@ test.describe('基础拖拽操作', () => {
 
     // 将第一个段落拖拽到第三个段落下方
     const dragResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[2], {
-      dragToPosition: 'below'
+      dragToPosition: 'below',
     })
 
     expect(dragResult.success).toBe(true)
@@ -57,7 +58,7 @@ test.describe('基础拖拽操作', () => {
 
     // 将第三个段落拖拽到第一个段落上方
     const dragResult = await dragHelper.dragParagraph(paragraphs[2], paragraphs[0], {
-      dragToPosition: 'above'
+      dragToPosition: 'above',
     })
 
     expect(dragResult.success).toBe(true)
@@ -87,7 +88,7 @@ test.describe('基础拖拽操作', () => {
 
     // 将第一个段落拖拽到第二个段落下方
     const dragResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[1], {
-      dragToPosition: 'below'
+      dragToPosition: 'below',
     })
 
     expect(dragResult.success).toBe(true)

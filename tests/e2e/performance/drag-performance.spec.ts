@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
+
 import { DragTestHelper } from '../utils/DragTestHelper'
 
 /**
@@ -22,29 +23,29 @@ test.describe('拖拽性能测试', () => {
 
     for (let round = 1; round <= testRounds; round++) {
       console.log(`📊 执行第${round}轮性能测试...`)
-      
+
       const startTime = Date.now()
-      
+
       // 执行标准拖拽操作
       const currentParagraphs = await dragHelper.getParagraphs()
       const dragResult = await dragHelper.dragParagraph(
-        currentParagraphs[0], 
+        currentParagraphs[0],
         currentParagraphs[Math.min(2, currentParagraphs.length - 1)],
-        { 
+        {
           dragToPosition: 'below',
           holdTime: 100,
           moveSteps: 2,
-          waitAfterDrag: 500
-        }
+          waitAfterDrag: 500,
+        },
       )
-      
+
       const endTime = Date.now()
       const roundTime = endTime - startTime
       performanceResults.push(roundTime)
-      
+
       expect(dragResult.success).toBe(true)
       console.log(`  第${round}轮耗时: ${roundTime}ms`)
-      
+
       if (round < testRounds) {
         await dragHelper.page.waitForTimeout(100)
       }
@@ -68,7 +69,7 @@ test.describe('拖拽性能测试', () => {
       avgTime: avgTime.toFixed(2),
       maxTime,
       minTime,
-      rounds: testRounds
+      rounds: testRounds,
     })
   })
 
@@ -77,18 +78,18 @@ test.describe('拖拽性能测试', () => {
     expect(paragraphs.length).toBeGreaterThanOrEqual(2)
 
     // 监控帧率和流畅度指标
-    let frameCount = 0
-    let startTime = Date.now()
+    const frameCount = 0
+    const startTime = Date.now()
 
     // 启用性能监控
     await page.evaluate(() => {
-      (window as any).performanceData = {
+      ;(window as any).performanceData = {
         frames: 0,
-        startTime: performance.now()
+        startTime: performance.now(),
       }
-      
+
       function countFrame() {
-        (window as any).performanceData.frames++
+        ;(window as any).performanceData.frames++
         requestAnimationFrame(countFrame)
       }
       countFrame()
@@ -98,7 +99,7 @@ test.describe('拖拽性能测试', () => {
     const dragResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[1], {
       dragToPosition: 'below',
       holdTime: 1000, // 较长的拖拽时间以测试流畅度
-      moveSteps: 10
+      moveSteps: 10,
     })
 
     expect(dragResult.success).toBe(true)
@@ -108,7 +109,7 @@ test.describe('拖拽性能测试', () => {
       const data = (window as any).performanceData
       return {
         frames: data.frames,
-        duration: performance.now() - data.startTime
+        duration: performance.now() - data.startTime,
       }
     })
 
@@ -122,7 +123,7 @@ test.describe('拖拽性能测试', () => {
     dragHelper.recordTest('拖拽流畅度', isSmoothEnough, {
       fps: fps.toFixed(1),
       duration: performanceData.duration.toFixed(2),
-      frames: performanceData.frames
+      frames: performanceData.frames,
     })
   })
 
@@ -132,10 +133,12 @@ test.describe('拖拽性能测试', () => {
 
     // 获取初始内存使用情况
     const initialMemory = await page.evaluate(() => {
-      return (performance as any).memory ? {
-        usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-        totalJSHeapSize: (performance as any).memory.totalJSHeapSize
-      } : null
+      return (performance as any).memory
+        ? {
+            usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
+            totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
+          }
+        : null
     })
 
     if (!initialMemory) {
@@ -150,14 +153,14 @@ test.describe('拖拽性能测试', () => {
         dragToPosition: 'below',
         holdTime: 200,
         moveSteps: 3,
-        waitAfterDrag: 200
+        waitAfterDrag: 200,
       })
     }
 
     // 强制垃圾回收（如果支持）
     await page.evaluate(() => {
       if ((window as any).gc) {
-        (window as any).gc()
+        ;(window as any).gc()
       }
     })
 
@@ -167,14 +170,16 @@ test.describe('拖拽性能测试', () => {
     const finalMemory = await page.evaluate(() => {
       return {
         usedJSHeapSize: (performance as any).memory.usedJSHeapSize,
-        totalJSHeapSize: (performance as any).memory.totalJSHeapSize
+        totalJSHeapSize: (performance as any).memory.totalJSHeapSize,
       }
     })
 
     const memoryIncrease = finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize
     const memoryIncreasePercent = (memoryIncrease / initialMemory.usedJSHeapSize) * 100
 
-    console.log(`🧠 内存使用变化: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB (${memoryIncreasePercent.toFixed(1)}%)`)
+    console.log(
+      `🧠 内存使用变化: ${(memoryIncrease / 1024 / 1024).toFixed(2)}MB (${memoryIncreasePercent.toFixed(1)}%)`,
+    )
 
     // 内存泄漏基准：内存增长应小于10%
     const noMemoryLeak = memoryIncreasePercent < 10
@@ -182,7 +187,7 @@ test.describe('拖拽性能测试', () => {
 
     dragHelper.recordTest('内存泄漏检测', noMemoryLeak, {
       memoryIncreaseMB: (memoryIncrease / 1024 / 1024).toFixed(2),
-      memoryIncreasePercent: memoryIncreasePercent.toFixed(1)
+      memoryIncreasePercent: memoryIncreasePercent.toFixed(1),
     })
   })
 

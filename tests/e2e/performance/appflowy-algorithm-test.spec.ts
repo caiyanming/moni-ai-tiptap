@@ -3,7 +3,7 @@
  * 验证 88px + 4/5 + 1/5 精确位置计算在实际拖拽中的表现
  */
 
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
   test.beforeEach(async ({ page }) => {
