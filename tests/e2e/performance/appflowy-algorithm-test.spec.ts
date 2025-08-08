@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
 
 test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/preview/Examples/DragHandleComparison')
+    await page.goto('/src/Examples/DragHandleComparison/React/')
     await page.waitForLoadState('networkidle')
     await page.waitForTimeout(3000)
 

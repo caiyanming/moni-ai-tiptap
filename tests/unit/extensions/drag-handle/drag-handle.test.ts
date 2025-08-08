@@ -125,7 +125,7 @@ describe('DragHandle Extension', () => {
         // 检查是否包含SVG图标（新的实现方式）
         const svg = renderResult.querySelector('svg')
         expect(svg).toBeTruthy()
-        
+
         // 检查SVG是否包含6个圆点
         const circles = renderResult.querySelectorAll('svg circle')
         expect(circles.length).toBe(6)

@@ -64,7 +64,9 @@ Cypress.Commands.add('disableDebug', () => {
 Cypress.Commands.add('toggleEditable', () => {
   cy.get('[data-testid="editor-content"]').within(() => {
     // 查找可编辑状态按钮
-    cy.get('button').contains(/Editable|Read-only/).click()
+    cy.get('button')
+      .contains(/Editable|Read-only/)
+      .click()
   })
 })
 
@@ -79,7 +81,7 @@ Cypress.Commands.add('addSampleContent', () => {
 Cypress.Commands.add('insertHiddenBlock', () => {
   const initialCount = cy.get('p[data-moni-block-id]:visible').its('length')
   cy.contains('👁️ Insert Hidden Block').click()
-  
+
   // 验证可见段落数量没有变化
   return initialCount.then(count => {
     cy.get('p[data-moni-block-id]:visible').should('have.length', count)
@@ -110,34 +112,36 @@ Cypress.Commands.add('runCustomOperation', (content, type = 'insert') => {
 })
 
 // 设置模拟速度
-Cypress.Commands.add('setSimulationSpeed', (speed) => {
+Cypress.Commands.add('setSimulationSpeed', speed => {
   cy.get('input[type="range"]').invoke('val', speed).trigger('input')
 })
 
 // 验证段落数量
-Cypress.Commands.add('shouldHaveParagraphs', (count) => {
+Cypress.Commands.add('shouldHaveParagraphs', count => {
   cy.get('p[data-moni-block-id]:visible').should('have.length', count)
 })
 
 // 验证包含特定文本的段落
-Cypress.Commands.add('shouldContainText', (text) => {
+Cypress.Commands.add('shouldContainText', text => {
   cy.contains(text).should('be.visible')
 })
 
 // 测量性能
 Cypress.Commands.add('measurePerformance', (name, testFn) => {
   const startTime = performance.now()
-  
-  return cy.then(() => {
-    return testFn()
-  }).then(() => {
-    const endTime = performance.now()
-    const duration = endTime - startTime
-    
-    cy.log(`Performance: ${name} took ${duration.toFixed(2)}ms`)
-    
-    return cy.wrap(duration)
-  })
+
+  return cy
+    .then(() => {
+      return testFn()
+    })
+    .then(() => {
+      const endTime = performance.now()
+      const duration = endTime - startTime
+
+      cy.log(`Performance: ${name} took ${duration.toFixed(2)}ms`)
+
+      return cy.wrap(duration)
+    })
 })
 
 // 检查控制台错误
@@ -166,19 +170,19 @@ Cypress.Commands.add('waitForAnimation', (duration = 500) => {
 })
 
 // 模拟Tab键导航
-Cypress.Commands.add('tab', { prevSubject: 'optional' }, (subject) => {
+Cypress.Commands.add('tab', { prevSubject: 'optional' }, subject => {
   const element = subject ? cy.wrap(subject) : cy.focused()
   return element.trigger('keydown', { key: 'Tab', code: 'Tab' })
 })
 
 // 验证响应式设计
-Cypress.Commands.add('testResponsive', (callback) => {
+Cypress.Commands.add('testResponsive', callback => {
   const viewports = [
     { width: 1920, height: 1080, name: 'desktop' },
     { width: 768, height: 1024, name: 'tablet' },
-    { width: 375, height: 667, name: 'mobile' }
+    { width: 375, height: 667, name: 'mobile' },
   ]
-  
+
   viewports.forEach(viewport => {
     cy.viewport(viewport.width, viewport.height)
     cy.log(`Testing ${viewport.name} (${viewport.width}x${viewport.height})`)
@@ -187,7 +191,7 @@ Cypress.Commands.add('testResponsive', (callback) => {
 })
 
 // 截图并添加时间戳
-Cypress.Commands.add('screenshotWithTimestamp', (name) => {
+Cypress.Commands.add('screenshotWithTimestamp', name => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   cy.screenshot(`${name}-${timestamp}`)
 })

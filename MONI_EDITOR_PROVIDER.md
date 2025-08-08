@@ -45,13 +45,13 @@ function App() {
     <MoniEditorProvider extensions={extensions} content={content}>
       {/* Top level can access editor */}
       <TopLevelInfo />
-      
+
       <div className="complex-layout">
         <div className="sidebar">
           {/* Deeply nested components can still access editor */}
           <SomeNestedComponent />
         </div>
-        
+
         <div className="main-content">
           {/* Manually render editor content where needed */}
           <ManualEditorContent />
@@ -68,11 +68,13 @@ function App() {
 // Problem: useStreamOperationManager needs editor at DocumentContainer level
 // But EditorContent needs to render inside DocumentEditor
 
-<MoniEditorProvider extensions={extensions} content={content}>
-  <DocumentContainer>  {/* Can use useStreamOperationManager here */}
-    <DocumentChat />   {/* Can access editor for AI features */}
+;<MoniEditorProvider extensions={extensions} content={content}>
+  <DocumentContainer>
+    {' '}
+    {/* Can use useStreamOperationManager here */}
+    <DocumentChat /> {/* Can access editor for AI features */}
   </DocumentContainer>
-  
+
   <PanelGroup>
     <DocumentEditor>
       <MoniEditor>
@@ -80,7 +82,7 @@ function App() {
           {/* Manual render EditorContent at correct position */}
           <EditorContentRenderer />
         </MoniEditorContent>
-      </MoniEditor>  
+      </MoniEditor>
     </DocumentEditor>
   </PanelGroup>
 </MoniEditorProvider>
@@ -112,13 +114,13 @@ interface MoniEditorProviderProps {
 
 ### Comparison with EditorProvider
 
-| Feature | EditorProvider | MoniEditorProvider |
-|---------|----------------|-------------------|
-| **Editor Instance** | ✅ Creates and provides | ✅ Creates and provides |
-| **Auto Render Content** | ✅ Automatic | ❌ Manual control |
-| **useCurrentEditor** | ✅ Supported | ✅ Supported |
-| **Complex Layouts** | ❌ Limited | ✅ Full control |
-| **Content Position** | 🔒 Fixed | 🎯 Flexible |
+| Feature                 | EditorProvider          | MoniEditorProvider      |
+| ----------------------- | ----------------------- | ----------------------- |
+| **Editor Instance**     | ✅ Creates and provides | ✅ Creates and provides |
+| **Auto Render Content** | ✅ Automatic            | ❌ Manual control       |
+| **useCurrentEditor**    | ✅ Supported            | ✅ Supported            |
+| **Complex Layouts**     | ❌ Limited              | ✅ Full control         |
+| **Content Position**    | 🔒 Fixed                | 🎯 Flexible             |
 
 ## 🧪 Testing
 
@@ -139,8 +141,9 @@ Interactive demo available at:
 `/demos/src/Extensions/MoniEditor/MoniEditorProvider/React/`
 
 Features demonstrated:
+
 - ✅ Top-level editor info access
-- ✅ Manual content rendering control  
+- ✅ Manual content rendering control
 - ✅ Cross-level editor instance sharing
 - ✅ Complex nested component access
 - ✅ Editor commands from any level
@@ -150,15 +153,17 @@ Features demonstrated:
 ### From EditorProvider to MoniEditorProvider
 
 **Before:**
+
 ```tsx
 <EditorProvider extensions={extensions} content={content}>
-  <MyComponent />  {/* EditorContent auto-rendered here */}
+  <MyComponent /> {/* EditorContent auto-rendered here */}
 </EditorProvider>
 ```
 
 **After:**
+
 ```tsx
-<MoniEditorProvider extensions={extensions} content={content}>
+;<MoniEditorProvider extensions={extensions} content={content}>
   <MyComponent />
   {/* Manual render where needed */}
   <EditorContentRenderer />

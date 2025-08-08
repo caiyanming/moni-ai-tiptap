@@ -13,7 +13,7 @@ on:
     branches: [main, develop]
     paths:
       - 'demos/src/Extensions/MoniEditor/React/**'
-  
+
   # 手动触发
   workflow_dispatch:
     inputs:
@@ -37,22 +37,22 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install --with-deps
-        
+
       - name: 🔧 Cache Playwright browsers
         uses: actions/cache@v3
         with:
@@ -65,37 +65,37 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == '' || contains(github.event.inputs.test_suite, 'basic')
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install chromium
-        
+
       - name: 🚀 Start development server
         working-directory: demos
         run: npm start &
-        
+
       - name: ⏳ Wait for server
         run: npx wait-on http://localhost:3668 --timeout 60000
-        
+
       - name: 🎯 Run DragHandle tests
         working-directory: demos/src/Extensions/MoniEditor/React
         run: npx playwright test drag-handle-migrated.spec.js --project=chromium
-        
+
       - name: 📊 Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -110,37 +110,37 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'stream-operations' || github.event.inputs.test_suite == ''
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install chromium
-        
+
       - name: 🚀 Start development server
         working-directory: demos
         run: npm start &
-        
+
       - name: ⏳ Wait for server
         run: npx wait-on http://localhost:3668 --timeout 60000
-        
+
       - name: 🔄 Run StreamOperations tests
         working-directory: demos/src/Extensions/MoniEditor/React
         run: npx playwright test stream-operations-migrated.spec.js --project=chromium
-        
+
       - name: 📊 Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -155,37 +155,37 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'hidden-blocks' || github.event.inputs.test_suite == ''
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install chromium
-        
+
       - name: 🚀 Start development server
         working-directory: demos
         run: npm start &
-        
+
       - name: ⏳ Wait for server
         run: npx wait-on http://localhost:3668 --timeout 60000
-        
+
       - name: 👁️ Run HiddenBlocks tests
         working-directory: demos/src/Extensions/MoniEditor/React
         run: npx playwright test hidden-blocks-migrated.spec.js --project=chromium
-        
+
       - name: 📊 Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -203,37 +203,37 @@ jobs:
     strategy:
       matrix:
         browser: [chromium, firefox, webkit]
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install ${{ matrix.browser }} --with-deps
-        
+
       - name: 🚀 Start development server
         working-directory: demos
         run: npm start &
-        
+
       - name: ⏳ Wait for server
         run: npx wait-on http://localhost:3668 --timeout 60000
-        
+
       - name: 🌐 Run cross-browser tests
         working-directory: demos/src/Extensions/MoniEditor/React
         run: npx playwright test *-migrated.spec.js --project=${{ matrix.browser }}
-        
+
       - name: 📊 Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -248,37 +248,37 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     if: github.event.inputs.test_suite == 'all' || github.event.inputs.test_suite == 'mobile'
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
-        
+
       - name: 📦 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: 'demos/package.json'
-          
+
       - name: 📚 Install dependencies
         working-directory: demos
         run: npm ci
-        
+
       - name: 🎭 Install Playwright browsers
         working-directory: demos
         run: npx playwright install chromium webkit --with-deps
-        
+
       - name: 🚀 Start development server
         working-directory: demos
         run: npm start &
-        
+
       - name: ⏳ Wait for server
         run: npx wait-on http://localhost:3668 --timeout 60000
-        
+
       - name: 📱 Run mobile tests
         working-directory: demos/src/Extensions/MoniEditor/React
         run: npx playwright test drag-handle-migrated.spec.js --project="Mobile Chrome" --project="Mobile Safari"
-        
+
       - name: 📊 Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -293,13 +293,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test-basic, test-stream, test-hidden, test-cross-browser, test-mobile]
     if: always()
-    
+
     steps:
       - name: 📥 Download all test results
         uses: actions/download-artifact@v3
         with:
           path: all-test-results/
-          
+
       - name: 📊 Generate HTML Report
         run: |
           echo "# 🎭 Playwright Test Results" > test-summary.md
@@ -315,7 +315,7 @@ jobs:
           echo "✅ 成功从 Cypress 迁移到 Playwright" >> test-summary.md
           echo "✅ 实现了 Cypress 无法做到的真实拖拽测试" >> test-summary.md
           echo "✅ 提供了更稳定和可靠的测试执行" >> test-summary.md
-          
+
       - name: 📋 Comment PR
         uses: actions/github-script@v6
         if: github.event_name == 'pull_request'
@@ -329,7 +329,7 @@ jobs:
               repo: context.repo.repo,
               body: testSummary
             });
-            
+
       - name: 📊 Upload final report
         uses: actions/upload-artifact@v3
         with:
@@ -341,7 +341,7 @@ jobs:
 
 # 🎯 工作流完成标志
 env:
-  PLAYWRIGHT_MIGRATION: "SUCCESS"
-  TEST_FRAMEWORK: "PLAYWRIGHT"
-  MIGRATION_FROM: "CYPRESS"
-  REAL_DRAG_SUPPORT: "TRUE"
+  PLAYWRIGHT_MIGRATION: 'SUCCESS'
+  TEST_FRAMEWORK: 'PLAYWRIGHT'
+  MIGRATION_FROM: 'CYPRESS'
+  REAL_DRAG_SUPPORT: 'TRUE'

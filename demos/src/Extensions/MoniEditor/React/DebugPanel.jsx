@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect,useState } from 'react'
 
 const DebugPanel = ({ editor, streamOperations }) => {
   const [editorState, setEditorState] = useState(null)
@@ -6,7 +6,7 @@ const DebugPanel = ({ editor, streamOperations }) => {
   const [refreshCount, setRefreshCount] = useState(0)
 
   useEffect(() => {
-    if (!editor) return
+    if (!editor) {return}
 
     const updateState = () => {
       try {
@@ -39,10 +39,11 @@ const DebugPanel = ({ editor, streamOperations }) => {
                 type: node.type.name,
                 content: node.textContent?.substring(0, 50) + (node.textContent?.length > 50 ? '...' : ''),
                 attrs: node.attrs,
-                marks: node.marks?.map(mark => ({
-                  type: mark.type.name,
-                  attrs: mark.attrs,
-                })) || [],
+                marks:
+                  node.marks?.map(mark => ({
+                    type: mark.type.name,
+                    attrs: mark.attrs,
+                  })) || [],
               }
             }
           } catch (e) {
@@ -53,7 +54,8 @@ const DebugPanel = ({ editor, streamOperations }) => {
         // Get all nodes with their positions
         const allNodes = []
         doc.descendants((node, pos) => {
-          if (allNodes.length < 20) { // Limit to prevent performance issues
+          if (allNodes.length < 20) {
+            // Limit to prevent performance issues
             allNodes.push({
               pos,
               type: node.type.name,
@@ -96,7 +98,7 @@ const DebugPanel = ({ editor, streamOperations }) => {
     setRefreshCount(prev => prev + 1)
   }
 
-  const selectNode = (nodeInfo) => {
+  const selectNode = nodeInfo => {
     if (editor && nodeInfo.pos >= 0) {
       try {
         editor.chain().focus().setTextSelection(nodeInfo.pos).run()
@@ -154,7 +156,7 @@ const DebugPanel = ({ editor, streamOperations }) => {
             🔄 Refresh
           </button>
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={exportJSON}
@@ -180,12 +182,8 @@ const DebugPanel = ({ editor, streamOperations }) => {
               {streamOperations.map(op => (
                 <div key={op.id} className="bg-yellow-50 p-2 rounded text-xs border border-yellow-200">
                   <div className="font-medium text-yellow-800">{op.type.toUpperCase()}</div>
-                  {op.targetId && (
-                    <div className="text-yellow-700">Target: {op.targetId}</div>
-                  )}
-                  {op.description && (
-                    <div className="text-yellow-600 mt-1">{op.description}</div>
-                  )}
+                  {op.targetId && <div className="text-yellow-700">Target: {op.targetId}</div>}
+                  {op.description && <div className="text-yellow-600 mt-1">{op.description}</div>}
                 </div>
               ))}
             </div>
@@ -221,22 +219,20 @@ const DebugPanel = ({ editor, streamOperations }) => {
               <div>
                 <h4 className="font-medium text-sm text-gray-700 mb-2">📍 Node at Cursor</h4>
                 <div className="bg-blue-50 p-2 rounded text-xs space-y-1 border border-blue-200">
-                  <div>Type: <span className="font-mono">{editorState.nodeAtCursor.type}</span></div>
-                  {editorState.nodeAtCursor.content && (
-                    <div>Content: "{editorState.nodeAtCursor.content}"</div>
-                  )}
+                  <div>
+                    Type: <span className="font-mono">{editorState.nodeAtCursor.type}</span>
+                  </div>
+                  {editorState.nodeAtCursor.content && <div>Content: "{editorState.nodeAtCursor.content}"</div>}
                   {Object.keys(editorState.nodeAtCursor.attrs || {}).length > 0 && (
                     <div>
-                      Attrs: 
+                      Attrs:
                       <pre className="mt-1 bg-white p-1 rounded text-xs overflow-x-auto">
                         {JSON.stringify(editorState.nodeAtCursor.attrs, null, 2)}
                       </pre>
                     </div>
                   )}
                   {editorState.nodeAtCursor.marks?.length > 0 && (
-                    <div>
-                      Marks: {editorState.nodeAtCursor.marks.map(mark => mark.type).join(', ')}
-                    </div>
+                    <div>Marks: {editorState.nodeAtCursor.marks.map(mark => mark.type).join(', ')}</div>
                   )}
                 </div>
               </div>
@@ -268,9 +264,7 @@ const DebugPanel = ({ editor, streamOperations }) => {
                       <span className="font-mono text-blue-600">{node.type}</span>
                       <span className="text-gray-500">@{node.pos}</span>
                     </div>
-                    {node.content && (
-                      <div className="mt-1 text-gray-600">"{node.content}"</div>
-                    )}
+                    {node.content && <div className="mt-1 text-gray-600">"{node.content}"</div>}
                     {Object.keys(node.attrs || {}).length > 0 && (
                       <div className="mt-1 text-gray-500 text-xs">
                         {Object.entries(node.attrs).map(([key, value]) => (

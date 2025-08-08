@@ -4,8 +4,8 @@ module.exports = {
   roots: ['<rootDir>/src'],
   globals: {
     'ts-jest': {
-      isolatedModules: true
-    }
+      isolatedModules: true,
+    },
   },
   testMatch: ['**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}', '**/*.(test|spec).{js,jsx,ts,tsx}'],
   transform: {

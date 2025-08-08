@@ -4,23 +4,22 @@
  */
 
 import { Editor } from '@tiptap/core'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-
 import { Document } from '@tiptap/extension-document'
-import { Paragraph } from '@tiptap/extension-paragraph'
-import { Text } from '@tiptap/extension-text'
 import { DragHandlePlugin } from '@tiptap/extension-drag-handle/drag-handle-plugin.js'
 import { DropPositionCalculator } from '@tiptap/extension-drag-handle/drop-position-calculator.js'
+import { Paragraph } from '@tiptap/extension-paragraph'
+import { Text } from '@tiptap/extension-text'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Helper function to mock getBoundingClientRect
 function mockGetBoundingClientRect(element: HTMLElement, rect: DOMRect) {
   Object.defineProperty(element, 'getBoundingClientRect', {
     value: () => ({
       ...rect,
-      toJSON: () => {}
+      toJSON: () => {},
     }),
     writable: true,
-    configurable: true
+    configurable: true,
   })
 }
 
@@ -78,8 +77,14 @@ describe('Drag Smoothness Integration', () => {
     it('应该在所有阈值边界处给出一致的结果', () => {
       const mockElement = document.createElement('p')
       mockGetBoundingClientRect(mockElement, {
-        x: 50, y: 100, width: 400, height: 100,
-        top: 100, bottom: 200, left: 50, right: 450,
+        x: 50,
+        y: 100,
+        width: 400,
+        height: 100,
+        top: 100,
+        bottom: 200,
+        left: 50,
+        right: 450,
       } as DOMRect)
 
       // 测试关键阈值点
@@ -103,8 +108,14 @@ describe('Drag Smoothness Integration', () => {
     it('应该处理快速移动时的位置计算稳定性', () => {
       const mockElement = document.createElement('p')
       mockGetBoundingClientRect(mockElement, {
-        x: 50, y: 100, width: 400, height: 100,
-        top: 100, bottom: 200, left: 50, right: 450,
+        x: 50,
+        y: 100,
+        width: 400,
+        height: 100,
+        top: 100,
+        bottom: 200,
+        left: 50,
+        right: 450,
       } as DOMRect)
 
       // 模拟快速鼠标移动（可能跳过某些像素）
@@ -122,7 +133,7 @@ describe('Drag Smoothness Integration', () => {
 
       // 验证每个位置都能给出合理的结果
       expect(results[0].dropPosition).toBe('above')
-      expect(results[1].dropPosition).toBe('inside') 
+      expect(results[1].dropPosition).toBe('inside')
       expect(results[2].dropPosition).toBe('inside')
       expect(results[3].dropPosition).toBe('below')
 
@@ -139,8 +150,14 @@ describe('Drag Smoothness Integration', () => {
       const nestableElement = document.createElement('p')
       nestableElement.setAttribute('data-moni-nestable', 'true')
       mockGetBoundingClientRect(nestableElement, {
-        x: 50, y: 100, width: 400, height: 100,
-        top: 100, bottom: 200, left: 50, right: 450,
+        x: 50,
+        y: 100,
+        width: 400,
+        height: 100,
+        top: 100,
+        bottom: 200,
+        left: 50,
+        right: 450,
       } as DOMRect)
 
       // 测试嵌套边界的精确切换
@@ -163,8 +180,14 @@ describe('Drag Smoothness Integration', () => {
       const nestableElement = document.createElement('p')
       nestableElement.setAttribute('data-moni-nestable', 'true')
       mockGetBoundingClientRect(nestableElement, {
-        x: 50, y: 100, width: 400, height: 100,
-        top: 100, bottom: 200, left: 50, right: 450,
+        x: 50,
+        y: 100,
+        width: 400,
+        height: 100,
+        top: 100,
+        bottom: 200,
+        left: 50,
+        right: 450,
       } as DOMRect)
 
       // 模拟从外部移动到嵌套区域的轨迹
@@ -201,7 +224,7 @@ describe('Drag Smoothness Integration', () => {
 
   describe('实时响应性能测试', () => {
     it('应该在高频更新下保持稳定性能', () => {
-      let dragIndicator: any = null
+      const dragIndicator: any = null
       let onDragOverCallCount = 0
 
       const plugin = DragHandlePlugin({
@@ -233,8 +256,14 @@ describe('Drag Smoothness Integration', () => {
       highFrequencyEvents.forEach(({ x, y }) => {
         const mockElement = document.createElement('p')
         mockGetBoundingClientRect(mockElement, {
-          x: 50, y: 100, width: 400, height: 100,
-          top: 100, bottom: 200, left: 50, right: 450,
+          x: 50,
+          y: 100,
+          width: 400,
+          height: 100,
+          top: 100,
+          bottom: 200,
+          left: 50,
+          right: 450,
         } as DOMRect)
 
         const event = createMockDragEvent(x, y)
@@ -310,28 +339,34 @@ describe('Drag Smoothness Integration', () => {
       // 测试极小元素
       const tinyElement = document.createElement('p')
       mockGetBoundingClientRect(tinyElement, {
-        x: 50, y: 100, width: 10, height: 5,
-        top: 100, bottom: 105, left: 50, right: 60,
+        x: 50,
+        y: 100,
+        width: 10,
+        height: 5,
+        top: 100,
+        bottom: 105,
+        left: 50,
+        right: 60,
       } as DOMRect)
 
-      const tinyResult = DropPositionCalculator.calculate(
-        createMockDragEvent(55, 102),
-        tinyElement
-      )
+      const tinyResult = DropPositionCalculator.calculate(createMockDragEvent(55, 102), tinyElement)
       expect(tinyResult.dropPosition).toBeDefined()
       expect(tinyResult.indicatorPosition.width || tinyResult.indicatorPosition.height).toBeGreaterThan(0)
 
       // 测试超大元素
       const hugeElement = document.createElement('p')
       mockGetBoundingClientRect(hugeElement, {
-        x: 0, y: 0, width: 2000, height: 1000,
-        top: 0, bottom: 1000, left: 0, right: 2000,
+        x: 0,
+        y: 0,
+        width: 2000,
+        height: 1000,
+        top: 0,
+        bottom: 1000,
+        left: 0,
+        right: 2000,
       } as DOMRect)
 
-      const hugeResult = DropPositionCalculator.calculate(
-        createMockDragEvent(1000, 200),
-        hugeElement
-      )
+      const hugeResult = DropPositionCalculator.calculate(createMockDragEvent(1000, 200), hugeElement)
       expect(hugeResult.dropPosition).toBe('above')
       expect(hugeResult.indicatorPosition.width).toBe(2000)
     })
@@ -339,23 +374,23 @@ describe('Drag Smoothness Integration', () => {
     it('应该处理无效或缺失的元素属性', () => {
       const invalidElement = document.createElement('div') // 不是p元素
       mockGetBoundingClientRect(invalidElement, {
-        x: 50, y: 100, width: 400, height: 100,
-        top: 100, bottom: 200, left: 50, right: 450,
+        x: 50,
+        y: 100,
+        width: 400,
+        height: 100,
+        top: 100,
+        bottom: 200,
+        left: 50,
+        right: 450,
       } as DOMRect)
 
       // 测试缺失data-moni-nestable属性
-      const result1 = DropPositionCalculator.calculate(
-        createMockDragEvent(70, 150),
-        invalidElement
-      )
+      const result1 = DropPositionCalculator.calculate(createMockDragEvent(70, 150), invalidElement)
       expect(result1.direction).toBe('horizontal') // 应该回退到普通模式
 
       // 测试空的data-moni-nestable属性
       invalidElement.setAttribute('data-moni-nestable', '')
-      const result2 = DropPositionCalculator.calculate(
-        createMockDragEvent(70, 150),
-        invalidElement
-      )
+      const result2 = DropPositionCalculator.calculate(createMockDragEvent(70, 150), invalidElement)
       expect(result2.direction).toBe('vertical') // 空字符串属性仍然存在，被视为true
     })
   })
@@ -385,14 +420,14 @@ describe('Drag Smoothness Integration', () => {
       // 1. 从源元素开始
       let result = DropPositionCalculator.calculate(
         createMockDragEvent(sourceRect.x + sourceRect.width / 2, sourceRect.y + sourceRect.height / 2),
-        sourceP
+        sourceP,
       )
       expect(result.dropPosition).toBe('inside') // 在源元素中心
 
       // 2. 移动到目标元素上方
       result = DropPositionCalculator.calculate(
         createMockDragEvent(targetRect.x + targetRect.width / 2, targetRect.y - 5),
-        targetP
+        targetP,
       )
       expect(result.dropPosition).toBe('above')
       expect(result.direction).toBe('horizontal')
@@ -400,7 +435,7 @@ describe('Drag Smoothness Integration', () => {
       // 3. 移动到目标元素下方
       result = DropPositionCalculator.calculate(
         createMockDragEvent(targetRect.x + targetRect.width / 2, targetRect.y + targetRect.height + 5),
-        targetP
+        targetP,
       )
       expect(result.dropPosition).toBe('below')
       expect(result.direction).toBe('horizontal')
@@ -426,17 +461,14 @@ describe('Drag Smoothness Integration', () => {
       // 模拟从右侧接近然后进入嵌套区域
       const approachPath = [
         { x: rect.x + 100, y: rect.y + rect.height / 2, expectedDirection: 'horizontal' }, // x=100, 远离左边缘
-        { x: rect.x + 80, y: rect.y + rect.height / 2, expectedDirection: 'horizontal' },  // x=80, 仍在非嵌套区域
-        { x: rect.x + 50, y: rect.y + rect.height / 2, expectedDirection: 'horizontal' },  // x=50, 在边界附近
-        { x: rect.x + 35, y: rect.y + rect.height / 2, expectedDirection: 'vertical' },   // x=35, 进入嵌套区域（<40px）
-        { x: rect.x + 20, y: rect.y + rect.height / 2, expectedDirection: 'vertical' },   // x=20, 深入嵌套区域
+        { x: rect.x + 80, y: rect.y + rect.height / 2, expectedDirection: 'horizontal' }, // x=80, 仍在非嵌套区域
+        { x: rect.x + 50, y: rect.y + rect.height / 2, expectedDirection: 'horizontal' }, // x=50, 在边界附近
+        { x: rect.x + 35, y: rect.y + rect.height / 2, expectedDirection: 'vertical' }, // x=35, 进入嵌套区域（<40px）
+        { x: rect.x + 20, y: rect.y + rect.height / 2, expectedDirection: 'vertical' }, // x=20, 深入嵌套区域
       ]
 
       approachPath.forEach(({ x, y, expectedDirection }, index) => {
-        const result = DropPositionCalculator.calculate(
-          createMockDragEvent(x, y),
-          targetElement
-        )
+        const result = DropPositionCalculator.calculate(createMockDragEvent(x, y), targetElement)
         expect(result.direction).toBe(expectedDirection, `Step ${index + 1}: x=${x}, expected=${expectedDirection}`)
 
         if (expectedDirection === 'vertical') {

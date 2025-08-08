@@ -3,11 +3,15 @@
  * 测试拖拽指示器的视觉状态管理，确保 Notion 级别的流畅体验
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { EditorView } from '@tiptap/pm/view'
-
-import { ModernDragIndicator, createDragIndicator, DEFAULT_THEMES } from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
 import type { IndicatorDirection, IndicatorPosition } from '@tiptap/extension-drag-handle/drop-position-calculator.js'
+import type {
+  ModernDragIndicator} from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
+import {
+  createDragIndicator,
+  DEFAULT_THEMES
+} from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
+import type { EditorView } from '@tiptap/pm/view'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 describe('ModernDragIndicator', () => {
   let mockEditorView: EditorView
@@ -40,20 +44,20 @@ describe('ModernDragIndicator', () => {
       bottom: 200,
       left: 50,
       right: 450,
-      toJSON: vi.fn()
+      toJSON: vi.fn(),
     })
 
     // 为 container 和 editorDom 设置 getBoundingClientRect
     Object.defineProperty(mockContainer, 'getBoundingClientRect', {
       value: mockRect,
       writable: true,
-      configurable: true
+      configurable: true,
     })
-    
+
     Object.defineProperty(editorDom, 'getBoundingClientRect', {
       value: mockRect,
       writable: true,
-      configurable: true
+      configurable: true,
     })
 
     // 模拟 EditorView
@@ -94,15 +98,21 @@ describe('ModernDragIndicator', () => {
     })
 
     it('应该初始状态下隐藏所有指示器', () => {
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
-      const verticalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="vertical"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
+      const verticalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="vertical"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.display).toBe('none')
       expect(verticalIndicator.style.display).toBe('none')
     })
 
     it('应该应用默认主题样式', () => {
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.backgroundColor).toBe('rgb(59, 130, 246)') // DEFAULT_THEMES.notion.color
       expect(horizontalIndicator.style.borderRadius).toBe('2px')
@@ -123,7 +133,9 @@ describe('ModernDragIndicator', () => {
         dropPosition: 'above',
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.display).toBe('block')
       expect(horizontalIndicator.style.transform).toBe('translate(100px, 200px)')
@@ -140,7 +152,9 @@ describe('ModernDragIndicator', () => {
         dropPosition: 'above',
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       // 检查动画相关的样式
       expect(horizontalIndicator.style.opacity).toBe('0.9') // DEFAULT_THEMES.notion.opacity
@@ -163,7 +177,9 @@ describe('ModernDragIndicator', () => {
         dropPosition: 'below',
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.transform).toBe('translate(120px, 250px)')
       expect(horizontalIndicator.style.width).toBe('380px')
@@ -184,7 +200,9 @@ describe('ModernDragIndicator', () => {
         dropPosition: 'inside',
       })
 
-      const verticalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="vertical"]') as HTMLElement
+      const verticalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="vertical"]',
+      ) as HTMLElement
 
       expect(verticalIndicator.style.display).toBe('block')
       expect(verticalIndicator.style.transform).toBe('translate(50px, 100px)')
@@ -207,8 +225,12 @@ describe('ModernDragIndicator', () => {
         dropPosition: 'inside',
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
-      const verticalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="vertical"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
+      const verticalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="vertical"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.display).toBe('none')
       expect(verticalIndicator.style.display).toBe('block')
@@ -227,8 +249,12 @@ describe('ModernDragIndicator', () => {
       // 然后隐藏
       indicator.hide()
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
-      const verticalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="vertical"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
+      const verticalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="vertical"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.display).toBe('none')
       expect(verticalIndicator.style.display).toBe('none')
@@ -265,7 +291,7 @@ describe('ModernDragIndicator', () => {
     it('should apply custom theme correctly', () => {
       // 先销毁默认指示器，避免冲突
       indicator.destroy()
-      
+
       // 使用自定义主题创建指示器
       const customIndicator = createDragIndicator(mockEditorView, {
         theme: {
@@ -282,7 +308,9 @@ describe('ModernDragIndicator', () => {
         debug: false,
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.backgroundColor).toBe('rgb(255, 0, 0)')
       expect(horizontalIndicator.style.borderRadius).toBe('10px')
@@ -294,7 +322,7 @@ describe('ModernDragIndicator', () => {
     it('should respect animation configuration', () => {
       // 先销毁默认指示器，避免冲突
       indicator.destroy()
-      
+
       const customIndicator = createDragIndicator(mockEditorView, {
         theme: DEFAULT_THEMES.notion,
         animation: {
@@ -304,7 +332,9 @@ describe('ModernDragIndicator', () => {
         debug: false,
       })
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
 
       expect(horizontalIndicator.style.transition).toContain('150ms')
       expect(horizontalIndicator.style.transition).toContain('ease-in-out')
@@ -336,7 +366,8 @@ describe('ModernDragIndicator', () => {
 
       // 模拟60fps的更新频率
       const simulateFrameUpdates = () => {
-        if (updateCount < 60) { // 模拟1秒60帧
+        if (updateCount < 60) {
+          // 模拟1秒60帧
           indicator.show({
             direction: 'horizontal',
             position: { x: 100 + updateCount, y: 200, width: 400 },
@@ -352,7 +383,7 @@ describe('ModernDragIndicator', () => {
       setTimeout(() => {
         const endTime = performance.now()
         const duration = endTime - startTime
-        
+
         // 验证更新频率接近60fps
         expect(duration).toBeLessThan(1200) // 允许20%的性能损耗
         expect(updateCount).toBe(60)
@@ -371,8 +402,10 @@ describe('ModernDragIndicator', () => {
         })
       }).not.toThrow()
 
-      const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
-      
+      const horizontalIndicator = mockContainer.querySelector(
+        '.moni-drag-indicator[data-direction="horizontal"]',
+      ) as HTMLElement
+
       // 应该使用默认值或跳过显示
       expect(horizontalIndicator.style.display).toBe('none')
     })
@@ -418,8 +451,10 @@ describe('ModernDragIndicator', () => {
           dropPosition: pos.dropPosition,
         })
 
-        const horizontalIndicator = mockContainer.querySelector('.moni-drag-indicator[data-direction="horizontal"]') as HTMLElement
-        
+        const horizontalIndicator = mockContainer.querySelector(
+          '.moni-drag-indicator[data-direction="horizontal"]',
+        ) as HTMLElement
+
         expect(horizontalIndicator.style.display).toBe('block')
         expect(horizontalIndicator.style.transform).toContain(`${pos.y}px`)
       })
@@ -435,7 +470,7 @@ describe('ModernDragIndicator', () => {
         { direction: 'vertical' as IndicatorDirection, x: 60 },
       ]
 
-      transitions.forEach((transition) => {
+      transitions.forEach(transition => {
         if (transition.direction === 'horizontal') {
           indicator.show({
             direction: 'horizontal',
@@ -450,8 +485,12 @@ describe('ModernDragIndicator', () => {
           })
         }
 
-        const activeIndicator = mockContainer.querySelector(`.moni-drag-indicator[data-direction="${transition.direction}"]`) as HTMLElement
-        const inactiveIndicator = mockContainer.querySelector(`.moni-drag-indicator[data-direction="${transition.direction === 'horizontal' ? 'vertical' : 'horizontal'}"]`) as HTMLElement
+        const activeIndicator = mockContainer.querySelector(
+          `.moni-drag-indicator[data-direction="${transition.direction}"]`,
+        ) as HTMLElement
+        const inactiveIndicator = mockContainer.querySelector(
+          `.moni-drag-indicator[data-direction="${transition.direction === 'horizontal' ? 'vertical' : 'horizontal'}"]`,
+        ) as HTMLElement
 
         expect(activeIndicator.style.display).toBe('block')
         expect(inactiveIndicator.style.display).toBe('none')

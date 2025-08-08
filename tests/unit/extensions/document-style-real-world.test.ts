@@ -13,7 +13,7 @@ import { Document } from '@tiptap/extension-document'
 import { DocumentStyleExtension, MoniDefaultStylePreset } from '@tiptap/extension-document-style'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { afterEach,beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 describe('DocumentStyleExtension Real World Usage', () => {
   let editor: Editor

@@ -3,24 +3,24 @@
  * 生成性能分析报告和测试总结
  */
 
-import { FullConfig } from '@playwright/test'
+import type { FullConfig } from '@playwright/test'
 import * as fs from 'fs'
 import * as path from 'path'
 
 async function globalTeardown(config: FullConfig) {
   console.log('🧹 开始拖拽流畅度测试环境清理...')
-  
+
   try {
     // 1. 生成测试报告目录
     const reportDir = 'test-results/drag-smoothness-analysis'
     if (!fs.existsSync(reportDir)) {
       fs.mkdirSync(reportDir, { recursive: true })
     }
-    
+
     // 2. 分析测试结果
     const resultsPath = 'test-results/drag-smoothness-results.json'
     let testResults = null
-    
+
     try {
       if (fs.existsSync(resultsPath)) {
         testResults = JSON.parse(fs.readFileSync(resultsPath, 'utf8'))
@@ -29,37 +29,33 @@ async function globalTeardown(config: FullConfig) {
     } catch (error) {
       console.warn('⚠️ 无法读取测试结果文件:', error.message)
     }
-    
+
     // 3. 生成性能分析报告
     const analysisReport = generatePerformanceAnalysis(testResults)
-    
+
     // 4. 保存分析报告
     const reportPath = path.join(reportDir, 'performance-analysis.md')
     fs.writeFileSync(reportPath, analysisReport, 'utf8')
     console.log(`📋 性能分析报告已保存: ${reportPath}`)
-    
+
     // 5. 生成 AppFlowy 对比报告
     const comparisonReport = generateAppFlowyComparison()
     const comparisonPath = path.join(reportDir, 'appflowy-comparison.md')
     fs.writeFileSync(comparisonPath, comparisonReport, 'utf8')
     console.log(`🆚 AppFlowy 对比报告已保存: ${comparisonPath}`)
-    
+
     // 6. 清理临时文件
     console.log('🗑️ 清理临时测试文件...')
-    const tempDirs = [
-      'test-results/screenshots',
-      'test-results/videos'
-    ]
-    
+    const tempDirs = ['test-results/screenshots', 'test-results/videos']
+
     for (const dir of tempDirs) {
       if (fs.existsSync(dir)) {
         const files = fs.readdirSync(dir)
         console.log(`清理 ${dir}: ${files.length} 个文件`)
       }
     }
-    
+
     console.log('✅ 测试环境清理完成')
-    
   } catch (error) {
     console.error('❌ 测试环境清理失败:', error)
   }
@@ -67,19 +63,23 @@ async function globalTeardown(config: FullConfig) {
 
 function generatePerformanceAnalysis(testResults: any): string {
   const timestamp = new Date().toISOString()
-  
+
   return `# 🎯 拖拽流畅度性能分析报告
 
 **生成时间**: ${timestamp}
 
 ## 📊 测试概览
 
-${testResults ? `
+${
+  testResults
+    ? `
 - **测试套件总数**: ${testResults.suites?.length || 'N/A'}
 - **通过测试数**: ${testResults.stats?.passed || 'N/A'}
 - **失败测试数**: ${testResults.stats?.failed || 'N/A'}
 - **总执行时间**: ${testResults.stats?.duration || 'N/A'}ms
-` : '⚠️ 测试结果数据不可用'}
+`
+    : '⚠️ 测试结果数据不可用'
+}
 
 ## 🎨 关键性能指标
 

@@ -1,11 +1,6 @@
-import React, { useState, useCallback } from 'react'
+import React, { useCallback,useState } from 'react'
 
-const StreamSimulator = ({ 
-  editor, 
-  onStreamOperation, 
-  isSimulating, 
-  setIsSimulating 
-}) => {
+const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulating }) => {
   const [simulationSpeed, setSimulationSpeed] = useState(1000)
   const [operationType, setOperationType] = useState('insert')
   const [customContent, setCustomContent] = useState('')
@@ -13,7 +8,8 @@ const StreamSimulator = ({
   const sampleOperations = [
     {
       type: 'insert',
-      content: '<p data-type="paragraph">🤖 AI generated content: This paragraph was inserted by the stream simulator!</p>',
+      content:
+        '<p data-type="paragraph">🤖 AI generated content: This paragraph was inserted by the stream simulator!</p>',
       description: 'Insert AI generated paragraph',
     },
     {
@@ -39,55 +35,58 @@ const StreamSimulator = ({
     },
     {
       type: 'insert',
-      content: '<blockquote data-type="blockquote"><p>💬 "This is an AI generated quote that demonstrates the capabilities of the Block Stream system."</p></blockquote>',
+      content:
+        '<blockquote data-type="blockquote"><p>💬 "This is an AI generated quote that demonstrates the capabilities of the Block Stream system."</p></blockquote>',
       description: 'Insert AI generated blockquote',
     },
   ]
 
-  const simulateOperation = useCallback((operation) => {
-    if (!editor || isSimulating) return
+  const simulateOperation = useCallback(
+    operation => {
+      if (!editor || isSimulating) {return}
 
-    setIsSimulating(true)
-    
-    const simulatedOperation = {
-      ...operation,
-      id: Date.now(),
-      targetId: generateTargetId(),
-      timestamp: new Date().toISOString(),
-      progress: 0,
-    }
+      setIsSimulating(true)
 
-    // Simulate AI processing with progress
-    const progressInterval = setInterval(() => {
-      simulatedOperation.progress += 20
-      
-      if (simulatedOperation.progress >= 100) {
-        clearInterval(progressInterval)
-        
-        // Complete the operation
-        setTimeout(() => {
-          onStreamOperation(simulatedOperation)
-          setIsSimulating(false)
-        }, 300)
+      const simulatedOperation = {
+        ...operation,
+        id: Date.now(),
+        targetId: generateTargetId(),
+        timestamp: new Date().toISOString(),
+        progress: 0,
       }
-    }, simulationSpeed / 5)
 
-  }, [editor, onStreamOperation, isSimulating, setIsSimulating, simulationSpeed])
+      // Simulate AI processing with progress
+      const progressInterval = setInterval(() => {
+        simulatedOperation.progress += 20
+
+        if (simulatedOperation.progress >= 100) {
+          clearInterval(progressInterval)
+
+          // Complete the operation
+          setTimeout(() => {
+            onStreamOperation(simulatedOperation)
+            setIsSimulating(false)
+          }, 300)
+        }
+      }, simulationSpeed / 5)
+    },
+    [editor, onStreamOperation, isSimulating, setIsSimulating, simulationSpeed],
+  )
 
   const generateTargetId = () => {
     return `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
-  const runSingleOperation = (operation) => {
+  const runSingleOperation = operation => {
     simulateOperation(operation)
   }
 
   const runBatchOperations = useCallback(() => {
-    if (!editor || isSimulating) return
+    if (!editor || isSimulating) {return}
 
     setIsSimulating(true)
     let currentIndex = 0
-    
+
     const runNextOperation = () => {
       if (currentIndex >= sampleOperations.length) {
         setIsSimulating(false)
@@ -114,7 +113,7 @@ const StreamSimulator = ({
   }, [editor, onStreamOperation, isSimulating, setIsSimulating, simulationSpeed, sampleOperations])
 
   const runCustomOperation = useCallback(() => {
-    if (!customContent.trim()) return
+    if (!customContent.trim()) {return}
 
     const customOperation = {
       type: operationType,
@@ -126,10 +125,10 @@ const StreamSimulator = ({
   }, [customContent, operationType, simulateOperation])
 
   const simulateRealtimeEditing = useCallback(() => {
-    if (!editor || isSimulating) return
+    if (!editor || isSimulating) {return}
 
     setIsSimulating(true)
-    
+
     const editingSequence = [
       {
         type: 'insert',
@@ -137,7 +136,7 @@ const StreamSimulator = ({
         description: 'AI is thinking',
       },
       {
-        type: 'update', 
+        type: 'update',
         content: '<p data-type="paragraph">AI 正在分析文档内容...</p>',
         description: 'AI is analyzing',
       },
@@ -181,24 +180,20 @@ const StreamSimulator = ({
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="p-4 border-b border-gray-200">
         <h3 className="font-medium text-gray-800 mb-2">🔄 Stream Simulator</h3>
-        <p className="text-sm text-gray-600">
-          Simulate AI Block Stream operations for testing
-        </p>
+        <p className="text-sm text-gray-600">Simulate AI Block Stream operations for testing</p>
       </div>
 
       <div className="p-4 space-y-4">
         {/* Simulation Controls */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Simulation Speed: {simulationSpeed}ms
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Simulation Speed: {simulationSpeed}ms</label>
           <input
             type="range"
             min="200"
             max="3000"
             step="200"
             value={simulationSpeed}
-            onChange={(e) => setSimulationSpeed(Number(e.target.value))}
+            onChange={e => setSimulationSpeed(Number(e.target.value))}
             className="w-full"
             disabled={isSimulating}
           />
@@ -219,7 +214,7 @@ const StreamSimulator = ({
             >
               {isSimulating ? '⏳ Running...' : '🚀 Run Batch Operations'}
             </button>
-            
+
             <button
               onClick={simulateRealtimeEditing}
               disabled={isSimulating || !editor}
@@ -237,12 +232,8 @@ const StreamSimulator = ({
             {sampleOperations.map((operation, index) => (
               <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-800">
-                    {operation.type.toUpperCase()}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {operation.description}
-                  </div>
+                  <div className="text-sm font-medium text-gray-800">{operation.type.toUpperCase()}</div>
+                  <div className="text-xs text-gray-600">{operation.description}</div>
                 </div>
                 <button
                   onClick={() => runSingleOperation(operation)}
@@ -262,7 +253,7 @@ const StreamSimulator = ({
           <div className="space-y-2">
             <select
               value={operationType}
-              onChange={(e) => setOperationType(e.target.value)}
+              onChange={e => setOperationType(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isSimulating}
             >
@@ -273,7 +264,7 @@ const StreamSimulator = ({
 
             <textarea
               value={customContent}
-              onChange={(e) => setCustomContent(e.target.value)}
+              onChange={e => setCustomContent(e.target.value)}
               placeholder="Enter custom HTML content..."
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows="3"
@@ -295,13 +286,9 @@ const StreamSimulator = ({
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-              <span className="text-blue-700 font-medium text-sm">
-                AI Stream Simulation in Progress
-              </span>
+              <span className="text-blue-700 font-medium text-sm">AI Stream Simulation in Progress</span>
             </div>
-            <p className="text-blue-600 text-xs mt-1">
-              Operations will appear in the pending queue for approval
-            </p>
+            <p className="text-blue-600 text-xs mt-1">Operations will appear in the pending queue for approval</p>
           </div>
         )}
 

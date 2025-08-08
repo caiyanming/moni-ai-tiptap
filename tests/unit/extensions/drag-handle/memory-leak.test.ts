@@ -1,6 +1,6 @@
 /**
  * 🧪 Memory Leak Test for DragHandlePlugin
- * 
+ *
  * This test validates that the memory leak fixes properly clean up:
  * 1. Document-level event listeners
  * 2. DOM elements

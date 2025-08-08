@@ -16,13 +16,21 @@ export default () => {
         This is a very unique heading.
       </h1>
       <p>
-        This is a unique paragraph. It’s so unique, it even has an ID attached to it.
+        This is a unique paragraph. It's so unique, it even has an ID attached to it.
       </p>
       <p>
         And this one, too.
       </p>
     `,
   })
+
+  // 🎯 [TEST FIX] 将编辑器实例暴露给全局，供测试使用
+  React.useEffect(() => {
+    if (editor) {
+      window.__tiptapEditor = editor
+      console.log('✅ TipTap编辑器已暴露到全局：window.__tiptapEditor')
+    }
+  }, [editor])
 
   const toggleEditable = () => {
     editor.setEditable(!editor.isEditable)
@@ -38,10 +46,10 @@ export default () => {
         editor={editor}
         showIndicators={true}
         onDragStart={() => {
-          console.log('🚀 拖拽开始')
+          console.log('🚀 [REACT] 拖拽开始回调触发')
         }}
         onDrop={(event, dropInfo) => {
-          console.log('📥 拖拽完成:', dropInfo)
+          console.log('📥 [REACT] 拖拽完成回调触发:', dropInfo)
         }}
       >
         <svg

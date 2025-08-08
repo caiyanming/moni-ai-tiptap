@@ -113,6 +113,13 @@ export const DragHandlePlugin = ({
     throw new Error('DragHandlePlugin: element is required')
   }
 
+  console.log('🔧 DragHandlePlugin 初始化', {
+    showIndicators,
+    hasOnDragStart: !!onDragStart,
+    hasOnDrop: !!onDrop,
+    pluginKey: typeof pluginKey === 'string' ? pluginKey : pluginKey.key
+  })
+
   const wrapper = document.createElement('div')
   let locked = false
   let currentNode: Node | null = null
@@ -415,7 +422,26 @@ export const DragHandlePlugin = ({
 
           // 🔍 简化的目标元素查找 (最底层，被多个函数依赖)
           const findBlockElement = (target: HTMLElement): HTMLElement | null => {
-            return target.closest('[data-moni-block-id]') as HTMLElement | null
+            console.log('查找块级元素', { target: target.tagName, className: target.className })
+            
+            // 首先尝试查找具有 data-moni-block-id 的元素
+            let blockElement = target.closest('[data-moni-block-id]') as HTMLElement | null
+            
+            if (blockElement) {
+              console.log('找到带有 data-moni-block-id 的块级元素', { tag: blockElement.tagName })
+              return blockElement
+            }
+            
+            // 如果没有找到 data-moni-block-id，尝试查找块级节点（p, h1-h6, blockquote 等）
+            blockElement = target.closest('p, h1, h2, h3, h4, h5, h6, blockquote, pre, div[data-type]') as HTMLElement | null
+            
+            if (blockElement) {
+              console.log('找到标准块级元素', { tag: blockElement.tagName, dataType: blockElement.getAttribute('data-type') })
+              return blockElement
+            }
+            
+            console.log('未找到块级元素')
+            return null
           }
 
           // 辅助函数：找到块级节点的位置和大小 (被 executeNotionStyleMove 依赖)
@@ -440,13 +466,17 @@ export const DragHandlePlugin = ({
           ): boolean => {
             try {
               // 🔧 FIX: 改进DOM到ProseMirror位置的查找逻辑
-              // 通过 data-moni-block-id 查找对应的ProseMirror节点
+              // 优先尝试 data-moni-block-id，如果不存在则直接使用DOM元素
               const sourceMoniBlockId = sourceElement.getAttribute('data-moni-block-id')
               const targetMoniBlockId = targetElement.getAttribute('data-moni-block-id')
 
-              if (!sourceMoniBlockId || !targetMoniBlockId) {
-                console.warn('无法找到 moni-block-id 属性')
-                return false
+              if (sourceMoniBlockId && targetMoniBlockId) {
+                console.log('使用 moni-block-id 进行拖拽移动', { sourceMoniBlockId, targetMoniBlockId })
+              } else {
+                console.log('moni-block-id 不存在，使用直接DOM定位', { 
+                  sourceTag: sourceElement.tagName, 
+                  targetTag: targetElement.tagName 
+                })
               }
 
               // 尝试多种方式查找ProseMirror位置
@@ -472,6 +502,8 @@ export const DragHandlePlugin = ({
                 console.warn('改进查找后仍无法找到DOM对应的ProseMirror位置', { sourcePos, targetPos })
                 return false
               }
+
+              console.log('找到ProseMirror位置', { sourcePos, targetPos })
 
               const { state } = view
               const { doc, tr } = state
@@ -509,6 +541,15 @@ export const DragHandlePlugin = ({
               const deleteFrom = sourceBlockPos.pos
               const deleteTo = sourceBlockPos.pos + sourceBlockPos.size
 
+              console.log('准备执行移动操作', { 
+                sourceNode: sourceNode.type.name,
+                sourceText: sourceNode.textContent?.slice(0, 30),
+                deleteFrom, 
+                deleteTo, 
+                insertPos,
+                position 
+              })
+
               let newTr = tr.delete(deleteFrom, deleteTo)
 
               // 调整插入位置（如果删除位置在插入位置之前）
@@ -517,11 +558,17 @@ export const DragHandlePlugin = ({
                 adjustedInsertPos -= sourceBlockPos.size
               }
 
+              console.log('调整后的插入位置', { adjustedInsertPos })
+
               // 插入节点
               newTr = newTr.insert(adjustedInsertPos, sourceNode)
 
+              console.log('事务准备完成，开始dispatch')
+
               // 应用事务
               view.dispatch(newTr)
+
+              console.log('事务已dispatched')
 
               return true
             } catch (error) {
@@ -531,18 +578,32 @@ export const DragHandlePlugin = ({
           }
 
           const handleDragStart = (event: DragEvent) => {
+            console.log('🎯 [DEBUG] DragStart event triggered:', {
+              target: (event.target as HTMLElement)?.tagName,
+              dragIndicatorExists: !!dragIndicator,
+              eventType: event.type
+            })
+
             if (!dragIndicator) {
+              console.log('🔧 dragIndicator 不存在，跳过拖拽开始处理')
               return // 🔧 FIX: 防止在指示器不存在时处理事件
             }
 
             isDragging = true
             dragSourceElement = event.target as HTMLElement
 
+            // 尝试查找块级源元素
+            const sourceBlockElement = findBlockElement(dragSourceElement)
+            if (sourceBlockElement) {
+              dragSourceElement = sourceBlockElement
+            }
+
             console.log('🎯 拖拽开始检测:', {
               isDragging,
               source: dragSourceElement?.tagName,
               sourceClass: dragSourceElement?.className,
               sourceId: dragSourceElement?.getAttribute('data-moni-block-id') || 'N/A',
+              sourceText: dragSourceElement?.textContent?.slice(0, 30),
               eventType: event.type,
             })
           }
@@ -593,7 +654,15 @@ export const DragHandlePlugin = ({
           }
 
           const handleDropHandler = (event: DragEvent) => {
+            console.log('🎯 [DEBUG] Drop event triggered:', {
+              isDragging,
+              dragSourceElement: dragSourceElement?.tagName,
+              target: (event.target as HTMLElement)?.tagName,
+              eventType: event.type
+            })
+
             if (!isDragging || !dragSourceElement) {
+              console.log('🔧 [DEBUG] Drop ignored - not in dragging state')
               return
             }
 
@@ -603,11 +672,24 @@ export const DragHandlePlugin = ({
             const target = event.target as HTMLElement
             const blockElement = findBlockElement(target)
 
+            console.log('🎯 [DEBUG] Drop processing:', {
+              target: target.tagName,
+              blockElement: blockElement?.tagName,
+              dragSourceElement: dragSourceElement.tagName,
+              isSameElement: blockElement === dragSourceElement
+            })
+
             if (blockElement && blockElement !== dragSourceElement) {
               const result = DropPositionCalculator.calculate(event, blockElement)
 
               // 🎯 NOTION风格：执行实际的节点移动
               try {
+                console.log('🎯 开始执行拖拽操作', {
+                  sourceElement: dragSourceElement.tagName + ': ' + dragSourceElement.textContent?.slice(0, 30),
+                  targetElement: blockElement.tagName + ': ' + blockElement.textContent?.slice(0, 30),
+                  dropPosition: result.dropPosition
+                })
+
                 // 🔧 FIX: 暂时跳过 'inside' 位置的实际移动，专注修复指示器显示
                 if (result.dropPosition === 'inside') {
                   console.log('🎯 [临时] 跳过 inside 位置的节点移动，待后续实现')

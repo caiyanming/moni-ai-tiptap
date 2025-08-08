@@ -1,16 +1,17 @@
 import { expect,test } from '@playwright/test'
 
-import { DragTestHelper } from '../utils/DragTestHelper'
+import { createDragTestHelper, DragTestHelper } from '../utils/DragTestHelper'
 
 /**
- * 🎯 基础拖拽操作E2E测试
+ * 🎯 优化版基础拖拽操作E2E测试
  * 验证段落拖拽的核心功能
  */
 test.describe('基础拖拽操作', () => {
   let dragHelper: DragTestHelper
 
   test.beforeEach(async ({ page }) => {
-    dragHelper = new DragTestHelper(page)
+    // 🎯 使用优化的配置化助手
+    dragHelper = createDragTestHelper(page, 'debug') // 使用调试模式获得详细日志
     await dragHelper.setup()
   })
 
@@ -18,32 +19,36 @@ test.describe('基础拖拽操作', () => {
     const paragraphs = await dragHelper.getParagraphs()
     expect(paragraphs.length).toBeGreaterThanOrEqual(2)
 
-    // 获取拖拽前的段落顺序
-    const beforeTexts = []
-    for (const p of paragraphs) {
-      const text = await dragHelper.getParagraphText(p)
-      beforeTexts.push(text.trim())
-    }
+    console.log('🎯 [TEST] 开始段落向下拖拽测试')
+    console.log(`📝 [TEST] 找到 ${paragraphs.length} 个段落`)
 
     // 将第一个段落拖拽到第二个段落下方
     const dragResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[1], {
       dragToPosition: 'below',
     })
 
-    expect(dragResult.success).toBe(true)
+    console.log('📊 [TEST] 拖拽结果:', {
+      success: dragResult.success,
+      method: dragResult.method,
+      duration: `${dragResult.duration?.toFixed(2)}ms`,
+      attemptedMethods: dragResult.details?.attemptedMethods,
+      verification: dragResult.details?.verification
+    })
 
-    // 验证拖拽结果
-    const newParagraphs = await dragHelper.getParagraphs()
-    const afterTexts = []
-    for (const p of newParagraphs) {
-      const text = await dragHelper.getParagraphText(p)
-      afterTexts.push(text.trim())
+    if (!dragResult.success) {
+      console.log('❌ [TEST] 拖拽失败原因:', dragResult.details?.failureReasons)
+      console.log('🔍 [TEST] 错误信息:', dragResult.error)
     }
 
-    const verifyResult = await dragHelper.verifyDragResult(beforeTexts, afterTexts, 0, 1)
-    expect(verifyResult.success).toBe(true)
+    expect(dragResult.success).toBe(true)
 
-    dragHelper.recordTest('段落向下拖拽', verifyResult.success, verifyResult)
+    // 记录测试结果，包含详细信息
+    dragHelper.recordTest('段落向下拖拽', dragResult.success, {
+      method: dragResult.method,
+      duration: dragResult.duration,
+      verification: dragResult.details?.verification,
+      error: dragResult.error
+    })
   })
 
   test('段落向上拖拽', async () => {

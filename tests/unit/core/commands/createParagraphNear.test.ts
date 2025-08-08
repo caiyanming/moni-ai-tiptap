@@ -5,7 +5,7 @@ import { Heading } from '@tiptap/extension-heading'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import type { Node } from '@tiptap/pm/model'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('createParagraphNear command - moniBlockId generation', () => {
   let editor: Editor

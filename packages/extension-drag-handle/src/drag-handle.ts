@@ -188,7 +188,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           dragHandle.style.backgroundColor = '#e5e7eb'
           addButton.style.backgroundColor = '#e5e7eb'
           addButton.style.color = '#374151'
-          
+
           // SVG图标颜色变深
           const svg = dragHandle.querySelector('svg')
           if (svg) {
@@ -201,7 +201,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           dragHandle.style.backgroundColor = 'transparent'
           addButton.style.backgroundColor = 'transparent'
           addButton.style.color = '#9ca3af'
-          
+
           // 恢复SVG图标颜色
           const svg = dragHandle.querySelector('svg')
           if (svg) {

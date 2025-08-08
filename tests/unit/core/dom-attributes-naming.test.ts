@@ -1,9 +1,9 @@
 import type { ExtensionAttribute } from '@tiptap/core'
-import { Editor , getRenderedAttributes } from '@tiptap/core'
+import { Editor, getRenderedAttributes } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('DOM 属性命名规范测试', () => {
   let editor: Editor

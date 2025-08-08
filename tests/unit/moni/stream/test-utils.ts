@@ -1,5 +1,5 @@
 // Test utilities for stream operation tests
-import { BlockOperationType, BlockOperationStatus, type StreamOperation, type BlockContent } from '@tiptap/core'
+import { type BlockContent,type StreamOperation, BlockOperationStatus, BlockOperationType } from '@tiptap/core'
 
 export const cleanupDOM = () => {
   // Clean up any existing DOM elements after tests
@@ -12,7 +12,7 @@ export const createMockStreamOperation = (overrides: Partial<StreamOperation> = 
     type: 'paragraph',
     text: 'Test content',
   }
-  
+
   return {
     moniOperationId: `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     moniStreamId: 'stream-test',

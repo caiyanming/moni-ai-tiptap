@@ -1,6 +1,6 @@
 /**
  * 🛠️ 拖拽测试工具函数
- * 
+ *
  * 提供统一的测试工具和Mock，确保测试一致性
  */
 
@@ -18,7 +18,7 @@ export function createTestEditor(dragHandleOptions = {}) {
   const defaultOptions = {
     onAddBlock: vi.fn(),
     onDragStart: vi.fn(),
-    onDragOver: vi.fn(), 
+    onDragOver: vi.fn(),
     onDrop: vi.fn(),
     onClick: vi.fn(),
   }
@@ -90,7 +90,7 @@ export function createMockDragEvent(clientX: number, clientY: number): Partial<D
  */
 export function validateSVGHandle(container: HTMLElement) {
   const svg = container.querySelector('svg')
-  if (!svg) return { isValid: false, error: 'SVG not found' }
+  if (!svg) {return { isValid: false, error: 'SVG not found' }}
 
   const circles = svg.querySelectorAll('circle')
   if (circles.length !== 6) {
@@ -110,18 +110,18 @@ export function validateSVGHandle(container: HTMLElement) {
  * 性能测试装饰器
  */
 export function performanceTest(maxDuration: number) {
-  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
 
-    descriptor.value = async function(...args: any[]) {
+    descriptor.value = async function (...args: any[]) {
       const startTime = performance.now()
       const result = await originalMethod.apply(this, args)
       const duration = performance.now() - startTime
-      
+
       if (duration > maxDuration) {
         throw new Error(`Performance test failed: ${propertyKey} took ${duration}ms, expected < ${maxDuration}ms`)
       }
-      
+
       return result
     }
 
@@ -155,9 +155,7 @@ export class MemoryLeakDetector {
     const memoryIncrease = currentMemory - this.initialMemory
 
     // 检查是否有DOM元素未被清理
-    const stillAttached = Array.from(this.elements).filter(el => 
-      el.isConnected || document.contains(el)
-    )
+    const stillAttached = Array.from(this.elements).filter(el => el.isConnected || document.contains(el))
 
     const hasLeaks = stillAttached.length > 0 || memoryIncrease > 50
 

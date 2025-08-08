@@ -44,7 +44,9 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    expect(html).toMatch(/<p data-moni-block-id="block-\d+-[a-z0-9]+">First paragraph<\/p><p data-moni-block-id="block-\d+-[a-z0-9]+">Second paragraph<\/p>/)
+    expect(html).toMatch(
+      /<p data-moni-block-id="block-\d+-[a-z0-9]+">First paragraph<\/p><p data-moni-block-id="block-\d+-[a-z0-9]+">Second paragraph<\/p>/,
+    )
   })
 
   it('should handle empty document', () => {

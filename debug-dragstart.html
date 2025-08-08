@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Dragstart Events</title>
+    <style>
+        .ProseMirror { border: 1px solid #ccc; padding: 20px; }
+        .drag-handle { position: absolute; z-index: 1000; }
+        .drag-handle svg { width: 20px; height: 20px; cursor: grab; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Dragstart事件调试</h1>
+    <div id="app"></div>
+
+    <script type="module">
+        import { Editor } from '/packages/core/src/index.ts'
+        import { DragHandle } from '/packages/extension-drag-handle-react/src/index.ts'
+        import StarterKit from '/packages/starter-kit/src/index.ts'
+        import React from '/node_modules/.vite/deps/react.js'
+        import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js'
+        import { EditorContent, useEditor } from '/packages/react/src/index.ts'
+
+        function DebugEditor() {
+            const editor = useEditor({
+                extensions: [StarterKit],
+                content: `
+                    <p>第一段：拖拽源段落</p>
+                    <p>第二段：拖拽目标段落</p>
+                `,
+            })
+
+            React.useEffect(() => {
+                if (editor) {
+                    console.log('✅ 编辑器初始化完成')
+                    
+                    // 全局事件监听，捕获所有dragstart事件
+                    document.addEventListener('dragstart', (e) => {
+                        console.log('🎯 Global dragstart event captured:', {
+                            target: e.target.tagName,
+                            className: e.target.className,
+                            draggable: e.target.draggable,
+                            dataTransfer: !!e.dataTransfer
+                        })
+                    }, true)
+
+                    // 监听drop事件
+                    document.addEventListener('drop', (e) => {
+                        console.log('📥 Global drop event captured:', {
+                            target: e.target.tagName,
+                            dataTransfer: !!e.dataTransfer
+                        })
+                    }, true)
+                }
+            }, [editor])
+
+            if (!editor) return React.createElement('div', null, 'Loading...')
+
+            return React.createElement('div', null, 
+                React.createElement(DragHandle, {
+                    editor: editor,
+                    showIndicators: true,
+                    onDragStart: (event) => {
+                        console.log('🚀 React onDragStart回调触发:', {
+                            target: event.target.tagName,
+                            type: event.type
+                        })
+                    },
+                    onDrop: (event, dropInfo) => {
+                        console.log('📥 React onDrop回调触发:', dropInfo)
+                    }
+                }, React.createElement('svg', {
+                    xmlns: "http://www.w3.org/2000/svg",
+                    fill: "none",
+                    viewBox: "0 0 24 24",
+                    strokeWidth: "1.5",
+                    stroke: "currentColor",
+                    draggable: true,  // 关键修复
+                    onDragStart: (e) => {
+                        console.log('🎯 SVG onDragStart 直接事件:', e.target.tagName)
+                    }
+                }, React.createElement('path', {
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    d: "M3.75 9h16.5m-16.5 6.75h16.5"
+                }))),
+                React.createElement(EditorContent, { editor: editor })
+            )
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('app'))
+        root.render(React.createElement(DebugEditor))
+    </script>
+</body>
+</html>

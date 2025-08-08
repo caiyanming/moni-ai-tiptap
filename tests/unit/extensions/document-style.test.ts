@@ -1,23 +1,22 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import type { DocumentStylePreset } from '@tiptap/core'
 import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
+import { DocumentStyleExtension , MoniDefaultStylePreset } from '@tiptap/extension-document-style'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { DocumentStyleExtension } from '@tiptap/extension-document-style'
-import { MoniDefaultStylePreset } from '@tiptap/extension-document-style'
-import type { DocumentStylePreset } from '@tiptap/core'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock document.documentElement.style for CSS variable injection
 const mockStyle = {
   setProperty: vi.fn(),
-  removeProperty: vi.fn()
+  removeProperty: vi.fn(),
 }
 
 Object.defineProperty(document, 'documentElement', {
   value: {
-    style: mockStyle
+    style: mockStyle,
   },
-  writable: true
+  writable: true,
 })
 
 describe('DocumentStyleExtension', () => {
@@ -25,7 +24,7 @@ describe('DocumentStyleExtension', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     editor = new Editor({
       extensions: [
         Document,
@@ -34,7 +33,7 @@ describe('DocumentStyleExtension', () => {
         DocumentStyleExtension.configure({
           defaultPreset: MoniDefaultStylePreset,
           autoInjectCSS: true,
-          enableCache: true
+          enableCache: true,
         }),
       ],
     })
@@ -42,9 +41,8 @@ describe('DocumentStyleExtension', () => {
 
   describe('初始化', () => {
     it('应该正确初始化默认样式预设', () => {
-      const documentStyle = editor.extensionManager.extensions
-        .find(ext => ext.name === 'documentStyle')
-      
+      const documentStyle = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
+
       expect(documentStyle).toBeDefined()
       expect(documentStyle?.storage.documentStyle.currentPreset).toEqual(MoniDefaultStylePreset)
       expect(documentStyle?.storage.documentStyle.styleVersion).toBe(1)
@@ -54,11 +52,11 @@ describe('DocumentStyleExtension', () => {
     it('应该自动注入CSS变量', () => {
       // 检查是否调用了 setProperty 来注入CSS变量
       expect(mockStyle.setProperty).toHaveBeenCalled()
-      
+
       // 检查是否注入了基础CSS变量
       const calls = mockStyle.setProperty.mock.calls
       const propertyNames = calls.map(call => call[0])
-      
+
       expect(propertyNames).toContain('--moni-font-family')
       expect(propertyNames).toContain('--moni-font-size')
       expect(propertyNames).toContain('--moni-color-accent')
@@ -76,7 +74,7 @@ describe('DocumentStyleExtension', () => {
           fontSize: 14,
           lineHeight: 1.4,
           letterSpacing: '0em',
-          scale: { ratio: 1.2, base: 14 }
+          scale: { ratio: 1.2, base: 14 },
         },
         colors: {
           text: '#000000',
@@ -86,12 +84,12 @@ describe('DocumentStyleExtension', () => {
           highlight: 'rgba(0, 122, 204, 0.1)',
           success: '#00aa00',
           warning: '#ff9900',
-          error: '#cc0000'
+          error: '#cc0000',
         },
         spacing: {
           blockSpacing: 20,
           paragraphSpacing: 12,
-          listIndent: 28
+          listIndent: 28,
         },
         semantic: {
           title: { fontSize: 24, fontWeight: 700 },
@@ -107,8 +105,8 @@ describe('DocumentStyleExtension', () => {
           inlineCode: { fontSize: 12, fontWeight: 500 },
           orderedList: { fontSize: 14, fontWeight: 400 },
           bulletList: { fontSize: 14, fontWeight: 400 },
-          listItem: { marginBottom: 4 }
-        }
+          listItem: { marginBottom: 4 },
+        },
       }
 
       // 添加自定义预设到可用预设列表
@@ -134,7 +132,7 @@ describe('DocumentStyleExtension', () => {
       editor.commands.applyStylePreset('moni-default')
 
       const paragraphs = []
-      editor.state.doc.descendants((node) => {
+      editor.state.doc.descendants(node => {
         if (node.type.name === 'paragraph') {
           paragraphs.push(node)
         }
@@ -156,7 +154,7 @@ describe('DocumentStyleExtension', () => {
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
       const currentPreset = extension.storage.documentStyle.currentPreset
-      
+
       expect(currentPreset?.typography.fontFamily).toBe('"Custom Font", serif')
       expect(extension.storage.documentStyle.styleVersion).toBe(2)
     })
@@ -177,7 +175,7 @@ describe('DocumentStyleExtension', () => {
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
       const currentPreset = extension.storage.documentStyle.currentPreset
-      
+
       expect(currentPreset?.typography.fontSize).toBe(20)
       expect(extension.storage.documentStyle.styleVersion).toBe(2)
     })
@@ -186,7 +184,7 @@ describe('DocumentStyleExtension', () => {
   describe('getDocumentStyle', () => {
     it('应该返回当前文档样式状态', () => {
       const documentStyle = editor.commands.getDocumentStyle()
-      
+
       expect(documentStyle).toBeDefined()
       expect(documentStyle?.currentPreset).toEqual(MoniDefaultStylePreset)
       expect(documentStyle?.styleVersion).toBe(1)
@@ -199,14 +197,14 @@ describe('DocumentStyleExtension', () => {
     it('应该重置为默认样式', () => {
       // 先改变样式
       editor.commands.setDocumentFontSize(24)
-      
+
       // 然后重置
       const result = editor.commands.resetDocumentStyle()
       expect(result).toBe(true)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
       const currentPreset = extension.storage.documentStyle.currentPreset
-      
+
       expect(currentPreset?.name).toBe('moni-default')
       expect(currentPreset?.typography.fontSize).toBe(16) // 默认字体大小
     })
@@ -226,10 +224,10 @@ describe('DocumentStyleExtension', () => {
     it('应该为新插入的段落应用当前样式', () => {
       // 设置一个自定义字体
       editor.commands.setDocumentFont('"New Font", sans-serif')
-      
+
       // 插入新段落
       editor.commands.setContent('<p>测试段落</p>')
-      
+
       const paragraph = editor.state.doc.firstChild
       expect(paragraph?.attrs.moniGlobalFontFamily).toBe('"New Font", sans-serif')
       expect(paragraph?.attrs.moniStyleVersion).toBe(2)
@@ -241,7 +239,7 @@ describe('DocumentStyleExtension', () => {
 
       const paragraph = editor.state.doc.firstChild
       const semanticStyle = JSON.parse(paragraph?.attrs.moniSemanticStyle || '{}')
-      
+
       // 应该包含段落的语义样式属性
       expect(semanticStyle.fontSize).toBe(16)
       expect(semanticStyle.fontWeight).toBe(400)
@@ -252,13 +250,13 @@ describe('DocumentStyleExtension', () => {
   describe('性能优化', () => {
     it('应该缓存样式计算结果', () => {
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      
+
       // 初始缓存应该为空
       expect(extension.storage.styleCache.size).toBe(0)
-      
+
       // 执行样式操作
       editor.commands.applyStylePreset('moni-default')
-      
+
       // 这里我们主要测试缓存机制的存在，具体的缓存逻辑在 StreamStyleIntelligence 中
       expect(extension.storage.styleCache).toBeDefined()
     })
@@ -268,10 +266,10 @@ describe('DocumentStyleExtension', () => {
       editor.commands.setDocumentFontSize(18)
       editor.commands.setDocumentFontSize(20)
       editor.commands.setDocumentFontSize(22)
-      
+
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
       const currentPreset = extension.storage.documentStyle.currentPreset
-      
+
       // 最终应该是最后一次更新的值
       expect(currentPreset?.typography.fontSize).toBe(22)
     })
@@ -285,7 +283,7 @@ describe('DocumentStyleExtension', () => {
 
     it('应该在扩展销毁时清理CSS变量', () => {
       editor.destroy()
-      
+
       // 应该调用 removeProperty 来清理CSS变量
       expect(mockStyle.removeProperty).toHaveBeenCalled()
     })

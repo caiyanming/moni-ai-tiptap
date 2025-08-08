@@ -7,7 +7,7 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
   const [characterCount, setCharacterCount] = useState(0)
 
   useEffect(() => {
-    if (!editor) return
+    if (!editor) {return}
 
     // Update counts when content changes
     const updateCounts = () => {
@@ -37,18 +37,22 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
 
   const insertHiddenBlock = () => {
     if (editor) {
-      editor.chain().focus().insertContent({
-        type: 'hiddenBlock',
-        attrs: {
-          id: 'hidden-' + Date.now(),
-        },
-      }).run()
-      
+      editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'hiddenBlock',
+          attrs: {
+            id: `hidden-${  Date.now()}`,
+          },
+        })
+        .run()
+
       // Simulate an AI operation targeting the hidden block
       setTimeout(() => {
         onStreamOperation({
           type: 'insert',
-          targetId: 'hidden-' + Date.now(),
+          targetId: `hidden-${  Date.now()}`,
           content: '<p data-type="paragraph">🎯 This content was inserted via a hidden block target!</p>',
           description: 'AI inserted content targeting hidden block',
         })
@@ -149,11 +153,8 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
 
       {/* Editor Content */}
       <div className="relative">
-        <EditorContent 
-          editor={editor} 
-          className="moni-editor-wrapper"
-        />
-        
+        <EditorContent editor={editor} className="moni-editor-wrapper" />
+
         {/* Overlay for visual feedback */}
         {isSimulating && (
           <div className="absolute inset-0 bg-blue-50/30 pointer-events-none rounded-b-lg flex items-center justify-center">
@@ -168,11 +169,21 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
       <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-lg">
         <h4 className="font-medium text-gray-800 mb-2">💡 Try these features:</h4>
         <ul className="text-sm text-gray-600 space-y-1">
-          <li>• <strong>Drag Handles:</strong> Hover over any block to see the drag handle appear</li>
-          <li>• <strong>Block Operations:</strong> Click the + button on drag handles to add new blocks</li>
-          <li>• <strong>AI Simulation:</strong> Use the Stream Simulator on the right to test AI operations</li>
-          <li>• <strong>Hidden Blocks:</strong> Insert hidden blocks that serve as AI operation targets</li>
-          <li>• <strong>Debug Mode:</strong> Enable debug mode to see internal editor state</li>
+          <li>
+            • <strong>Drag Handles:</strong> Hover over any block to see the drag handle appear
+          </li>
+          <li>
+            • <strong>Block Operations:</strong> Click the + button on drag handles to add new blocks
+          </li>
+          <li>
+            • <strong>AI Simulation:</strong> Use the Stream Simulator on the right to test AI operations
+          </li>
+          <li>
+            • <strong>Hidden Blocks:</strong> Insert hidden blocks that serve as AI operation targets
+          </li>
+          <li>
+            • <strong>Debug Mode:</strong> Enable debug mode to see internal editor state
+          </li>
         </ul>
       </div>
     </div>

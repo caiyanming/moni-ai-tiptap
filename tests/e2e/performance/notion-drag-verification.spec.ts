@@ -8,7 +8,7 @@ import { expect,test } from '@playwright/test'
 test.describe('🚀 Notion 级别拖拽功能验证', () => {
   test('🔍 拖拽功能状态检查 - 快速检查拖拽功能实际状态', async ({ page }) => {
     // 1. 访问拖拽演示页面
-    await page.goto('/preview/Extensions/DragHandle')
+    await page.goto('/src/Extensions/DragHandle/React/')
 
     // 2. 等待 iframe 和编辑器加载
     await page.waitForSelector('iframe', { timeout: 10000 })
@@ -163,7 +163,7 @@ test.describe('🚀 Notion 级别拖拽功能验证', () => {
   })
 
   test('🎨 拖拽手柄视觉验证 - 检查拖拽手柄的视觉表现', async ({ page }) => {
-    await page.goto('/preview/Extensions/DragHandle')
+    await page.goto('/src/Extensions/DragHandle/React/')
 
     const iframe = page.frameLocator('iframe')
     await iframe.locator('p').first().waitFor({ timeout: 5000 })

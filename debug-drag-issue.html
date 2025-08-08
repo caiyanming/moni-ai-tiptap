@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Drag Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .editor { border: 1px solid #ccc; padding: 20px; min-height: 300px; }
+        .debug-info { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            margin: 10px 0; 
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Drag Issue</h1>
+    
+    <button class="button" onclick="debugTransaction()">Test Manual Transaction</button>
+    <button class="button" onclick="checkDOMState()">Check DOM State</button>
+    <button class="button" onclick="clearDebug()">Clear Debug</button>
+    
+    <div class="debug-info" id="debug-output">Debug output will appear here...</div>
+    
+    <div class="editor" id="editor"></div>
+
+    <script type="module">
+        import { Editor } from 'https://esm.sh/@tiptap/core@3.0.0-beta.22';
+        import StarterKit from 'https://esm.sh/@tiptap/starter-kit@3.0.0-beta.22';
+        import DragHandle from 'https://esm.sh/@tiptap/extension-drag-handle@3.0.0-beta.22';
+
+        let editor = null;
+        let debugOutput = document.getElementById('debug-output');
+
+        function log(message) {
+            debugOutput.textContent += new Date().toISOString() + ': ' + message + '\n';
+        }
+
+        // Initialize editor
+        const initializeEditor = async () => {
+            try {
+                editor = new Editor({
+                    element: document.getElementById('editor'),
+                    extensions: [
+                        StarterKit.configure({
+                            heading: { levels: [1, 2, 3, 4, 5, 6] },
+                        }),
+                        DragHandle.configure({
+                            showIndicators: true,
+                            onDrop: (event, dropInfo) => {
+                                log('Drop event triggered: ' + JSON.stringify(dropInfo, null, 2));
+                            }
+                        })
+                    ],
+                    content: `
+                        <p data-moni-block-id="block-1">This is the first paragraph. It should be dragable.</p>
+                        <p data-moni-block-id="block-2">This is the second paragraph. It should also be dragable.</p>
+                        <p data-moni-block-id="block-3">This is the third paragraph for testing.</p>
+                    `,
+                    editorProps: {
+                        attributes: {
+                            'data-testid': 'debug-editor',
+                        },
+                    },
+                });
+                
+                log('Editor initialized successfully');
+            } catch (error) {
+                log('Failed to initialize editor: ' + error.message);
+            }
+        };
+
+        // Test manual transaction 
+        window.debugTransaction = () => {
+            if (!editor) {
+                log('Editor not initialized');
+                return;
+            }
+
+            try {
+                const { view } = editor;
+                const { state } = view;
+                const { doc, tr } = state;
+                
+                log('Current document structure:');
+                doc.descendants((node, pos) => {
+                    if (node.isBlock && node.type.name !== 'doc') {
+                        log(`  Node at ${pos}: ${node.type.name} - "${node.textContent.slice(0, 50)}"`);
+                    }
+                });
+
+                // Try to move first paragraph after second paragraph
+                const firstParaPos = 1; // Usually paragraph starts at position 1
+                const firstPara = doc.nodeAt(firstParaPos);
+                
+                if (firstPara) {
+                    log(`Attempting to move node: ${firstPara.textContent}`);
+                    
+                    // Calculate positions
+                    const deleteFrom = firstParaPos;
+                    const deleteTo = firstParaPos + firstPara.nodeSize;
+                    const insertPos = deleteTo + doc.nodeAt(deleteTo)?.nodeSize || deleteTo;
+                    
+                    log(`Delete from ${deleteFrom} to ${deleteTo}, insert at ${insertPos}`);
+                    
+                    // Execute transaction
+                    let newTr = tr.delete(deleteFrom, deleteTo);
+                    let adjustedInsertPos = insertPos - firstPara.nodeSize;
+                    newTr = newTr.insert(adjustedInsertPos, firstPara);
+                    
+                    view.dispatch(newTr);
+                    log('Transaction dispatched successfully');
+                } else {
+                    log('Could not find first paragraph');
+                }
+            } catch (error) {
+                log('Transaction failed: ' + error.message);
+                log('Stack trace: ' + error.stack);
+            }
+        };
+
+        // Check DOM state
+        window.checkDOMState = () => {
+            const paragraphs = document.querySelectorAll('#editor p');
+            log(`Found ${paragraphs.length} paragraphs in DOM:`);
+            paragraphs.forEach((p, i) => {
+                log(`  ${i+1}: "${p.textContent.slice(0, 50)}" (block-id: ${p.getAttribute('data-moni-block-id')})`);
+            });
+        };
+
+        // Clear debug output
+        window.clearDebug = () => {
+            debugOutput.textContent = '';
+        };
+
+        // Initialize when page loads
+        initializeEditor();
+    </script>
+</body>
+</html>

@@ -14,7 +14,7 @@ async function globalSetup() {
 
   try {
     console.log('🔧 预热服务器连接...')
-    await page.goto('http://localhost:3666/src/Extensions/MoniEditor/React/index.html', {
+    await page.goto('http://localhost:3667/src/Extensions/DragHandle/React/', {
       waitUntil: 'networkidle',
       timeout: 60000,
     })

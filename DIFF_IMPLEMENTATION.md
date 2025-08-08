@@ -11,6 +11,7 @@ This implementation integrates git diff-style block operation confirmation direc
 **File**: `/packages/core/src/StreamOperationManager.ts`
 
 **Key Methods Added**:
+
 - `queueOperationWithDiff()` - Queues operations requiring user confirmation
 - `approveDiffOperation()` - Approve and execute pending diff operations
 - `rejectDiffOperation()` - Reject and discard pending diff operations
@@ -19,13 +20,14 @@ This implementation integrates git diff-style block operation confirmation direc
 - `approveAllDiffOperations()` / `rejectAllDiffOperations()` - Batch operations
 
 **Diff Attributes System**:
+
 ```typescript
 interface DiffAttributes {
-  diffMode: boolean                    // Whether node is in diff preview mode
+  diffMode: boolean // Whether node is in diff preview mode
   diffStatus: 'normal' | 'pending' | 'approved' | 'rejected'
-  diffOperationId: string | null       // Links to pending operation
-  diffOriginalContent: any             // Content before change
-  diffNewContent: any                  // Content to be applied
+  diffOperationId: string | null // Links to pending operation
+  diffOriginalContent: any // Content before change
+  diffNewContent: any // Content to be applied
 }
 ```
 
@@ -34,6 +36,7 @@ interface DiffAttributes {
 **File**: `/packages/core/src/StreamOperationManager.ts`
 
 **Native StreamOperationManager API**:
+
 ```typescript
 // Diff operation support (built into core)
 queueOperation(operation: Omit<StreamOperation, 'id' | 'timestamp'>): string
@@ -55,16 +58,28 @@ Added documentation for `supportsDiff` property and explained the diff attribute
 The TipTap core now provides the foundational infrastructure. The frontend should implement:
 
 ### 1. CSS Styling
+
 Create diff visualization styles based on data attributes:
+
 ```css
-[data-diff-mode="true"] { /* Base diff styling */ }
-[data-diff-status="pending"] { /* Pending confirmation style */ }
-[data-diff-status="approved"] { /* Approved animation */ }
-[data-diff-status="rejected"] { /* Rejected animation */ }
+[data-diff-mode='true'] {
+  /* Base diff styling */
+}
+[data-diff-status='pending'] {
+  /* Pending confirmation style */
+}
+[data-diff-status='approved'] {
+  /* Approved animation */
+}
+[data-diff-status='rejected'] {
+  /* Rejected animation */
+}
 ```
 
 ### 2. Interactive Controls
+
 Use the exposed API to create confirm/reject buttons:
+
 ```typescript
 const streamAPI = editor.storage.moniStream.getAPI()
 
@@ -73,7 +88,7 @@ const operationId = streamAPI.queueOperationWithDiff({
   sessionId: 'session-1',
   blockId: 'block-123',
   type: 'replace',
-  content: 'New content'
+  content: 'New content',
 })
 
 // Handle user actions
@@ -82,7 +97,9 @@ streamAPI.rejectDiffOperation(operationId)
 ```
 
 ### 3. Extension Support
+
 Nodes that want diff support should add the relevant attributes:
+
 ```typescript
 addAttributes() {
   return {
@@ -99,7 +116,7 @@ addAttributes() {
 ## 🔄 Usage Flow
 
 1. **AI generates content** → Call `queueOperationWithDiff()`
-2. **Core sets diff attributes** → Node gets `diffMode: true, diffStatus: 'pending'`  
+2. **Core sets diff attributes** → Node gets `diffMode: true, diffStatus: 'pending'`
 3. **Frontend renders preview** → CSS shows diff styling + confirm/reject buttons
 4. **User interacts** → Call `approveDiffOperation()` or `rejectDiffOperation()`
 5. **Core executes/discards** → Diff attributes cleared, normal state restored
@@ -115,7 +132,7 @@ addAttributes() {
 ## 📝 Next Steps for Frontend Integration
 
 1. Add CSS styles for diff visualization
-2. Create interactive confirm/reject UI components  
+2. Create interactive confirm/reject UI components
 3. Integrate with existing block operation panels
 4. Add keyboard shortcuts (Ctrl+Shift+A for approve all, etc.)
 5. Test with various content types (text, lists, tables, code blocks)

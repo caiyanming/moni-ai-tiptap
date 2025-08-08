@@ -8,38 +8,38 @@
 /* Editor content area */
 .moni-editor-wrapper {
   min-height: 400px;
-  
+
   .ProseMirror {
     padding: 2rem;
     border: none;
     outline: none;
     min-height: 350px;
-    
+
     /* Block spacing */
     > * + * {
       margin-top: 1rem;
     }
-    
+
     /* Drag handle integration styles */
     [data-moni-block-id] {
       position: relative;
       border-radius: 4px;
       transition: all 0.2s ease;
-      
+
       &:hover {
         background-color: rgba(59, 130, 246, 0.02);
       }
     }
-    
+
     /* Hidden blocks (invisible to users) */
     .moni-hidden-block {
       display: none !important;
     }
-    
+
     /* Block Stream operation styles */
     .block-stream-operation {
       position: relative;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -52,48 +52,63 @@
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+
       &.operation-pending::before {
         opacity: 1;
         animation: blockStreamPulse 2s infinite;
       }
     }
-    
+
     /* Typography improvements */
-    h1, h2, h3, h4, h5, h6 {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
       font-weight: 600;
       line-height: 1.25;
-      
+
       &:first-child {
         margin-top: 0;
       }
     }
-    
-    h1 { font-size: 2rem; color: #1f2937; }
-    h2 { font-size: 1.5rem; color: #374151; }
-    h3 { font-size: 1.25rem; color: #4b5563; }
-    
+
+    h1 {
+      font-size: 2rem;
+      color: #1f2937;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #374151;
+    }
+    h3 {
+      font-size: 1.25rem;
+      color: #4b5563;
+    }
+
     p {
       line-height: 1.6;
       color: #374151;
-      
+
       &:first-child {
         margin-top: 0;
       }
     }
-    
-    ul, ol {
+
+    ul,
+    ol {
       padding-left: 1.5rem;
-      
+
       li {
         margin: 0.5rem 0;
-        
+
         p {
           margin: 0;
         }
       }
     }
-    
+
     blockquote {
       border-left: 4px solid #e5e7eb;
       margin: 1.5rem 0;
@@ -101,7 +116,7 @@
       font-style: italic;
       color: #6b7280;
     }
-    
+
     code {
       background-color: #f3f4f6;
       border-radius: 4px;
@@ -109,12 +124,12 @@
       font-size: 0.875em;
       font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', monospace;
     }
-    
+
     strong {
       font-weight: 600;
       color: #1f2937;
     }
-    
+
     em {
       font-style: italic;
       color: #4b5563;
@@ -134,18 +149,18 @@
   justify-content: center;
   width: 24px;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: #f3f4f6;
     border-color: #d1d5db;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
-  
+
   &:active {
     cursor: grabbing;
     transform: scale(0.95);
   }
-  
+
   svg {
     width: 16px;
     height: 16px;
@@ -161,13 +176,13 @@
   opacity: 0.8;
   z-index: 1000;
   transition: all 0.2s ease;
-  
+
   &.horizontal {
     height: 2px;
     left: 0;
     right: 0;
   }
-  
+
   &.vertical {
     width: 2px;
     top: 0;
@@ -193,21 +208,21 @@
 .debug-panel {
   font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', monospace;
   font-size: 12px;
-  
+
   .debug-section {
     margin-bottom: 1rem;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
   .debug-title {
     font-weight: 600;
     color: #374151;
     margin-bottom: 0.5rem;
   }
-  
+
   .debug-content {
     background: #f9fafb;
     border: 1px solid #e5e7eb;
@@ -215,18 +230,18 @@
     padding: 0.5rem;
     overflow-x: auto;
   }
-  
+
   .debug-node {
     padding: 0.25rem;
     margin: 0.125rem 0;
     border-radius: 3px;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    
+
     &:hover {
       background-color: #eff6ff;
     }
-    
+
     &.selected {
       background-color: #dbeafe;
       border: 1px solid #93c5fd;
@@ -238,21 +253,21 @@
 .stream-simulator {
   .simulation-control {
     margin-bottom: 1rem;
-    
+
     label {
       font-weight: 500;
       color: #374151;
       margin-bottom: 0.5rem;
       display: block;
     }
-    
-    input[type="range"] {
+
+    input[type='range'] {
       width: 100%;
       height: 6px;
       border-radius: 3px;
       background: #e5e7eb;
       outline: none;
-      
+
       &::-webkit-slider-thumb {
         appearance: none;
         width: 16px;
@@ -261,7 +276,7 @@
         background: #3b82f6;
         cursor: pointer;
       }
-      
+
       &::-moz-range-thumb {
         width: 16px;
         height: 16px;
@@ -272,7 +287,7 @@
       }
     }
   }
-  
+
   .operation-item {
     display: flex;
     align-items: center;
@@ -283,15 +298,15 @@
     border-radius: 6px;
     margin-bottom: 0.5rem;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: #f3f4f6;
       border-color: #d1d5db;
     }
-    
+
     .operation-info {
       flex: 1;
-      
+
       .operation-type {
         font-weight: 600;
         color: #1f2937;
@@ -299,14 +314,14 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      
+
       .operation-description {
         color: #6b7280;
         font-size: 11px;
         margin-top: 2px;
       }
     }
-    
+
     .operation-button {
       padding: 0.25rem 0.5rem;
       background: #3b82f6;
@@ -316,11 +331,11 @@
       font-size: 11px;
       cursor: pointer;
       transition: background-color 0.2s ease;
-      
+
       &:hover {
         background: #2563eb;
       }
-      
+
       &:disabled {
         background: #9ca3af;
         cursor: not-allowed;
@@ -331,7 +346,8 @@
 
 /* Animations */
 @keyframes blockStreamPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scaleY(1);
   }
@@ -342,7 +358,8 @@
 }
 
 @keyframes operationPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -353,7 +370,8 @@
 }
 
 @keyframes streamGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
   }
   50% {
@@ -366,17 +384,17 @@
   .moni-editor-wrapper .ProseMirror {
     padding: 1rem;
   }
-  
+
   .drag-handle {
     width: 20px;
     height: 20px;
-    
+
     svg {
       width: 14px;
       height: 14px;
     }
   }
-  
+
   .debug-panel,
   .stream-simulator {
     font-size: 11px;
@@ -390,10 +408,10 @@
       background-color: rgba(0, 0, 0, 0.05);
     }
   }
-  
+
   .drag-handle {
     border-color: #000;
-    
+
     &:hover {
       background: #e0e0e0;
     }
@@ -405,23 +423,29 @@
   .moni-editor-demo {
     .moni-editor-wrapper .ProseMirror {
       color: #f9fafb;
-      
-      h1, h2, h3 { color: #f9fafb; }
-      p { color: #e5e7eb; }
-      blockquote { 
-        border-left-color: #4b5563;
-        color: #9ca3af; 
+
+      h1,
+      h2,
+      h3 {
+        color: #f9fafb;
       }
-      code { 
+      p {
+        color: #e5e7eb;
+      }
+      blockquote {
+        border-left-color: #4b5563;
+        color: #9ca3af;
+      }
+      code {
         background-color: #374151;
         color: #f3f4f6;
       }
     }
-    
+
     .drag-handle {
       background: #374151;
       border-color: #4b5563;
-      
+
       svg {
         color: #9ca3af;
       }

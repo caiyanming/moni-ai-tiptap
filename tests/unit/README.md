@@ -43,11 +43,13 @@ pnpm run test:unit:ui
 ## 📝 测试规范
 
 ### 命名规范
+
 - 测试文件：`*.test.ts` 或 `*.spec.ts`
 - 描述块：使用被测试的函数/类名
 - 测试用例：使用 `should + 动作 + 期望结果` 格式
 
 ### 示例
+
 ```typescript
 describe('mergeAttributes', () => {
   it('should merge simple attributes correctly', () => {

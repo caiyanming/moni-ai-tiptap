@@ -55,7 +55,9 @@ describe('StreamOperationManager - 重构后测试', () => {
             mockNodes.forEach((node, index) => {
               const position = index * 3 // 模拟位置计算
               const result = callback(node, position)
-              if (result === false) {return false} // 支持早期退出
+              if (result === false) {
+                return false
+              } // 支持早期退出
             })
           }),
           content: { size: 10 },

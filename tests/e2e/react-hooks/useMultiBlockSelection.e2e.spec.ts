@@ -10,7 +10,7 @@ import { expect,test } from '@playwright/test'
 test.describe('useMultiBlockSelection E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
     // 设置测试页面
-    await page.goto('/demos/react/multi-block-selection')
+    await page.goto('/react/multi-block-selection/')
     await page.waitForLoadState('networkidle')
 
     // 等待编辑器初始化完成

@@ -15,9 +15,5 @@
     "typeRoots": ["../../node_modules/@types", "../../node_modules/"]
   },
   "include": ["./*/*.ts", "../../**/*.ts"],
-  "exclude": [
-    "../../packages/vue-2",
-    "../../packages/vue-3",
-    "../../packages/extension-code-block-lowlight"
-  ]
+  "exclude": ["../../packages/vue-2", "../../packages/vue-3", "../../packages/extension-code-block-lowlight"]
 }

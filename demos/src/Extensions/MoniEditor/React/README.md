@@ -7,11 +7,13 @@
 验证以下核心扩展和上游修复：
 
 ### 🔧 Moni自定义扩展
+
 - **DragHandle Extension**: 拖拽手柄功能，支持块级元素拖拽
 - **HiddenBlock Extension**: 隐藏块功能，用于AI操作目标
 - **StreamOperationManager**: 流式操作管理器（AI实时编辑）
 
 ### 🔨 上游修复验证
+
 - Menu渲染修复（inline模式）
 - TypeScript extend function链式调用
 - React JSX runtime修复
@@ -20,6 +22,7 @@
 ## 🚀 快速开始
 
 ### 在浏览器中运行
+
 1. 确保你在 `moni-ai-tiptap/demos` 目录下
 2. 运行开发服务器：
    ```bash
@@ -31,6 +34,7 @@
    ```
 
 ### 运行测试
+
 ```bash
 # 进入 demo 目录
 cd src/Extensions/MoniEditor/React/
@@ -41,7 +45,7 @@ chmod +x run-tests.sh
 
 # 或者单独运行测试
 npx vitest run index.spec.js        # 基础功能测试
-npx vitest run extensions.test.js   # 扩展功能测试  
+npx vitest run extensions.test.js   # 扩展功能测试
 npx vitest run e2e.test.js          # 端到端测试
 
 # 监听模式
@@ -54,21 +58,23 @@ npx vitest run --coverage
 ## 🎮 Demo 功能
 
 ### 主要功能
+
 1. **基础编辑器**: 包含标准的富文本编辑功能
-2. **拖拽系统**: 
+2. **拖拽系统**:
    - 显示拖拽手柄（鼠标悬停时）
    - 支持块级元素拖拽重排
    - 拖拽指示器可视化
-3. **AI Stream模拟**: 
+3. **AI Stream模拟**:
    - 模拟AI实时编辑效果
    - Block Stream操作展示
    - 操作确认/拒绝界面
-4. **调试面板**: 
+4. **调试面板**:
    - 显示编辑器状态
    - 显示block属性
    - 操作历史记录
 
 ### 使用说明
+
 1. **拖拽功能**: 鼠标悬停在任何块级元素上会显示拖拽手柄
 2. **添加块**: 点击拖拽手柄上的 + 按钮添加新块
 3. **AI模拟**: 使用右侧的"Stream Simulator"面板模拟AI操作
@@ -97,12 +103,15 @@ MoniEditor/React/
 ## 🧪 测试覆盖
 
 ### 测试套件
+
 1. **基础功能测试** (`index.spec.js`):
+
    - 组件渲染测试
    - 用户交互测试
    - 状态管理测试
 
 2. **扩展功能测试** (`extensions.test.js`):
+
    - DragHandle扩展测试
    - HiddenBlock扩展测试
    - StreamOperationManager测试
@@ -114,6 +123,7 @@ MoniEditor/React/
    - 错误处理测试
 
 ### 验收标准
+
 - ✅ 编辑器正常渲染和交互
 - ✅ 拖拽手柄可见且功能正常
 - ✅ AI Stream模拟器工作正常
@@ -124,17 +134,20 @@ MoniEditor/React/
 ## 🎯 关键验证点
 
 ### DragHandle Extension
+
 - 拖拽手柄在鼠标悬停时显示
 - 支持块级元素拖拽重排
-- + 按钮添加新块功能
+- - 按钮添加新块功能
 - 键盘事件正确处理（上游修复）
 
 ### HiddenBlock Extension
+
 - 隐藏块不在DOM中显示
 - 支持AI操作目标定位
 - NULL_UUID系统正确实现
 
 ### StreamOperationManager
+
 - AI操作队列管理
 - 用户确认工作流
 - 批量操作支持
@@ -151,12 +164,14 @@ MoniEditor/React/
 ## 🚦 故障排查
 
 ### 常见问题
+
 1. **编辑器不显示**: 检查TipTap扩展是否正确安装
 2. **拖拽不工作**: 检查DragHandle扩展配置
 3. **测试失败**: 运行 `npm install` 确保依赖完整
 4. **样式问题**: 检查Tailwind CSS是否正确引入
 
 ### 调试技巧
+
 1. 启用Debug模式查看编辑器内部状态
 2. 检查浏览器控制台错误信息
 3. 使用测试模式验证特定功能
@@ -165,6 +180,7 @@ MoniEditor/React/
 ## 📞 支持
 
 如果遇到问题，请：
+
 1. 检查本README的故障排查部分
 2. 运行测试套件确定问题范围
 3. 查看相关日志和错误信息

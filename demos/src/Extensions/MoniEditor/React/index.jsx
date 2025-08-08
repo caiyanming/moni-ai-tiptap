@@ -5,7 +5,7 @@ import DragHandle from '@tiptap/extension-drag-handle'
 import HiddenBlock from '@tiptap/extension-hidden-block'
 import { useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import React, { useCallback, useRef,useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import DebugPanel from './DebugPanel.jsx'
 import MoniEditor from './MoniEditor.jsx'
@@ -38,7 +38,9 @@ export default () => {
     options => {
       console.log('🎯 [DragHandle] Add block:', options)
 
-      if (!editorInstance) {return}
+      if (!editorInstance) {
+        return
+      }
 
       // Create a new paragraph block with auto-generated ID
       const blockId = generateMoniBlockId()
@@ -68,7 +70,9 @@ export default () => {
   }, [])
 
   const executeOperation = useCallback((operation, editor) => {
-    if (!editor || !editor.view) {return}
+    if (!editor || !editor.view) {
+      return
+    }
 
     switch (operation.type) {
       case 'insert':

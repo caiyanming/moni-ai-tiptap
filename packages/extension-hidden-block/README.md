@@ -33,9 +33,9 @@ const editor = new Editor({
   extensions: [
     HiddenBlock.configure({
       hideFromDOM: true, // Enable DOM filtering (default: true)
-      nullUUID: '13814000-1dd2-11b2-8080-808080808080' // Custom NULL_UUID (optional)
-    })
-  ]
+      nullUUID: '13814000-1dd2-11b2-8080-808080808080', // Custom NULL_UUID (optional)
+    }),
+  ],
 })
 
 // Insert a hidden NULL_UUID block
@@ -172,7 +172,7 @@ const nullBlocks = editor.storage.hiddenBlock.getNullUUIDBlocks()
 const streamOperation = {
   type: 'insert_after',
   blockId: '13814000-1dd2-11b2-8080-808080808080', // NULL_UUID - 零映射架构
-  content: { type: 'paragraph', content: [{ type: 'text', text: 'New content' }] }
+  content: { type: 'paragraph', content: [{ type: 'text', text: 'New content' }] },
 }
 ```
 

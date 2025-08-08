@@ -117,8 +117,12 @@ describe('🐛 Bug修复验证 - Reject操作应该撤销内容', () => {
       const mockTransaction = {
         setNodeMarkup: vi.fn(),
         delete: vi.fn(() => {
-          if (testType === 'approve') {approveCallCount += 1}
-          if (testType === 'reject') {rejectCallCount += 1}
+          if (testType === 'approve') {
+            approveCallCount += 1
+          }
+          if (testType === 'reject') {
+            rejectCallCount += 1
+          }
         }),
       }
 

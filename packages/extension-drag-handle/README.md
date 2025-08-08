@@ -77,12 +77,14 @@ const editor = new Editor({
 ## 🎨 UI设计
 
 ### 拖拽手柄样式
+
 - **容器**：flex布局，居中对齐，4px间距
 - **拖拽手柄**：18×18像素，6个网格点排列
 - **加号按钮**：18×18像素，圆角按钮
 - **悬停效果**：背景色变化，点颜色加深
 
 ### 颜色方案
+
 ```css
 /* 默认状态 */
 --dot-color: #9ca3af;
@@ -96,6 +98,7 @@ const editor = new Editor({
 ## 📱 响应式设计
 
 扩展支持各种屏幕尺寸：
+
 - **桌面端**：完整功能，悬停效果
 - **平板端**：触摸友好的按钮尺寸
 - **移动端**：长按拖拽，点击添加
@@ -103,11 +106,13 @@ const editor = new Editor({
 ## ♿ 无障碍支持
 
 ### 键盘导航
+
 - `Tab`: 聚焦到拖拽手柄
 - `Enter/Space`: 触发添加块操作
 - `Escape`: 取消当前操作
 
 ### 屏幕阅读器
+
 - 拖拽手柄：`aria-label="Drag to reorder"`
 - 加号按钮：`aria-label="Add block"`
 - 语义化的HTML结构
@@ -140,7 +145,7 @@ DragHandle.configure({
     // 显示QuickInsert菜单
     showQuickInsertMenu({
       position,
-      onSelect: (blockType) => {
+      onSelect: blockType => {
         const content = getBlockContent(blockType)
         editor.chain().focus().insertContentAt(position, content).run()
       },
@@ -156,10 +161,13 @@ DragHandle.configure({
   onDragStart: (event, editor) => {
     // 设置拖拽数据
     event.dataTransfer?.setData('text/plain', 'block-data')
-    event.dataTransfer?.setData('application/json', JSON.stringify({
-      type: 'block',
-      data: '...',
-    }))
+    event.dataTransfer?.setData(
+      'application/json',
+      JSON.stringify({
+        type: 'block',
+        data: '...',
+      }),
+    )
   },
 
   onDrop: (event, dropInfo, editor) => {
@@ -222,11 +230,7 @@ interface DragHandleOptions {
   /**
    * 点击+号按钮的回调函数
    */
-  onAddBlock?: (options: {
-    node: Node | null
-    editor: Editor
-    position: number
-  }) => void
+  onAddBlock?: (options: { node: Node | null; editor: Editor; position: number }) => void
 
   /**
    * 拖拽开始事件
@@ -285,6 +289,7 @@ DragHandle Extension
 ## 🔄 版本历史
 
 ### 3.0.0-beta.22
+
 - ✨ 新增Notion风格+号按钮功能
 - 🎨 重新设计UI，采用6个网格点的拖拽手柄
 - ♿ 增强无障碍支持
@@ -292,6 +297,7 @@ DragHandle Extension
 - 📝 完善文档和示例
 
 ### 3.0.0-beta.21
+
 - 🐛 修复拖拽事件处理问题
 - 🔧 优化性能和内存使用
 

@@ -2,7 +2,7 @@
  * Vitest 全局测试设置
  */
 
-import { beforeAll, afterAll, vi } from 'vitest'
+import { afterAll, beforeAll, vi } from 'vitest'
 
 // DOM环境设置
 beforeAll(() => {
@@ -12,7 +12,7 @@ beforeAll(() => {
     configurable: true,
     value: 1024,
   })
-  
+
   Object.defineProperty(window, 'innerWidth', {
     writable: true,
     configurable: true,
@@ -36,34 +36,36 @@ beforeAll(() => {
   HTMLElement.prototype.scrollIntoView = vi.fn()
   HTMLElement.prototype.focus = vi.fn()
   HTMLElement.prototype.blur = vi.fn()
-  
+
   // Mock isConnected property
   Object.defineProperty(HTMLElement.prototype, 'isConnected', {
-    get: function() { return true }, // 默认返回true表示已连接
-    configurable: true
+    get () {
+      return true
+    }, // 默认返回true表示已连接
+    configurable: true,
   })
-  
-  // Mock document.body.appendChild 
+
+  // Mock document.body.appendChild
   const originalAppendChild = document.body.appendChild
-  document.body.appendChild = vi.fn((child) => {
+  document.body.appendChild = vi.fn(child => {
     // 简单模拟appendChild行为
     if (child && typeof child === 'object') {
       Object.defineProperty(child, 'parentNode', {
         value: document.body,
         writable: true,
-        configurable: true
+        configurable: true,
       })
     }
     return child
   })
-  
+
   // Mock removeChild
-  document.body.removeChild = vi.fn((child) => {
+  document.body.removeChild = vi.fn(child => {
     if (child && child.parentNode === document.body) {
       Object.defineProperty(child, 'parentNode', {
         value: null,
         writable: true,
-        configurable: true
+        configurable: true,
       })
     }
     return child
@@ -88,7 +90,7 @@ beforeAll(() => {
     dataTransfer: DataTransfer
     clientX = 0
     clientY = 0
-    screenX = 0  
+    screenX = 0
     screenY = 0
   } as any
 
@@ -99,7 +101,7 @@ beforeAll(() => {
     disconnect = vi.fn()
   }
 
-  // Mock MutationObserver 
+  // Mock MutationObserver
   global.MutationObserver = class MockMutationObserver {
     observe = vi.fn()
     unobserve = vi.fn()

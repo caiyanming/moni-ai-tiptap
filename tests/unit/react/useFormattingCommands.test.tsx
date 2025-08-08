@@ -6,18 +6,18 @@ import { act, renderHook } from '@testing-library/react'
 import type { Editor } from '@tiptap/core'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { useCurrentEditor } from '../../../packages/react/src/Context'
+// Import the hook from the source files
+import { useFormattingCommands } from '../../../packages/react/src/useFormattingCommands'
+
 // Mock the local Context file - this is where useCurrentEditor is actually imported from
 vi.mock('../../../packages/react/src/Context.tsx', async () => {
-  const actual = await vi.importActual('../../../packages/react/src/Context.tsx') as any
+  const actual = (await vi.importActual('../../../packages/react/src/Context.tsx')) as any
   return {
     ...actual,
     useCurrentEditor: vi.fn(),
   }
 })
-
-// Import the hook from the source files
-import { useFormattingCommands } from '../../../packages/react/src/useFormattingCommands'
-import { useCurrentEditor } from '../../../packages/react/src/Context'
 
 // Create shared run function to track command execution
 const mockRun = vi.fn()
@@ -65,14 +65,14 @@ describe('useFormattingCommands', () => {
     // Don't clear all mocks as it resets our module mock
     // vi.clearAllMocks()
     mockRun.mockClear()
-    
+
     // Reset individual mock functions but keep the module mock
     Object.values(mockChainMethods).forEach((mock: any) => {
       if (typeof mock === 'function' && mock.mockClear) {
         mock.mockClear()
       }
     })
-    
+
     // Set up the mock return value for each test
     vi.mocked(useCurrentEditor).mockReturnValue({ editor: mockEditor })
   })
@@ -102,7 +102,7 @@ describe('useFormattingCommands', () => {
   it('当editor为null时应该安全退出', () => {
     // Reset mock to return null editor
     vi.mocked(useCurrentEditor).mockReturnValue({ editor: null })
-    
+
     const { result } = renderHook(() => useFormattingCommands())
 
     act(() => {
