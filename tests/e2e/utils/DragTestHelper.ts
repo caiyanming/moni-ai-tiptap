@@ -299,15 +299,27 @@ export class DragTestHelper {
         
         result.success = result.details.verification.positionChanged
         this.log(`${result.success ? '✅' : '❌'} 拖拽操作${result.success ? '成功' : '失败'}`)
+      } else {
+        // 🎯 明确处理拖拽失败的情况
+        result.success = false
+        this.log(`❌ 拖拽操作失败：所有方法都未成功执行`)
       }
 
     } catch (error: any) {
+      result.success = false
       result.error = error.message
       result.details.failureReasons.push(error.message)
       this.log(`❌ 拖拽操作异常: ${error.message}`)
     }
 
     result.duration = performance.now() - startTime
+    
+    // 🎯 最终安全检查：确保success属性始终存在
+    if (result.success === undefined || result.success === null) {
+      this.log(`⚠️ 警告: result.success为undefined，设置为false`, 'warn')
+      result.success = false
+    }
+    
     return result
   }
 
@@ -459,15 +471,17 @@ export class DragTestHelper {
 
     // 基础验证：检查段落位置是否改变
     // 🎯 使用完整文本进行比较，而不是截断的文本
-    verification.positionChanged = !this.arraysEqual(beforeState.paragraphTexts, afterState.paragraphTexts)
+    const beforeTexts = beforeState.paragraphTexts || []
+    const afterTexts = afterState.paragraphTexts || []
+    verification.positionChanged = !this.arraysEqual(beforeTexts, afterTexts)
     this.log(`段落位置是否改变: ${verification.positionChanged}`, 'info')
     
     if (this.config.debugMode) {
       // 同时显示截断和完整版本用于调试
-      this.log(`拖拽前(截断): [${beforeState.paragraphTexts.map((t: string) => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
-      this.log(`拖拽后(截断): [${afterState.paragraphTexts.map((t: string) => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
-      this.log(`拖拽前(完整): [${beforeState.paragraphTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
-      this.log(`拖拽后(完整): [${afterState.paragraphTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
+      this.log(`拖拽前(截断): [${beforeTexts.map((t: string) => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
+      this.log(`拖拽后(截断): [${afterTexts.map((t: string) => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
+      this.log(`拖拽前(完整): [${beforeTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
+      this.log(`拖拽后(完整): [${afterTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
     }
     
     // 标准验证：检查段落数量和内容完整性
@@ -506,6 +520,9 @@ export class DragTestHelper {
    * 工具方法：数组比较
    */
   private arraysEqual(a: any[], b: any[]): boolean {
+    // 防御性编程：处理undefined/null情况
+    if (!a || !b) return false
+    if (!Array.isArray(a) || !Array.isArray(b)) return false
     return a.length === b.length && a.every((val, index) => val === b[index])
   }
 
@@ -903,6 +920,48 @@ export class DragTestHelper {
 
       return tagName
     })
+  }
+
+  /**
+   * 🎯 公共方法：验证拖拽结果
+   * 供外部测试使用的简化验证接口
+   */
+  async verifyDragResult(
+    beforeTexts: string[],
+    afterTexts: string[],
+    sourceIndex: number,
+    targetIndex: number,
+  ): Promise<{ success: boolean; message: string; details?: Record<string, any> }> {
+    // 基础数据验证
+    if (!beforeTexts || !afterTexts || !Array.isArray(beforeTexts) || !Array.isArray(afterTexts)) {
+      return { success: false, message: '输入数据无效', details: { beforeTexts, afterTexts } }
+    }
+
+    // 检查索引有效性
+    if (sourceIndex < 0 || sourceIndex >= beforeTexts.length) {
+      return { success: false, message: '源索引超出范围', details: { sourceIndex, beforeTexts } }
+    }
+
+    // 简单但有效的验证逻辑：检查段落顺序是否改变
+    const textsChanged = JSON.stringify(beforeTexts) !== JSON.stringify(afterTexts)
+    
+    this.log(`验证拖拽结果: 文本变化=${textsChanged}`, 'info')
+    this.log(`拖拽前: [${beforeTexts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info') 
+    this.log(`拖拽后: [${afterTexts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
+
+    if (textsChanged) {
+      return {
+        success: true,
+        message: '拖拽操作成功：段落顺序已改变',
+        details: { beforeTexts, afterTexts, sourceIndex, targetIndex }
+      }
+    } else {
+      return {
+        success: false,
+        message: '拖拽操作失败：段落顺序未改变',
+        details: { beforeTexts, afterTexts, sourceIndex, targetIndex }
+      }
+    }
   }
 
   /**

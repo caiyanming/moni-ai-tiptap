@@ -117,7 +117,7 @@ export const DragHandlePlugin = ({
     showIndicators,
     hasOnDragStart: !!onDragStart,
     hasOnDrop: !!onDrop,
-    pluginKey: typeof pluginKey === 'string' ? pluginKey : pluginKey.key
+    pluginKey: typeof pluginKey === 'string' ? pluginKey : (pluginKey as any).spec?.key || 'unknown'
   })
 
   const wrapper = document.createElement('div')
@@ -587,7 +587,7 @@ export const DragHandlePlugin = ({
                 const nodeAtDepth = sourceNodeResolve.node(depth)
                 if (nodeAtDepth.isBlock && nodeAtDepth.type.name !== 'doc') {
                   sourceNode = nodeAtDepth
-                  console.log('🔧 [DEBUG] 在深度${depth}找到块级节点:', nodeAtDepth.type.name)
+                  console.log(`🔧 [DEBUG] 在深度${depth}找到块级节点:`, nodeAtDepth.type.name)
                   break
                 }
               }
@@ -638,27 +638,34 @@ export const DragHandlePlugin = ({
                 sourceComesFirst: sourceFrom < insertPos
               })
 
-              // 🎯 使用ProseMirror Transform的replaceRangeWith进行原子性节点移动
-              // 这是ProseMirror推荐的方式：先删除源节点，然后在目标位置插入
+              // 🎯 修复：使用正确的ProseMirror节点移动方法
+              // 参考DragOperationManager的正确实现
               let newTr = tr
               
+              console.log('🔧 [DEBUG] 使用修复后的节点移动逻辑')
+              
               if (sourceFrom < insertPos) {
-                // 源节点在目标位置前面：需要调整插入位置
-                const adjustedInsertPos = insertPos - sourceBlockPos.size
-                console.log('🔧 [DEBUG] 源在前，调整插入位置从', insertPos, '到', adjustedInsertPos)
+                // 源节点在目标位置前面：先删除源节点，然后调整插入位置
+                console.log('🔧 [DEBUG] 源在前：先删除，调整位置，再插入')
                 
-                // 使用原子操作：先在调整后的位置插入节点
-                newTr = newTr.replaceWith(adjustedInsertPos, adjustedInsertPos, sourceNode)
-                // 然后删除原位置的节点（位置需要+1因为前面插入了节点）
-                newTr = newTr.delete(sourceFrom + sourceBlockPos.size, sourceTo + sourceBlockPos.size)
+                // 1. 先删除源节点
+                newTr = newTr.delete(sourceFrom, sourceTo)
+                
+                // 2. 调整插入位置（因为删除了前面的内容，位置需要减少）
+                const adjustedInsertPos = insertPos - sourceBlockPos.size
+                console.log('🔧 [DEBUG] 调整插入位置从', insertPos, '到', adjustedInsertPos)
+                
+                // 3. 在调整后的位置插入节点
+                newTr = newTr.insert(adjustedInsertPos, sourceNode)
               } else {
                 // 源节点在目标位置后面：先删除源节点，再插入到目标位置
-                console.log('🔧 [DEBUG] 源在后，先删除后插入')
+                console.log('🔧 [DEBUG] 源在后：先删除后插入')
                 
-                // 先删除源节点
+                // 1. 先删除源节点
                 newTr = newTr.delete(sourceFrom, sourceTo)
-                // 在目标位置插入节点（位置无需调整）
-                newTr = newTr.replaceWith(insertPos, insertPos, sourceNode)
+                
+                // 2. 在目标位置插入节点（位置无需调整，因为删除的在后面）
+                newTr = newTr.insert(insertPos, sourceNode)
               }
 
               console.log('🔧 [DEBUG] 事务构建完成:', {
@@ -685,12 +692,13 @@ export const DragHandlePlugin = ({
               let errorInfo = 'Unknown error'
               try {
                 if (error && typeof error === 'object') {
+                  const err = error as any
                   errorInfo = JSON.stringify({
-                    name: error.name,
-                    message: error.message,
-                    stack: error.stack?.slice(0, 300),
-                    constructor: error.constructor?.name,
-                    toString: error.toString?.()
+                    name: err.name,
+                    message: err.message,
+                    stack: err.stack?.slice(0, 300),
+                    constructor: err.constructor?.name,
+                    toString: err.toString?.()
                   }, null, 2)
                 } else {
                   errorInfo = String(error)
@@ -702,12 +710,6 @@ export const DragHandlePlugin = ({
               console.error('🎯 [DEBUG] executeNotionStyleMove详细错误:', {
                 error: errorInfo,
                 context: {
-                  sourcePos,
-                  targetPos,
-                  sourceBlockPos,
-                  targetBlockPos,
-                  insertPos,
-                  adjustedInsertPos,
                   docSize: view.state.doc.content.size
                 }
               })
@@ -717,11 +719,11 @@ export const DragHandlePlugin = ({
 
           const handleDragStart = (event: DragEvent) => {
             // 🔧 添加全局事件计数器用于调试
-            if (!window.__dragEventCounter) window.__dragEventCounter = { dragstart: 0, drop: 0 }
-            window.__dragEventCounter.dragstart++
+            if (!(window as any).dragEventCounter) (window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            ;(window as any).dragEventCounter.dragstart += 1
             
             console.log('🎯 [PLUGIN-DEBUG] DragStart event triggered:', {
-              eventCount: window.__dragEventCounter.dragstart,
+              eventCount: (window as any).dragEventCounter.dragstart,
               target: (event.target as HTMLElement)?.tagName,
               targetId: (event.target as HTMLElement)?.id,
               targetClasses: (event.target as HTMLElement)?.className,
@@ -806,11 +808,11 @@ export const DragHandlePlugin = ({
 
           const handleDropHandler = (event: DragEvent) => {
             // 🔧 添加全局事件计数器用于调试
-            if (!window.__dragEventCounter) window.__dragEventCounter = { dragstart: 0, drop: 0 }
-            window.__dragEventCounter.drop++
+            if (!(window as any).dragEventCounter) (window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            ;(window as any).dragEventCounter.drop += 1
             
             console.log('🎯 [PLUGIN-DEBUG] Drop handler called:', {
-              eventCount: window.__dragEventCounter.drop,
+              eventCount: (window as any).dragEventCounter.drop,
               target: (event.target as HTMLElement)?.tagName,
               targetText: (event.target as HTMLElement)?.textContent?.slice(0, 30),
               coordinates: { x: event.clientX, y: event.clientY },
