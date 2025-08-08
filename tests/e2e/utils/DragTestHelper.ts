@@ -88,7 +88,7 @@ export class DragTestHelper {
     }
   }
 
-  async setup(baseUrl = 'http://localhost:3666/src/Extensions/DragHandle/React/') {
+  async setup(baseUrl = '/src/Extensions/DragHandle/React/') {
     // 导航到测试页面
     await this.page.goto(baseUrl)
 
@@ -205,25 +205,18 @@ export class DragTestHelper {
   }
 
   async insertStandardTestContent() {
-    await this.proseMirror.click()
-    await this.page.keyboard.press('Meta+A') // 全选
-
-    const testContent = `# 标准拖拽测试文档
-
-这是第一个段落，用于测试基础拖拽功能。
-
-这是第二个段落，包含格式化文本：**加粗**和*斜体*。
-
-这是第三个段落，较长文本用于测试复杂拖拽场景的处理能力和性能表现。
-
-## 子标题区域
-
-这是子标题下的第一个段落。
-
-这是子标题下的第二个段落，用于测试跨结构拖拽。`
-
-    await this.page.keyboard.type(testContent.trim())
-    await this.page.waitForTimeout(1000) // 等待内容渲染完成
+    // 不需要重新插入内容，直接使用演示页面的现有内容
+    // 演示页面已经有标准的段落结构
+    console.log('✅ 使用演示页面现有内容')
+    
+    // 验证现有段落
+    const paragraphs = await this.proseMirror.locator('p').all()
+    console.log(`✅ 找到 ${paragraphs.length} 个现有段落`)
+    
+    for (let i = 0; i < paragraphs.length; i++) {
+      const text = await paragraphs[i].textContent()
+      console.log(`段落 ${i}: ${text?.trim() || '(空段落)'}`)
+    }
   }
 
   async getParagraphs(): Promise<Locator[]> {

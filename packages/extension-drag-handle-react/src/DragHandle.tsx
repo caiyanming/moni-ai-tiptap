@@ -25,6 +25,7 @@ export const DragHandle = (props: DragHandleProps) => {
     pluginKey = dragHandlePluginDefaultKey,
     onNodeChange,
     computePositionConfig = defaultComputePositionConfig,
+    ...pluginProps
   } = props
   const [element, setElement] = useState<HTMLDivElement | null>(null)
   const plugin = useRef<Plugin | null>(null)
@@ -54,6 +55,7 @@ export const DragHandle = (props: DragHandleProps) => {
         pluginKey,
         computePositionConfig: { ...defaultComputePositionConfig, ...computePositionConfig },
         onNodeChange,
+        ...pluginProps,
       })
       plugin.current = initPlugin!.plugin
 
