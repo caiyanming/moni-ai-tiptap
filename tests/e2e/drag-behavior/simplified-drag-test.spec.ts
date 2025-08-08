@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { SimplifiedDragHelper } from '../utils/SimplifiedDragHelper'
+
+import { SimplifiedDragHelper } from '../utils/SimplifiedDragHelper.ts'
 
 /**
  * 🎯 简化的拖拽测试 - 基于成功的simple-drag-test模式
@@ -12,7 +13,7 @@ test.describe('简化拖拽测试 - 验证修复', () => {
     await page.goto('/src/Extensions/DragHandle/React/')
     await page.waitForSelector('.ProseMirror', { state: 'visible' })
     await page.waitForTimeout(1000)
-    
+
     dragHelper = new SimplifiedDragHelper(page)
   })
 
@@ -21,12 +22,12 @@ test.describe('简化拖拽测试 - 验证修复', () => {
 
     // 使用简化的拖拽助手
     const result = await dragHelper.executeParagraphDrag()
-    
+
     console.log('📊 [SIMPLIFIED-TEST] 拖拽结果:', {
       success: result.success,
       beforeTexts: result.beforeTexts.length,
       afterTexts: result.afterTexts.length,
-      changed: result.beforeTexts[0] !== result.afterTexts[0]
+      changed: result.beforeTexts[0] !== result.afterTexts[0],
     })
 
     if (!result.success) {
@@ -42,9 +43,9 @@ test.describe('简化拖拽测试 - 验证修复', () => {
 
   test('拖拽验证助手', async () => {
     console.log('🎯 [SIMPLIFIED-TEST] 验证简化拖拽助手')
-    
+
     const success = await dragHelper.verifyDragSuccess()
-    
+
     console.log('📊 [SIMPLIFIED-TEST] 助手验证结果:', { success })
     expect(success).toBe(true)
   })

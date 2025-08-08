@@ -152,8 +152,8 @@ describe('DocumentStyleExtension Real World Usage', () => {
       const styleExtension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
 
       expect(styleExtension?.storage).toBeDefined()
-      expect(styleExtension?.storage.documentStyle).toBeDefined()
-      expect(styleExtension?.storage.styleCache).toBeDefined()
+      expect(styleExtension?.storage.currentPreset).toBeDefined()
+      expect(styleExtension?.storage.styleVersion).toBeDefined()
     })
 
     it('应该有样式扩展的配置选项', () => {

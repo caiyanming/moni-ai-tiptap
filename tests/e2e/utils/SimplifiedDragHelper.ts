@@ -1,11 +1,15 @@
-import { type Page, type Locator } from '@playwright/test'
+import { type Page } from '@playwright/test'
 
 /**
  * 🎯 简化的拖拽测试助手
  * 基于simple-drag-test.spec.ts的成功模式创建
  */
 export class SimplifiedDragHelper {
-  constructor(private page: Page) {}
+  private page: Page
+
+  constructor(page: Page) {
+    this.page = page
+  }
 
   /**
    * 执行简化的拖拽操作，模仿成功的简单测试
@@ -36,16 +40,16 @@ export class SimplifiedDragHelper {
 
       // 创建DataTransfer对象
       const dataTransfer = new DataTransfer()
-      
+
       // 1. dragstart on first paragraph
       const dragStartEvent = new DragEvent('dragstart', {
         bubbles: true,
         cancelable: true,
-        dataTransfer
+        dataTransfer,
       })
-      Object.defineProperty(dragStartEvent, 'target', { 
-        value: firstParagraph, 
-        configurable: true 
+      Object.defineProperty(dragStartEvent, 'target', {
+        value: firstParagraph,
+        configurable: true,
       })
       document.dispatchEvent(dragStartEvent)
       console.log('  ✅ [SimplifiedDragHelper] dragstart 事件已触发')
@@ -58,11 +62,11 @@ export class SimplifiedDragHelper {
           cancelable: true,
           clientX: rect.x + rect.width / 2,
           clientY: rect.y + rect.height + 5,
-          dataTransfer
+          dataTransfer,
         })
-        Object.defineProperty(dropEvent, 'target', { 
-          value: secondParagraph, 
-          configurable: true 
+        Object.defineProperty(dropEvent, 'target', {
+          value: secondParagraph,
+          configurable: true,
         })
         document.dispatchEvent(dropEvent)
         console.log('  ✅ [SimplifiedDragHelper] drop 事件已触发在第二段落下方')

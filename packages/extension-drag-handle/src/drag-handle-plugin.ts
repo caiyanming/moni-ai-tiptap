@@ -117,7 +117,7 @@ export const DragHandlePlugin = ({
     showIndicators,
     hasOnDragStart: !!onDragStart,
     hasOnDrop: !!onDrop,
-    pluginKey: typeof pluginKey === 'string' ? pluginKey : (pluginKey as any).spec?.key || 'unknown'
+    pluginKey: typeof pluginKey === 'string' ? pluginKey : (pluginKey as any).spec?.key || 'unknown',
   })
 
   const wrapper = document.createElement('div')
@@ -422,37 +422,39 @@ export const DragHandlePlugin = ({
 
           // 🔍 简化的目标元素查找 (最底层，被多个函数依赖)
           const findBlockElement = (target: HTMLElement): HTMLElement | null => {
-            console.log('🔍 [DEBUG] 查找块级元素', { 
-              target: target.tagName, 
+            console.log('🔍 [DEBUG] 查找块级元素', {
+              target: target.tagName,
               className: target.className,
               id: target.id,
-              textContent: target.textContent?.slice(0, 30)
+              textContent: target.textContent?.slice(0, 30),
             })
-            
+
             // 首先尝试查找具有 data-moni-block-id 的元素
             let blockElement = target.closest('[data-moni-block-id]') as HTMLElement | null
-            
+
             if (blockElement) {
-              console.log('✅ [DEBUG] 找到带有 data-moni-block-id 的块级元素', { 
+              console.log('✅ [DEBUG] 找到带有 data-moni-block-id 的块级元素', {
                 tag: blockElement.tagName,
                 blockId: blockElement.getAttribute('data-moni-block-id'),
-                textContent: blockElement.textContent?.slice(0, 30)
+                textContent: blockElement.textContent?.slice(0, 30),
               })
               return blockElement
             }
-            
+
             // 如果没有找到 data-moni-block-id，尝试查找块级节点（p, h1-h6, blockquote 等）
-            blockElement = target.closest('p, h1, h2, h3, h4, h5, h6, blockquote, pre, div[data-type]') as HTMLElement | null
-            
+            blockElement = target.closest(
+              'p, h1, h2, h3, h4, h5, h6, blockquote, pre, div[data-type]',
+            ) as HTMLElement | null
+
             if (blockElement) {
-              console.log('✅ [DEBUG] 找到标准块级元素', { 
-                tag: blockElement.tagName, 
+              console.log('✅ [DEBUG] 找到标准块级元素', {
+                tag: blockElement.tagName,
                 dataType: blockElement.getAttribute('data-type'),
-                textContent: blockElement.textContent?.slice(0, 30)
+                textContent: blockElement.textContent?.slice(0, 30),
               })
               return blockElement
             }
-            
+
             console.log('❌ [DEBUG] 未找到块级元素')
             return null
           }
@@ -483,7 +485,7 @@ export const DragHandlePlugin = ({
                 targetElement: targetElement.tagName,
                 position,
                 viewExists: !!view,
-                editorViewExists: !!editor?.view
+                editorViewExists: !!editor?.view,
               })
 
               // 🔧 FIX: 改进DOM到ProseMirror位置的查找逻辑
@@ -495,7 +497,7 @@ export const DragHandlePlugin = ({
                 sourceMoniBlockId,
                 targetMoniBlockId,
                 sourceText: sourceElement.textContent?.slice(0, 30),
-                targetText: targetElement.textContent?.slice(0, 30)
+                targetText: targetElement.textContent?.slice(0, 30),
               })
 
               // 尝试多种方式查找ProseMirror位置
@@ -533,10 +535,10 @@ export const DragHandlePlugin = ({
               const { state } = view
               const { doc, tr } = state
 
-              console.log('🔧 [DEBUG] 准备解析文档位置:', { 
+              console.log('🔧 [DEBUG] 准备解析文档位置:', {
                 docSize: doc.content.size,
-                sourcePos, 
-                targetPos 
+                sourcePos,
+                targetPos,
               })
 
               // 找到包含的块级节点
@@ -545,7 +547,7 @@ export const DragHandlePlugin = ({
 
               console.log('🔧 [DEBUG] 文档位置解析完成:', {
                 sourceResolveDepth: sourceResolve.depth,
-                targetResolveDepth: targetResolve.depth
+                targetResolveDepth: targetResolve.depth,
               })
 
               // 找到最近的块级节点位置
@@ -556,16 +558,18 @@ export const DragHandlePlugin = ({
               // 🔧 FIX: 确保我们获取的是完整的块级节点，而不是文本节点
               console.log('🔧 [DEBUG] 检查resolves节点层级:', {
                 sourceDepth: sourceResolve.depth,
-                sourceParentNode: sourceResolve.depth > 0 ? sourceResolve.node(sourceResolve.depth - 1)?.type?.name : 'none',
+                sourceParentNode:
+                  sourceResolve.depth > 0 ? sourceResolve.node(sourceResolve.depth - 1)?.type?.name : 'none',
                 targetDepth: targetResolve.depth,
-                targetParentNode: targetResolve.depth > 0 ? targetResolve.node(targetResolve.depth - 1)?.type?.name : 'none'
+                targetParentNode:
+                  targetResolve.depth > 0 ? targetResolve.node(targetResolve.depth - 1)?.type?.name : 'none',
               })
 
               console.log('🔧 [DEBUG] 块级节点位置查找结果:', {
                 sourceBlockPos,
                 targetBlockPos,
                 hasSourceBlock: !!sourceBlockPos,
-                hasTargetBlock: !!targetBlockPos
+                hasTargetBlock: !!targetBlockPos,
               })
 
               if (sourceBlockPos === null || targetBlockPos === null) {
@@ -575,15 +579,15 @@ export const DragHandlePlugin = ({
 
               console.log('🔧 [DEBUG] 尝试获取源节点:', {
                 sourceBlockPos: sourceBlockPos.pos,
-                sourceBlockSize: sourceBlockPos.size
+                sourceBlockSize: sourceBlockPos.size,
               })
 
               // 🔧 FIX: 使用resolve来获取正确的块级节点
               const sourceNodeResolve = doc.resolve(sourceBlockPos.pos)
               let sourceNode = null
-              
+
               // 查找真正的块级节点（段落等）
-              for (let depth = sourceNodeResolve.depth; depth >= 1; depth--) {
+              for (let depth = sourceNodeResolve.depth; depth >= 1; depth -= 1) {
                 const nodeAtDepth = sourceNodeResolve.node(depth)
                 if (nodeAtDepth.isBlock && nodeAtDepth.type.name !== 'doc') {
                   sourceNode = nodeAtDepth
@@ -601,7 +605,7 @@ export const DragHandlePlugin = ({
                 nodeType: sourceNode.type.name,
                 nodeSize: sourceNode.nodeSize,
                 nodeText: sourceNode.textContent?.slice(0, 30),
-                isBlock: sourceNode.isBlock
+                isBlock: sourceNode.isBlock,
               })
 
               // 计算插入位置
@@ -616,17 +620,17 @@ export const DragHandlePlugin = ({
 
               // 🎯 使用ProseMirror的replaceRangeWith方法进行原子性节点移动
               console.log('🔧 [DEBUG] 使用ProseMirror原子性replaceRangeWith方法执行节点移动')
-              
+
               const sourceFrom = sourceBlockPos.pos
               const sourceTo = sourceBlockPos.pos + sourceBlockPos.size
 
-              console.log('🔧 [DEBUG] 移动操作参数:', { 
+              console.log('🔧 [DEBUG] 移动操作参数:', {
                 sourceNode: sourceNode.type.name,
                 sourceText: sourceNode.textContent?.slice(0, 30),
-                sourceFrom, 
-                sourceTo, 
+                sourceFrom,
+                sourceTo,
                 position,
-                docSizeBefore: doc.content.size
+                docSizeBefore: doc.content.size,
               })
 
               // 重用之前计算的insertPos位置
@@ -635,35 +639,35 @@ export const DragHandlePlugin = ({
                 targetBlockPos: targetBlockPos.pos,
                 targetBlockSize: targetBlockPos.size,
                 insertPos,
-                sourceComesFirst: sourceFrom < insertPos
+                sourceComesFirst: sourceFrom < insertPos,
               })
 
               // 🎯 修复：使用正确的ProseMirror节点移动方法
               // 参考DragOperationManager的正确实现
               let newTr = tr
-              
+
               console.log('🔧 [DEBUG] 使用修复后的节点移动逻辑')
-              
+
               if (sourceFrom < insertPos) {
                 // 源节点在目标位置前面：先删除源节点，然后调整插入位置
                 console.log('🔧 [DEBUG] 源在前：先删除，调整位置，再插入')
-                
+
                 // 1. 先删除源节点
                 newTr = newTr.delete(sourceFrom, sourceTo)
-                
+
                 // 2. 调整插入位置（因为删除了前面的内容，位置需要减少）
                 const adjustedInsertPos = insertPos - sourceBlockPos.size
                 console.log('🔧 [DEBUG] 调整插入位置从', insertPos, '到', adjustedInsertPos)
-                
+
                 // 3. 在调整后的位置插入节点
                 newTr = newTr.insert(adjustedInsertPos, sourceNode)
               } else {
                 // 源节点在目标位置后面：先删除源节点，再插入到目标位置
                 console.log('🔧 [DEBUG] 源在后：先删除后插入')
-                
+
                 // 1. 先删除源节点
                 newTr = newTr.delete(sourceFrom, sourceTo)
-                
+
                 // 2. 在目标位置插入节点（位置无需调整，因为删除的在后面）
                 newTr = newTr.insert(insertPos, sourceNode)
               }
@@ -671,7 +675,7 @@ export const DragHandlePlugin = ({
               console.log('🔧 [DEBUG] 事务构建完成:', {
                 stepCount: newTr.steps.length,
                 docChanged: newTr.docChanged,
-                newDocSize: newTr.doc.content.size
+                newDocSize: newTr.doc.content.size,
               })
 
               // 应用事务
@@ -679,7 +683,7 @@ export const DragHandlePlugin = ({
                 hasNewTr: !!newTr,
                 trSteps: newTr?.steps?.length,
                 docSizeBefore: view.state.doc.content.size,
-                docSizeAfter: newTr?.doc?.content?.size
+                docSizeAfter: newTr?.doc?.content?.size,
               })
 
               view.dispatch(newTr)
@@ -693,25 +697,29 @@ export const DragHandlePlugin = ({
               try {
                 if (error && typeof error === 'object') {
                   const err = error as any
-                  errorInfo = JSON.stringify({
-                    name: err.name,
-                    message: err.message,
-                    stack: err.stack?.slice(0, 300),
-                    constructor: err.constructor?.name,
-                    toString: err.toString?.()
-                  }, null, 2)
+                  errorInfo = JSON.stringify(
+                    {
+                      name: err.name,
+                      message: err.message,
+                      stack: err.stack?.slice(0, 300),
+                      constructor: err.constructor?.name,
+                      toString: err.toString?.(),
+                    },
+                    null,
+                    2,
+                  )
                 } else {
                   errorInfo = String(error)
                 }
-              } catch (serializeError) {
+              } catch {
                 errorInfo = `Error serialization failed: ${String(error)}`
               }
 
               console.error('🎯 [DEBUG] executeNotionStyleMove详细错误:', {
                 error: errorInfo,
                 context: {
-                  docSize: view.state.doc.content.size
-                }
+                  docSize: view.state.doc.content.size,
+                },
               })
               return false
             }
@@ -719,9 +727,11 @@ export const DragHandlePlugin = ({
 
           const handleDragStart = (event: DragEvent) => {
             // 🔧 添加全局事件计数器用于调试
-            if (!(window as any).dragEventCounter) (window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            if (!(window as any).dragEventCounter) {
+              ;(window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            }
             ;(window as any).dragEventCounter.dragstart += 1
-            
+
             console.log('🎯 [PLUGIN-DEBUG] DragStart event triggered:', {
               eventCount: (window as any).dragEventCounter.dragstart,
               target: (event.target as HTMLElement)?.tagName,
@@ -734,7 +744,11 @@ export const DragHandlePlugin = ({
               bubbles: event.bubbles,
               cancelable: event.cancelable,
               dataTransferTypes: event.dataTransfer?.types || [],
-              composedPath: event.composedPath?.()?.map(el => (el as HTMLElement)?.tagName).filter(Boolean).join(' -> ')
+              composedPath: event
+                .composedPath?.()
+                ?.map(el => (el as HTMLElement)?.tagName)
+                .filter(Boolean)
+                .join(' -> '),
             })
 
             if (!dragIndicator) {
@@ -808,9 +822,11 @@ export const DragHandlePlugin = ({
 
           const handleDropHandler = (event: DragEvent) => {
             // 🔧 添加全局事件计数器用于调试
-            if (!(window as any).dragEventCounter) (window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            if (!(window as any).dragEventCounter) {
+              ;(window as any).dragEventCounter = { dragstart: 0, drop: 0 }
+            }
             ;(window as any).dragEventCounter.drop += 1
-            
+
             console.log('🎯 [PLUGIN-DEBUG] Drop handler called:', {
               eventCount: (window as any).dragEventCounter.drop,
               target: (event.target as HTMLElement)?.tagName,
@@ -824,13 +840,17 @@ export const DragHandlePlugin = ({
               bubbles: event.bubbles,
               cancelable: event.cancelable,
               eventPhase: event.eventPhase,
-              composedPath: event.composedPath?.()?.map(el => (el as HTMLElement)?.tagName).filter(Boolean).join(' -> ')
+              composedPath: event
+                .composedPath?.()
+                ?.map(el => (el as HTMLElement)?.tagName)
+                .filter(Boolean)
+                .join(' -> '),
             })
 
             if (!isDragging || !dragSourceElement) {
               console.log('🔧 [DEBUG] Drop ignored - not in dragging state', {
                 isDragging,
-                hasDragSourceElement: !!dragSourceElement
+                hasDragSourceElement: !!dragSourceElement,
               })
               return
             }
@@ -845,7 +865,7 @@ export const DragHandlePlugin = ({
               target: target.tagName,
               blockElement: blockElement?.tagName,
               dragSourceElement: dragSourceElement.tagName,
-              isSameElement: blockElement === dragSourceElement
+              isSameElement: blockElement === dragSourceElement,
             })
 
             if (blockElement && blockElement !== dragSourceElement) {
@@ -854,10 +874,10 @@ export const DragHandlePlugin = ({
               // 🎯 NOTION风格：执行实际的节点移动
               try {
                 console.log('🎯 [DEBUG] 开始执行拖拽操作', {
-                  sourceElement: dragSourceElement.tagName + ': ' + dragSourceElement.textContent?.slice(0, 30),
-                  targetElement: blockElement.tagName + ': ' + blockElement.textContent?.slice(0, 30),
+                  sourceElement: `${dragSourceElement.tagName}: ${dragSourceElement.textContent?.slice(0, 30) ?? ''}`,
+                  targetElement: `${blockElement.tagName}: ${blockElement.textContent?.slice(0, 30) ?? ''}`,
                   dropPosition: result.dropPosition,
-                  executeFunction: typeof executeNotionStyleMove
+                  executeFunction: typeof executeNotionStyleMove,
                 })
 
                 // 🔧 FIX: 暂时跳过 'inside' 位置的实际移动，专注修复指示器显示

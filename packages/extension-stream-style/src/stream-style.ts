@@ -126,7 +126,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
           }
 
           try {
-            const currentPreset = documentStyleExt.storage.documentStyle.currentPreset
+            const currentPreset = documentStyleExt.storage.currentPreset
             if (!currentPreset) {
               return editor.commands.insertContent(content as Content)
             }

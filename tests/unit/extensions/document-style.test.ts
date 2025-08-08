@@ -1,7 +1,7 @@
 import type { DocumentStylePreset } from '@tiptap/core'
 import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
-import { DocumentStyleExtension , MoniDefaultStylePreset } from '@tiptap/extension-document-style'
+import { DocumentStyleExtension, MoniDefaultStylePreset } from '@tiptap/extension-document-style'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -44,9 +44,9 @@ describe('DocumentStyleExtension', () => {
       const documentStyle = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
 
       expect(documentStyle).toBeDefined()
-      expect(documentStyle?.storage.documentStyle.currentPreset).toEqual(MoniDefaultStylePreset)
-      expect(documentStyle?.storage.documentStyle.styleVersion).toBe(1)
-      expect(documentStyle?.storage.documentStyle.isInjected).toBe(true)
+      expect(documentStyle?.storage.currentPreset).toEqual(MoniDefaultStylePreset)
+      expect(documentStyle?.storage.styleVersion).toBe(1)
+      expect(documentStyle?.storage.isInjected).toBe(true)
     })
 
     it('应该自动注入CSS变量', () => {
@@ -116,7 +116,7 @@ describe('DocumentStyleExtension', () => {
       const result = editor.commands.applyStylePreset('test-preset')
       expect(result).toBe(true)
 
-      const documentStyle = extension.storage.documentStyle
+      const documentStyle = extension.storage
       expect(documentStyle.currentPreset?.name).toBe('test-preset')
       expect(documentStyle.styleVersion).toBe(2) // 应该递增
       expect(documentStyle.isInjected).toBe(true)
@@ -153,15 +153,15 @@ describe('DocumentStyleExtension', () => {
       expect(result).toBe(true)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      const currentPreset = extension.storage.documentStyle.currentPreset
+      const currentPreset = extension.storage.currentPreset
 
       expect(currentPreset?.typography.fontFamily).toBe('"Custom Font", serif')
-      expect(extension.storage.documentStyle.styleVersion).toBe(2)
+      expect(extension.storage.styleVersion).toBe(2)
     })
 
     it('应该在没有当前预设时失败', () => {
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      extension.storage.documentStyle.currentPreset = null
+      extension.storage.currentPreset = null
 
       const result = editor.commands.setDocumentFont('"Test Font", sans-serif')
       expect(result).toBe(false)
@@ -174,10 +174,10 @@ describe('DocumentStyleExtension', () => {
       expect(result).toBe(true)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      const currentPreset = extension.storage.documentStyle.currentPreset
+      const currentPreset = extension.storage.currentPreset
 
       expect(currentPreset?.typography.fontSize).toBe(20)
-      expect(extension.storage.documentStyle.styleVersion).toBe(2)
+      expect(extension.storage.styleVersion).toBe(2)
     })
   })
 
@@ -203,7 +203,7 @@ describe('DocumentStyleExtension', () => {
       expect(result).toBe(true)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      const currentPreset = extension.storage.documentStyle.currentPreset
+      const currentPreset = extension.storage.currentPreset
 
       expect(currentPreset?.name).toBe('moni-default')
       expect(currentPreset?.typography.fontSize).toBe(16) // 默认字体大小
@@ -216,7 +216,7 @@ describe('DocumentStyleExtension', () => {
       expect(result).toBe(true)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      expect(extension.storage.documentStyle.styleVersion).toBe(2) // 应该递增
+      expect(extension.storage.styleVersion).toBe(2) // 应该递增
     })
   })
 
@@ -268,7 +268,7 @@ describe('DocumentStyleExtension', () => {
       editor.commands.setDocumentFontSize(22)
 
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      const currentPreset = extension.storage.documentStyle.currentPreset
+      const currentPreset = extension.storage.currentPreset
 
       // 最终应该是最后一次更新的值
       expect(currentPreset?.typography.fontSize).toBe(22)

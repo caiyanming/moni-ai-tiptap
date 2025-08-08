@@ -77,8 +77,8 @@ describe('DocumentStyleExtension Integration', () => {
     it('应该初始化样式存储', () => {
       const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
 
-      expect(extension?.storage.documentStyle).toBeDefined()
-      expect(extension?.storage.styleCache).toBeDefined()
+      expect(extension?.storage.currentPreset).toBeDefined()
+      expect(extension?.storage.styleVersion).toBeDefined()
     })
   })
 

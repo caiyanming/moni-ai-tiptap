@@ -1,13 +1,13 @@
-import { Editor , nodeInputRule, textblockTypeInputRule, wrappingInputRule } from '@tiptap/core'
+import { Editor } from '@tiptap/core'
 // Use custom extensions that have moniBlockId support
-import { Blockquote } from "@tiptap/extension-blockquote/src/blockquote.tsx"
+import { Blockquote } from '@tiptap/extension-blockquote'
 import { Document } from '@tiptap/extension-document'
 import { Heading } from '@tiptap/extension-heading'
-import { HorizontalRule } from "@tiptap/extension-horizontal-rule/src/horizontal-rule.ts"
+import { HorizontalRule } from '@tiptap/extension-horizontal-rule'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import type { Node } from '@tiptap/pm/model'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('Input Rules - moniBlockId generation', () => {
   let editor: Editor
@@ -346,11 +346,11 @@ describe('Input Rules - moniBlockId generation', () => {
       doc.descendants(node => {
         if (node.type.name === 'heading') {
           expect(node.attrs.moniBlockId).toBeTruthy()
-          headingCount++
+          headingCount += 1
         }
         if (node.type.name === 'blockquote') {
           expect(node.attrs.moniBlockId).toBeTruthy()
-          blockquoteCount++
+          blockquoteCount += 1
         }
       })
 
