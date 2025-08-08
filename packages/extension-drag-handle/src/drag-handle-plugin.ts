@@ -422,13 +422,22 @@ export const DragHandlePlugin = ({
 
           // 🔍 简化的目标元素查找 (最底层，被多个函数依赖)
           const findBlockElement = (target: HTMLElement): HTMLElement | null => {
-            console.log('查找块级元素', { target: target.tagName, className: target.className })
+            console.log('🔍 [DEBUG] 查找块级元素', { 
+              target: target.tagName, 
+              className: target.className,
+              id: target.id,
+              textContent: target.textContent?.slice(0, 30)
+            })
             
             // 首先尝试查找具有 data-moni-block-id 的元素
             let blockElement = target.closest('[data-moni-block-id]') as HTMLElement | null
             
             if (blockElement) {
-              console.log('找到带有 data-moni-block-id 的块级元素', { tag: blockElement.tagName })
+              console.log('✅ [DEBUG] 找到带有 data-moni-block-id 的块级元素', { 
+                tag: blockElement.tagName,
+                blockId: blockElement.getAttribute('data-moni-block-id'),
+                textContent: blockElement.textContent?.slice(0, 30)
+              })
               return blockElement
             }
             
@@ -436,11 +445,15 @@ export const DragHandlePlugin = ({
             blockElement = target.closest('p, h1, h2, h3, h4, h5, h6, blockquote, pre, div[data-type]') as HTMLElement | null
             
             if (blockElement) {
-              console.log('找到标准块级元素', { tag: blockElement.tagName, dataType: blockElement.getAttribute('data-type') })
+              console.log('✅ [DEBUG] 找到标准块级元素', { 
+                tag: blockElement.tagName, 
+                dataType: blockElement.getAttribute('data-type'),
+                textContent: blockElement.textContent?.slice(0, 30)
+              })
               return blockElement
             }
             
-            console.log('未找到块级元素')
+            console.log('❌ [DEBUG] 未找到块级元素')
             return null
           }
 
@@ -465,67 +478,131 @@ export const DragHandlePlugin = ({
             position: 'above' | 'below' | 'inside',
           ): boolean => {
             try {
+              console.log('🎯 [DEBUG] executeNotionStyleMove 开始执行', {
+                sourceElement: sourceElement.tagName,
+                targetElement: targetElement.tagName,
+                position,
+                viewExists: !!view,
+                editorViewExists: !!editor?.view
+              })
+
               // 🔧 FIX: 改进DOM到ProseMirror位置的查找逻辑
               // 优先尝试 data-moni-block-id，如果不存在则直接使用DOM元素
               const sourceMoniBlockId = sourceElement.getAttribute('data-moni-block-id')
               const targetMoniBlockId = targetElement.getAttribute('data-moni-block-id')
 
-              if (sourceMoniBlockId && targetMoniBlockId) {
-                console.log('使用 moni-block-id 进行拖拽移动', { sourceMoniBlockId, targetMoniBlockId })
-              } else {
-                console.log('moni-block-id 不存在，使用直接DOM定位', { 
-                  sourceTag: sourceElement.tagName, 
-                  targetTag: targetElement.tagName 
-                })
-              }
+              console.log('🔍 [DEBUG] Block ID 信息:', {
+                sourceMoniBlockId,
+                targetMoniBlockId,
+                sourceText: sourceElement.textContent?.slice(0, 30),
+                targetText: targetElement.textContent?.slice(0, 30)
+              })
 
               // 尝试多种方式查找ProseMirror位置
               let sourcePos = view.posAtDOM(sourceElement, 0)
               let targetPos = view.posAtDOM(targetElement, 0)
 
+              console.log('🔍 [DEBUG] 初始位置查找结果:', { sourcePos, targetPos })
+
               // 如果直接查找失败，尝试查找子元素
               if (sourcePos === -1) {
+                console.log('🔍 [DEBUG] 源元素直接查找失败，尝试子元素')
                 const sourceChild = sourceElement.querySelector('[data-type]') || sourceElement.firstElementChild
                 if (sourceChild) {
                   sourcePos = view.posAtDOM(sourceChild as HTMLElement, 0)
+                  console.log('🔍 [DEBUG] 源元素子元素查找结果:', sourcePos)
                 }
               }
 
               if (targetPos === -1) {
+                console.log('🔍 [DEBUG] 目标元素直接查找失败，尝试子元素')
                 const targetChild = targetElement.querySelector('[data-type]') || targetElement.firstElementChild
                 if (targetChild) {
                   targetPos = view.posAtDOM(targetChild as HTMLElement, 0)
+                  console.log('🔍 [DEBUG] 目标元素子元素查找结果:', targetPos)
                 }
               }
 
               if (sourcePos === -1 || targetPos === -1) {
-                console.warn('改进查找后仍无法找到DOM对应的ProseMirror位置', { sourcePos, targetPos })
+                console.warn('🔍 [DEBUG] 改进查找后仍无法找到DOM对应的ProseMirror位置', { sourcePos, targetPos })
                 return false
               }
 
-              console.log('找到ProseMirror位置', { sourcePos, targetPos })
+              console.log('✅ [DEBUG] 找到ProseMirror位置', { sourcePos, targetPos })
 
               const { state } = view
               const { doc, tr } = state
+
+              console.log('🔧 [DEBUG] 准备解析文档位置:', { 
+                docSize: doc.content.size,
+                sourcePos, 
+                targetPos 
+              })
 
               // 找到包含的块级节点
               const sourceResolve = doc.resolve(sourcePos)
               const targetResolve = doc.resolve(targetPos)
 
+              console.log('🔧 [DEBUG] 文档位置解析完成:', {
+                sourceResolveDepth: sourceResolve.depth,
+                targetResolveDepth: targetResolve.depth
+              })
+
               // 找到最近的块级节点位置
+              console.log('🔧 [DEBUG] 开始查找块级节点位置')
               const sourceBlockPos = findBlockPosition(sourceResolve)
               const targetBlockPos = findBlockPosition(targetResolve)
 
+              // 🔧 FIX: 确保我们获取的是完整的块级节点，而不是文本节点
+              console.log('🔧 [DEBUG] 检查resolves节点层级:', {
+                sourceDepth: sourceResolve.depth,
+                sourceParentNode: sourceResolve.depth > 0 ? sourceResolve.node(sourceResolve.depth - 1)?.type?.name : 'none',
+                targetDepth: targetResolve.depth,
+                targetParentNode: targetResolve.depth > 0 ? targetResolve.node(targetResolve.depth - 1)?.type?.name : 'none'
+              })
+
+              console.log('🔧 [DEBUG] 块级节点位置查找结果:', {
+                sourceBlockPos,
+                targetBlockPos,
+                hasSourceBlock: !!sourceBlockPos,
+                hasTargetBlock: !!targetBlockPos
+              })
+
               if (sourceBlockPos === null || targetBlockPos === null) {
-                console.warn('无法找到块级节点位置')
+                console.warn('🔧 [DEBUG] 无法找到块级节点位置')
                 return false
               }
 
-              const sourceNode = doc.nodeAt(sourceBlockPos.pos)
+              console.log('🔧 [DEBUG] 尝试获取源节点:', {
+                sourceBlockPos: sourceBlockPos.pos,
+                sourceBlockSize: sourceBlockPos.size
+              })
+
+              // 🔧 FIX: 使用resolve来获取正确的块级节点
+              const sourceNodeResolve = doc.resolve(sourceBlockPos.pos)
+              let sourceNode = null
+              
+              // 查找真正的块级节点（段落等）
+              for (let depth = sourceNodeResolve.depth; depth >= 1; depth--) {
+                const nodeAtDepth = sourceNodeResolve.node(depth)
+                if (nodeAtDepth.isBlock && nodeAtDepth.type.name !== 'doc') {
+                  sourceNode = nodeAtDepth
+                  console.log('🔧 [DEBUG] 在深度${depth}找到块级节点:', nodeAtDepth.type.name)
+                  break
+                }
+              }
+
               if (!sourceNode) {
-                console.warn('无法找到源节点')
+                console.warn('🔧 [DEBUG] 无法找到块级源节点')
                 return false
               }
+
+              console.log('🔧 [DEBUG] 成功获取源节点:', {
+                nodeType: sourceNode.type.name,
+                nodeSize: sourceNode.nodeSize,
+                nodeText: sourceNode.textContent?.slice(0, 30),
+                isBlock: sourceNode.isBlock
+              })
 
               // 计算插入位置
               let insertPos: number
@@ -537,51 +614,125 @@ export const DragHandlePlugin = ({
                 return false // 暂不支持inside
               }
 
-              // 执行移动：先删除，再插入
-              const deleteFrom = sourceBlockPos.pos
-              const deleteTo = sourceBlockPos.pos + sourceBlockPos.size
+              // 🎯 使用ProseMirror的replaceRangeWith方法进行原子性节点移动
+              console.log('🔧 [DEBUG] 使用ProseMirror原子性replaceRangeWith方法执行节点移动')
+              
+              const sourceFrom = sourceBlockPos.pos
+              const sourceTo = sourceBlockPos.pos + sourceBlockPos.size
 
-              console.log('准备执行移动操作', { 
+              console.log('🔧 [DEBUG] 移动操作参数:', { 
                 sourceNode: sourceNode.type.name,
                 sourceText: sourceNode.textContent?.slice(0, 30),
-                deleteFrom, 
-                deleteTo, 
-                insertPos,
-                position 
+                sourceFrom, 
+                sourceTo, 
+                position,
+                docSizeBefore: doc.content.size
               })
 
-              let newTr = tr.delete(deleteFrom, deleteTo)
+              // 重用之前计算的insertPos位置
 
-              // 调整插入位置（如果删除位置在插入位置之前）
-              let adjustedInsertPos = insertPos
-              if (deleteFrom < insertPos) {
-                adjustedInsertPos -= sourceBlockPos.size
+              console.log('🔧 [DEBUG] 插入位置计算:', {
+                targetBlockPos: targetBlockPos.pos,
+                targetBlockSize: targetBlockPos.size,
+                insertPos,
+                sourceComesFirst: sourceFrom < insertPos
+              })
+
+              // 🎯 使用ProseMirror Transform的replaceRangeWith进行原子性节点移动
+              // 这是ProseMirror推荐的方式：先删除源节点，然后在目标位置插入
+              let newTr = tr
+              
+              if (sourceFrom < insertPos) {
+                // 源节点在目标位置前面：需要调整插入位置
+                const adjustedInsertPos = insertPos - sourceBlockPos.size
+                console.log('🔧 [DEBUG] 源在前，调整插入位置从', insertPos, '到', adjustedInsertPos)
+                
+                // 使用原子操作：先在调整后的位置插入节点
+                newTr = newTr.replaceWith(adjustedInsertPos, adjustedInsertPos, sourceNode)
+                // 然后删除原位置的节点（位置需要+1因为前面插入了节点）
+                newTr = newTr.delete(sourceFrom + sourceBlockPos.size, sourceTo + sourceBlockPos.size)
+              } else {
+                // 源节点在目标位置后面：先删除源节点，再插入到目标位置
+                console.log('🔧 [DEBUG] 源在后，先删除后插入')
+                
+                // 先删除源节点
+                newTr = newTr.delete(sourceFrom, sourceTo)
+                // 在目标位置插入节点（位置无需调整）
+                newTr = newTr.replaceWith(insertPos, insertPos, sourceNode)
               }
 
-              console.log('调整后的插入位置', { adjustedInsertPos })
-
-              // 插入节点
-              newTr = newTr.insert(adjustedInsertPos, sourceNode)
-
-              console.log('事务准备完成，开始dispatch')
+              console.log('🔧 [DEBUG] 事务构建完成:', {
+                stepCount: newTr.steps.length,
+                docChanged: newTr.docChanged,
+                newDocSize: newTr.doc.content.size
+              })
 
               // 应用事务
+              console.log('🔧 [DEBUG] 准备dispatch事务:', {
+                hasNewTr: !!newTr,
+                trSteps: newTr?.steps?.length,
+                docSizeBefore: view.state.doc.content.size,
+                docSizeAfter: newTr?.doc?.content?.size
+              })
+
               view.dispatch(newTr)
 
-              console.log('事务已dispatched')
+              console.log('✅ [DEBUG] 事务已成功dispatched')
 
               return true
             } catch (error) {
-              console.error('executeNotionStyleMove详细错误:', error)
+              // 尝试多种方式捕获错误信息
+              let errorInfo = 'Unknown error'
+              try {
+                if (error && typeof error === 'object') {
+                  errorInfo = JSON.stringify({
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack?.slice(0, 300),
+                    constructor: error.constructor?.name,
+                    toString: error.toString?.()
+                  }, null, 2)
+                } else {
+                  errorInfo = String(error)
+                }
+              } catch (serializeError) {
+                errorInfo = `Error serialization failed: ${String(error)}`
+              }
+
+              console.error('🎯 [DEBUG] executeNotionStyleMove详细错误:', {
+                error: errorInfo,
+                context: {
+                  sourcePos,
+                  targetPos,
+                  sourceBlockPos,
+                  targetBlockPos,
+                  insertPos,
+                  adjustedInsertPos,
+                  docSize: view.state.doc.content.size
+                }
+              })
               return false
             }
           }
 
           const handleDragStart = (event: DragEvent) => {
-            console.log('🎯 [DEBUG] DragStart event triggered:', {
+            // 🔧 添加全局事件计数器用于调试
+            if (!window.__dragEventCounter) window.__dragEventCounter = { dragstart: 0, drop: 0 }
+            window.__dragEventCounter.dragstart++
+            
+            console.log('🎯 [PLUGIN-DEBUG] DragStart event triggered:', {
+              eventCount: window.__dragEventCounter.dragstart,
               target: (event.target as HTMLElement)?.tagName,
+              targetId: (event.target as HTMLElement)?.id,
+              targetClasses: (event.target as HTMLElement)?.className,
+              targetText: (event.target as HTMLElement)?.textContent?.slice(0, 30),
               dragIndicatorExists: !!dragIndicator,
-              eventType: event.type
+              eventType: event.type,
+              isTrusted: event.isTrusted,
+              bubbles: event.bubbles,
+              cancelable: event.cancelable,
+              dataTransferTypes: event.dataTransfer?.types || [],
+              composedPath: event.composedPath?.()?.map(el => (el as HTMLElement)?.tagName).filter(Boolean).join(' -> ')
             })
 
             if (!dragIndicator) {
@@ -654,15 +805,31 @@ export const DragHandlePlugin = ({
           }
 
           const handleDropHandler = (event: DragEvent) => {
-            console.log('🎯 [DEBUG] Drop event triggered:', {
+            // 🔧 添加全局事件计数器用于调试
+            if (!window.__dragEventCounter) window.__dragEventCounter = { dragstart: 0, drop: 0 }
+            window.__dragEventCounter.drop++
+            
+            console.log('🎯 [PLUGIN-DEBUG] Drop handler called:', {
+              eventCount: window.__dragEventCounter.drop,
+              target: (event.target as HTMLElement)?.tagName,
+              targetText: (event.target as HTMLElement)?.textContent?.slice(0, 30),
+              coordinates: { x: event.clientX, y: event.clientY },
+              dataTransfer: event.dataTransfer?.getData('text/html') || 'no-data',
               isDragging,
               dragSourceElement: dragSourceElement?.tagName,
-              target: (event.target as HTMLElement)?.tagName,
-              eventType: event.type
+              eventType: event.type,
+              isTrusted: event.isTrusted,
+              bubbles: event.bubbles,
+              cancelable: event.cancelable,
+              eventPhase: event.eventPhase,
+              composedPath: event.composedPath?.()?.map(el => (el as HTMLElement)?.tagName).filter(Boolean).join(' -> ')
             })
 
             if (!isDragging || !dragSourceElement) {
-              console.log('🔧 [DEBUG] Drop ignored - not in dragging state')
+              console.log('🔧 [DEBUG] Drop ignored - not in dragging state', {
+                isDragging,
+                hasDragSourceElement: !!dragSourceElement
+              })
               return
             }
 
@@ -684,25 +851,28 @@ export const DragHandlePlugin = ({
 
               // 🎯 NOTION风格：执行实际的节点移动
               try {
-                console.log('🎯 开始执行拖拽操作', {
+                console.log('🎯 [DEBUG] 开始执行拖拽操作', {
                   sourceElement: dragSourceElement.tagName + ': ' + dragSourceElement.textContent?.slice(0, 30),
                   targetElement: blockElement.tagName + ': ' + blockElement.textContent?.slice(0, 30),
-                  dropPosition: result.dropPosition
+                  dropPosition: result.dropPosition,
+                  executeFunction: typeof executeNotionStyleMove
                 })
 
                 // 🔧 FIX: 暂时跳过 'inside' 位置的实际移动，专注修复指示器显示
                 if (result.dropPosition === 'inside') {
                   console.log('🎯 [临时] 跳过 inside 位置的节点移动，待后续实现')
                 } else {
+                  console.log('🎯 [DEBUG] 调用 executeNotionStyleMove 函数')
                   const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
-                  console.log(`🎯 Notion风格拖拽${success ? '成功' : '失败'}:`, {
+                  console.log(`🎯 [DEBUG] Notion风格拖拽${success ? '成功' : '失败'}:`, {
+                    success,
                     source: dragSourceElement.tagName,
                     target: blockElement.tagName,
                     position: result.dropPosition,
                   })
                 }
               } catch (error) {
-                console.error('🔧 Notion拖拽执行失败:', error)
+                console.error('🔧 [DEBUG] Notion拖拽执行失败:', error)
               }
 
               // 🎯 调用用户自定义回调
