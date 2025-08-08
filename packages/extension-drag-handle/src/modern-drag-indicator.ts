@@ -65,8 +65,9 @@ export class ModernDragIndicator {
       throw new Error('ModernDragIndicator: window is not available')
     }
 
+    // 🔧 FIX: DOM连接时机问题 - 改为警告而非抛出错误，允许在React组件生命周期早期创建
     if (!this.view.dom.isConnected) {
-      throw new Error('ModernDragIndicator: EditorView DOM is not connected')
+      console.warn('ModernDragIndicator: EditorView DOM is not yet connected, but proceeding with creation')
     }
 
     this.container = this.findContainer()

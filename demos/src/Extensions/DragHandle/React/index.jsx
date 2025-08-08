@@ -34,17 +34,24 @@ export default () => {
       <div>
         <button onClick={toggleEditable}>Toggle editable</button>
       </div>
-      <DragHandle 
+      <DragHandle
         editor={editor}
         showIndicators={true}
-        onDragStart={(event, editor) => {
+        onDragStart={() => {
           console.log('🚀 拖拽开始')
         }}
-        onDrop={(event, dropInfo, editor) => {
+        onDrop={(event, dropInfo) => {
           console.log('📥 拖拽完成:', dropInfo)
         }}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          draggable="true"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
         </svg>
       </DragHandle>

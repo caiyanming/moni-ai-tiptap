@@ -73,7 +73,7 @@ export const DragHandle = (props: DragHandleProps) => {
   }, [element, editor, onNodeChange, pluginKey, computePositionConfig])
 
   return (
-    <div className={className} style={{ visibility: 'hidden', position: 'absolute' }} ref={setElement}>
+    <div className={className} style={{ position: 'absolute' }} ref={setElement}>
       {children}
     </div>
   )
