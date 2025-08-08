@@ -9,9 +9,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./setup.ts'],
-    include: ['./unit/**/*.{test,spec}.{js,ts,tsx}'],
-    exclude: ['../../node_modules/**', '../../demos/**', '../../packages-deprecated/**', '../cypress/**', '../e2e/**'],
+    setupFiles: [resolve(__dirname, './setup.ts')],
+    include: [resolve(__dirname, '../unit/**/*.{test,spec}.{js,ts,tsx}')],
+    exclude: ['**/node_modules/**', '**/demos/**', '**/packages-deprecated/**', '**/cypress/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

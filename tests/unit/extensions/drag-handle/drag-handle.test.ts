@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
-import { DragHandle } from '@tiptap/extension-drag-handle/drag-handle.js'
+import { DragHandle } from '@tiptap/extension-drag-handle'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -104,7 +104,7 @@ describe('DragHandle Extension', () => {
     })
 
     afterEach(() => {
-      if (mockElement.parentNode) {
+      if (mockElement && mockElement.parentNode) {
         mockElement.parentNode.removeChild(mockElement)
       }
     })
@@ -122,9 +122,13 @@ describe('DragHandle Extension', () => {
         const dragHandle = renderResult.querySelector('.drag-handle')
         expect(dragHandle).toBeTruthy()
 
-        // 检查是否包含6个网格点
-        const gridDots = renderResult.querySelectorAll('.grid-dot')
-        expect(gridDots.length).toBe(6)
+        // 检查是否包含SVG图标（新的实现方式）
+        const svg = renderResult.querySelector('svg')
+        expect(svg).toBeTruthy()
+        
+        // 检查SVG是否包含6个圆点
+        const circles = renderResult.querySelectorAll('svg circle')
+        expect(circles.length).toBe(6)
 
         // 检查是否包含+号按钮
         const addButton = renderResult.querySelector('.add-block-button')
@@ -259,17 +263,19 @@ describe('DragHandle Extension', () => {
       if (dragHandleExtension && dragHandleExtension.options.render) {
         const element = dragHandleExtension.options.render()
 
-        // 验证CSS变量和悬停效果
+        // 验证新的SVG实现的样式
         const dragHandle = element.querySelector('.drag-handle')
         if (dragHandle) {
-          expect((dragHandle as HTMLElement).style.getPropertyValue('--dot-color')).toBe('#9ca3af')
-          expect((dragHandle as HTMLElement).style.getPropertyValue('--dot-color-hover')).toBe('#6b7280')
+          // 检查SVG图标是否存在
+          const svg = dragHandle.querySelector('svg')
+          expect(svg).toBeTruthy()
+          expect(svg?.getAttribute('width')).toBe('14')
+          expect(svg?.getAttribute('height')).toBe('14')
         }
 
         const addButton = element.querySelector('.add-block-button')
         if (addButton) {
-          expect((addButton as HTMLElement).style.getPropertyValue('--bg-color')).toBe('transparent')
-          expect((addButton as HTMLElement).style.getPropertyValue('--bg-color-hover')).toBe('#f3f4f6')
+          expect(addButton?.textContent).toBe('+')
         }
       }
     })

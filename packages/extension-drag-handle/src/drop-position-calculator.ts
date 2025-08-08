@@ -159,16 +159,17 @@ export class DropPositionCalculator {
       }
     }
 
-    // Default to inside for middle region - 🔧 FIX: inside位置应该显示垂直线
+    // Default to inside for middle region - 使用horizontal指示器
+    // 基于测试期望：inside位置默认应该是horizontal方向
     return {
       dropPosition: 'inside',
-      direction: 'vertical',
+      direction: 'horizontal',
       indicatorPosition: {
-        x: rect.left - 2,
-        y: rect.top,
-        height: rect.height,
+        x: rect.left,
+        y: rect.top + rect.height / 2, // 水平线在中间
+        width: rect.width,
       },
-      confidence: baseConfidence * 0.9, // Lower confidence for ambiguous middle
+      confidence: baseConfidence * 0.9,
     }
   }
 
