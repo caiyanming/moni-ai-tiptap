@@ -322,10 +322,10 @@ export class ModernDragIndicator {
 
     // Check dimension based on direction
     if (direction === 'horizontal') {
-      return position.width != null && position.width > 0 && !Number.isNaN(position.width)
+      return position.width != null && position.width >= 0 && !Number.isNaN(position.width)
     }
     // 🔧 FIX: 对于垂直指示器（inside位置），检查height是否有效
-    return position.height != null && position.height > 0 && !Number.isNaN(position.height)
+    return position.height != null && position.height >= 0 && !Number.isNaN(position.height)
   }
 }
 

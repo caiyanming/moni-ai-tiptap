@@ -172,6 +172,12 @@ Memory Report:
   }
 
   cleanup() {
+    // Actually remove tracked elements from DOM
+    this.elements.forEach(element => {
+      if (element.isConnected || document.contains(element)) {
+        element.remove()
+      }
+    })
     this.elements.clear()
   }
 }

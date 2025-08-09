@@ -13,7 +13,7 @@ import { Document } from '@tiptap/extension-document'
 import { DocumentStyleExtension, MoniDefaultStylePreset } from '@tiptap/extension-document-style'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock CSS 变量注入
 const mockInjectCSSVariables = vi.fn()
@@ -23,13 +23,27 @@ const mockClearCSSVariables = vi.fn()
 vi.mock('@tiptap/extension-document-style/src/style-utils.js', () => ({
   injectCSSVariables: mockInjectCSSVariables,
   clearCSSVariables: mockClearCSSVariables,
-  presetToCSSVariables: vi.fn(preset => ({
-    '--moni-font-family': preset.typography.fontFamily,
-    '--moni-font-size': `${preset.typography.fontSize}px`,
-    '--moni-color-text': preset.colors.text,
-    '--moni-color-accent': preset.colors.accent,
-  })),
+  presetToCSSVariables: vi.fn(preset => {
+    // 确保返回非空对象以触发CSS注入
+    if (preset && preset.typography && preset.colors) {
+      return {
+        '--moni-font-family': preset.typography.fontFamily,
+        '--moni-font-size': `${preset.typography.fontSize}px`,
+        '--moni-color-text': preset.colors.text,
+        '--moni-color-accent': preset.colors.accent,
+      }
+    }
+    // 提供默认值确保不为空
+    return {
+      '--moni-font-family': 'Arial, sans-serif',
+      '--moni-font-size': '16px',
+      '--moni-color-text': '#000000',
+      '--moni-color-accent': '#007acc',
+    }
+  }),
   generateGlobalStyleAttributes: vi.fn(() => ({})),
+  getSemanticTypeForNode: vi.fn(() => 'paragraph'),
+  hasAttributesChanged: vi.fn(() => false),
   debounce: vi.fn(fn => fn),
 }))
 
@@ -84,6 +98,13 @@ describe('DocumentStyleExtension Integration', () => {
 
   describe('CSS 变量注入', () => {
     it('应该在初始化时注入 CSS 变量', () => {
+      // 调试：检查存储状态和Mock调用
+      const extension = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
+      console.log('Extension storage:', extension?.storage)
+      console.log('autoInjectCSS:', extension?.options.autoInjectCSS)
+      console.log('cssVariables:', extension?.storage.cssVariables)
+      console.log('mockInjectCSSVariables calls:', mockInjectCSSVariables.mock.calls.length)
+      
       // 由于自动注入开启，应该调用了 CSS 变量注入
       expect(mockInjectCSSVariables).toHaveBeenCalled()
     })

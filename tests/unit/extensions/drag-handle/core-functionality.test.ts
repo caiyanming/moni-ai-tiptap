@@ -16,7 +16,7 @@
 import type { Editor } from '@tiptap/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { createTestEditor, MemoryLeakDetector, performanceTest,validateSVGHandle } from './test-utils'
+import { createTestEditor, MemoryLeakDetector, validateSVGHandle } from './test-utils.js'
 
 describe('🎯 DragHandle Core Functionality', () => {
   let editor: Editor
@@ -90,19 +90,24 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        // 验证容器结构
-        expect(container.classList.contains('drag-handle-container')).toBe(true)
-        expect(container.draggable).toBe(true)
+        try {
+          // 验证容器结构
+          expect(container.classList.contains('drag-handle-container')).toBe(true)
+          expect(container.draggable).toBe(true)
 
-        // 验证SVG手柄
-        const dragHandle = container.querySelector('.drag-handle')
-        expect(dragHandle).toBeTruthy()
+          // 验证SVG手柄
+          const dragHandle = container.querySelector('.drag-handle')
+          expect(dragHandle).toBeTruthy()
 
-        const validation = validateSVGHandle(container)
-        expect(validation.isValid).toBe(true)
+          const validation = validateSVGHandle(container)
+          expect(validation.isValid).toBe(true)
 
-        if (!validation.isValid) {
-          throw new Error(validation.error)
+          if (!validation.isValid) {
+            throw new Error(validation.error)
+          }
+        } finally {
+          // Clean up the test element immediately
+          container.remove()
         }
       }
     })
@@ -114,12 +119,16 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        const addButton = container.querySelector('.add-block-button')
-        expect(addButton).toBeTruthy()
-        expect(addButton?.textContent).toBe('+')
-        expect(addButton?.getAttribute('aria-label')).toBe('Add block')
-        expect(addButton?.getAttribute('title')).toBe('Add block')
-        expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+        try {
+          const addButton = container.querySelector('.add-block-button')
+          expect(addButton).toBeTruthy()
+          expect(addButton?.textContent).toBe('+')
+          expect(addButton?.getAttribute('aria-label')).toBe('Add block')
+          expect(addButton?.getAttribute('title')).toBe('Add block')
+          expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+        } finally {
+          container.remove()
+        }
       }
     })
 
@@ -130,23 +139,27 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        // 验证容器样式
-        const containerStyle = getComputedStyle(container)
-        expect(container.style.display).toBe('flex')
-        expect(container.style.alignItems).toBe('center')
-        expect(container.style.gap).toBe('4px')
+        try {
+          // 验证容器样式
+          getComputedStyle(container)
+          expect(container.style.display).toBe('flex')
+          expect(container.style.alignItems).toBe('center')
+          expect(container.style.gap).toBe('4px')
 
-        // 验证手柄样式
-        const dragHandle = container.querySelector('.drag-handle') as HTMLElement
-        expect(dragHandle.style.width).toBe('18px')
-        expect(dragHandle.style.height).toBe('18px')
-        expect(dragHandle.style.cursor).toBe('grab')
+          // 验证手柄样式
+          const dragHandle = container.querySelector('.drag-handle') as HTMLElement
+          expect(dragHandle.style.width).toBe('18px')
+          expect(dragHandle.style.height).toBe('18px')
+          expect(dragHandle.style.cursor).toBe('grab')
 
-        // 验证按钮样式
-        const addButton = container.querySelector('.add-block-button') as HTMLElement
-        expect(addButton.style.width).toBe('18px')
-        expect(addButton.style.height).toBe('18px')
-        expect(addButton.style.cursor).toBe('pointer')
+          // 验证按钮样式
+          const addButton = container.querySelector('.add-block-button') as HTMLElement
+          expect(addButton.style.width).toBe('18px')
+          expect(addButton.style.height).toBe('18px')
+          expect(addButton.style.cursor).toBe('pointer')
+        } finally {
+          container.remove()
+        }
       }
     })
   })

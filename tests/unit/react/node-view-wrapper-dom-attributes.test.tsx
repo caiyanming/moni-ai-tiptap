@@ -13,15 +13,11 @@ import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 // Mock useReactNodeView hook
-vi.mock('@tiptap/react', async () => {
-  const actual = await vi.importActual('@tiptap/react')
-  return {
-    ...actual,
-    useReactNodeView: () => ({
-      onDragStart: vi.fn(),
-    }),
-  }
-})
+vi.mock('@tiptap/react/src/useReactNodeView.ts', () => ({
+  useReactNodeView: vi.fn(() => ({
+    onDragStart: vi.fn(),
+  })),
+}))
 
 describe('NodeViewWrapper DOM Attributes', () => {
   it('应该将 data-moniBlockId 转换为 data-moniblockid', () => {

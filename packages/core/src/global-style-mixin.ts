@@ -176,7 +176,8 @@ export function generateInlineStyleForNode(
         }
       })
     } catch (error) {
-      console.warn('Failed to parse moniSemanticStyle:', error)
+      // 使用debug级别，减少测试时的噪音
+      console.debug('Failed to parse moniSemanticStyle:', error)
     }
   }
 

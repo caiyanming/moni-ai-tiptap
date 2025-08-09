@@ -1174,15 +1174,22 @@ export class StreamOperationManager {
     try {
       console.log(`[StreamOperationManager] 创建block from content:`, content)
 
+      // 检查schema是否有效
+      if (!this.schema?.nodes?.paragraph?.create) {
+        console.warn(`[StreamOperationManager] Schema不完整，无法创建block`)
+        return null
+      }
+
       // 处理简单文本内容（只有text字段，没有type）
       if (content.text && !content.type) {
+        const textNode = this.schema.text ? this.schema.text(content.text) : null
         const block = this.schema.nodes.paragraph.create(
           {
             moniBlockId: `block_${crypto.randomUUID()}`,
             moniParentId: null,
             moniLevel: 0,
           },
-          this.schema.text(content.text),
+          textNode,
         )
         console.log(`[StreamOperationManager] 创建简单文本block成功:`, block)
         return block

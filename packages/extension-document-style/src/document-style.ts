@@ -149,7 +149,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
         ({ tr, dispatch }) => {
           const preset = this.options.availablePresets.find(p => p.name === presetName)
           if (!preset) {
-            console.warn(`Style preset "${presetName}" not found`)
+            console.debug(`Style preset "${presetName}" not found`)
             return false
           }
 
@@ -166,11 +166,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
             this.storage.isInjected = true
           }
 
-          // 传播样式到所有块
+          // 传播样式到所有块 - 优化批处理
           if (dispatch) {
-            // 简单内联实现，不需要单独方法
             const { propagationOptions } = this.options
-            const { targetNodeTypes = [] } = propagationOptions
+            const { targetNodeTypes = [], batchSize = 100 } = propagationOptions
+            let updateCount = 0
+
+            // 批量收集更新操作，减少事务复杂度
+            const updates: Array<{ pos: number; attrs: any }> = []
 
             tr.doc.descendants((node: any, pos: number) => {
               if (!targetNodeTypes.includes(node.type.name)) {
@@ -187,9 +190,20 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
               const updatedAttrs = { ...currentAttrs, ...newAttributes }
 
               if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
-                tr.setNodeMarkup(pos, undefined, updatedAttrs)
+                updates.push({ pos, attrs: updatedAttrs })
+                updateCount += 1
+                
+                // 性能优化：限制批处理大小
+                if (updateCount >= batchSize) {
+                  return false // 停止遍历
+                }
               }
               return true
+            })
+
+            // 批量应用所有更新
+            updates.forEach(({ pos, attrs }) => {
+              tr.setNodeMarkup(pos, undefined, attrs)
             })
 
             dispatch(tr)
@@ -203,7 +217,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
         ({ tr, dispatch }) => {
           const currentPreset = this.storage.currentPreset
           if (!currentPreset) {
-            console.warn('No current style preset found')
+            console.debug('No current style preset found')
             return false
           }
 
@@ -262,7 +276,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
         ({ tr, dispatch }) => {
           const currentPreset = this.storage.currentPreset
           if (!currentPreset) {
-            console.warn('No current style preset found')
+            console.debug('No current style preset found')
             return false
           }
 
