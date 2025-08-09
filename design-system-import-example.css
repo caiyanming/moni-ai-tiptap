@@ -1,0 +1,29 @@
+/* 
+ * 🎨 MoniAI设计系统导入示例
+ * 
+ * 选择以下导入方式之一：
+ */
+
+/* 1. 完整导入（推荐） - 包含所有CSS Layers和组件 */
+@import 'moni-ai-design-system';
+
+/* 2. 按需导入 - 仅导入需要的部分 */
+/* @import 'moni-ai-design-system/tokens'; */
+/* @import 'moni-ai-design-system/foundation'; */
+/* @import 'moni-ai-design-system/components'; */
+
+/* 3. 编辑器专用导入 - TipTap项目使用 */
+/* @import 'moni-ai-design-system/editor'; */
+
+/* 
+ * 💡 使用提示：
+ * 
+ * 1. 将上述导入添加到你的主CSS文件开头
+ * 2. 设计系统使用CSS Layers架构，无需担心样式冲突
+ * 3. 所有样式都通过CSS自定义属性暴露，可以轻松定制
+ * 4. 支持OKLCH色彩空间和Container Queries
+ * 
+ * 🚀 零!important架构：
+ * - 通过CSS Layers自动管理样式优先级
+ * - 不再需要使用!important覆盖样式
+ */

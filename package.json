@@ -54,9 +54,13 @@
     "prepare": "husky install",
     "turbo": "turbo",
     "changeset": "changeset",
-    "version": "pnpm run changeset -- version && pnpm install --no-frozen-lockfile"
+    "version": "pnpm run changeset -- version && pnpm install --no-frozen-lockfile",
+    "install-design-system": "scripts/install-design-system.sh",
+    "install-design-system:clean": "scripts/install-design-system.sh --clean",
+    "update-design-system": "node scripts/update-design-system-deps.cjs"
   },
   "dependencies": {
+    "moni-ai-design-system": "file:../moni-ai-design-system",
     "@moni-ai-design-system": "file:../moni-ai-design-system"
   },
   "devDependencies": {
