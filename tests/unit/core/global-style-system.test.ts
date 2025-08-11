@@ -284,7 +284,7 @@ describe('Global Style System', () => {
 
       // 检查是否包含行内样式（当前实现应该包含style属性）
       expect(html).toContain('style=')
-      expect(html).toContain('font-family: "Roboto", sans-serif')
+      expect(html).toContain('font-family: &quot;Roboto&quot;, sans-serif')
       expect(html).toContain('font-size: 18px')
       expect(html).toContain('color: #f97316')
       expect(html).toContain('font-weight: 600')

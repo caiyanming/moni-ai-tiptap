@@ -1,6 +1,6 @@
 /**
  * DOM 属性规范化工具
- * 
+ *
  * 提供统一的DOM属性处理规则，确保React组件传递给DOM的属性符合规范
  */
 
@@ -20,29 +20,40 @@ interface AttributeRule {
 const DOM_ATTRIBUTE_RULES: AttributeRule[] = [
   // 高优先级：标准DOM属性
   {
-    test: (key) => [
-      'id', 'className', 'style', 'title', 'role', 'tabIndex',
-      'onClick', 'onMouseDown', 'onMouseUp', 'onKeyDown', 'onKeyUp',
-      'onFocus', 'onBlur'
-    ].includes(key),
+    test: key =>
+      [
+        'id',
+        'className',
+        'style',
+        'title',
+        'role',
+        'tabIndex',
+        'onClick',
+        'onMouseDown',
+        'onMouseUp',
+        'onKeyDown',
+        'onKeyUp',
+        'onFocus',
+        'onBlur',
+      ].includes(key),
     transform: (key, value) => ({ [key]: value }),
-    priority: 50
+    priority: 50,
   },
-  
+
   // 低优先级：data-*和aria-*属性（直接透传，保持原有格式）
   {
-    test: (key) => key.startsWith('data-') || key.startsWith('aria-'),
+    test: key => key.startsWith('data-') || key.startsWith('aria-'),
     transform: (key, value) => ({ [key]: value }),
-    priority: 10
-  }
+    priority: 10,
+  },
 ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
 /**
  * 规范化DOM属性
- * 
+ *
  * @param props 原始属性对象
  * @returns 规范化后的DOM属性对象
- * 
+ *
  * @example
  * ```typescript
  * const normalized = normalizeDOMAttributes({
@@ -55,7 +66,7 @@ const DOM_ATTRIBUTE_RULES: AttributeRule[] = [
  */
 export function normalizeDOMAttributes(props: Record<string, any>): Record<string, any> {
   const normalizedProps: Record<string, any> = {}
-  
+
   Object.entries(props).forEach(([key, value]) => {
     // 找到第一个匹配的规则
     const rule = DOM_ATTRIBUTE_RULES.find(r => r.test(key))
@@ -64,13 +75,13 @@ export function normalizeDOMAttributes(props: Record<string, any>): Record<strin
     }
     // 其他属性被过滤掉，确保不会传递给DOM
   })
-  
+
   return normalizedProps
 }
 
 /**
  * 获取被过滤掉的属性列表（用于调试）
- * 
+ *
  * @param props 原始属性对象
  * @returns 被过滤掉的属性名数组
  */

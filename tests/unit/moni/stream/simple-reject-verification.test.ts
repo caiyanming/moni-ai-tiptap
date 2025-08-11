@@ -28,8 +28,9 @@ describe('✅ 简化的 Reject 功能验证', () => {
 
     const mockTransaction = {
       setNodeMarkup: vi.fn(),
+      insert: vi.fn(),
       delete: vi.fn(() => {
-        deleteCallCount++
+        deleteCallCount += 1
         console.log(`🗑️ delete() 被调用，当前调用次数: ${deleteCallCount}`)
       }),
     }
@@ -59,8 +60,28 @@ describe('✅ 简化的 Reject 功能验证', () => {
       dispatch: vi.fn(),
     }
 
-    const mockSchema = { nodes: {}, text: vi.fn() }
-    manager = new StreamOperationManager(mockView, mockSchema)
+    // 创建完整的 Mock Schema
+    const mockParagraphNode = {
+      create: vi.fn((attrs, content) => ({
+        type: { name: 'paragraph' },
+        attrs: attrs || {},
+        content: content || null,
+        nodeSize: 2,
+        textContent: 'test',
+      })),
+    }
+
+    const mockSchema = {
+      nodes: {
+        paragraph: mockParagraphNode,
+      },
+      text: vi.fn((text) => ({
+        type: 'text',
+        text,
+        nodeSize: 1,
+      })),
+    }
+    manager = new StreamOperationManager(mockView, mockSchema as any)
   })
 
   afterEach(() => {

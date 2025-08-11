@@ -122,6 +122,14 @@ export class DragTestHelper {
 
     // 等待编辑器加载
     await this.proseMirror.waitFor({ state: 'visible', timeout: 10000 })
+    
+    // 等待编辑器实例就绪
+    await this.page.waitForFunction(() => {
+      return (window as any).__tiptapEditor !== undefined
+    }, { timeout: 5000 })
+    
+    // 额外等待以确保所有插件加载完成
+    await this.page.waitForTimeout(1000)
 
     // 插入标准测试内容
     await this.insertStandardTestContent()
@@ -295,13 +303,22 @@ export class DragTestHelper {
         
         // Step 6: 验证拖拽结果
         const afterState = await this.captureState()
-        result.details.verification = await this.verifyDragResult(beforeState, afterState)
         
-        result.success = result.details.verification.positionChanged
+        // 🔧 修复: 使用内部的verifyDragResult方法，传入状态对象
+        const verificationResult = await this.verifyDragResultInternal(beforeState, afterState)
+        
+        result.details.verification = verificationResult
+        result.success = verificationResult.positionChanged || false
+        
         this.log(`${result.success ? '✅' : '❌'} 拖拽操作${result.success ? '成功' : '失败'}`)
       } else {
         // 🎯 明确处理拖拽失败的情况
         result.success = false
+        result.details.verification = {
+          success: false,
+          message: '所有拖拽方法都未成功执行',
+          details: { attemptedMethods: result.details.attemptedMethods }
+        }
         this.log(`❌ 拖拽操作失败：所有方法都未成功执行`)
       }
 
@@ -396,16 +413,29 @@ export class DragTestHelper {
    * 🎯 优化: 准备拖拽手柄
    */
   private async prepareDragHandle(sourceParagraph: Locator): Promise<void> {
+    // 移动到段落上以显示拖拽手柄
     await sourceParagraph.hover()
     await this.page.waitForTimeout(500)
 
-    const svgHandle = this.page.locator('svg').first()
-    await svgHandle.waitFor({ state: 'visible', timeout: 3000 })
+    // 查找具有draggable属性的SVG手柄
+    const svgHandle = this.page.locator('svg[draggable="true"]').first()
+    
+    // 等待手柄出现
+    try {
+      await svgHandle.waitFor({ state: 'visible', timeout: 3000 })
+    } catch (error) {
+      // 如果手柄没有出现，再次尝试hover
+      await sourceParagraph.hover({ position: { x: 10, y: 10 } })
+      await this.page.waitForTimeout(500)
+      await svgHandle.waitFor({ state: 'visible', timeout: 2000 })
+    }
 
     const isVisible = await svgHandle.isVisible()
     if (!isVisible) {
       throw new Error('SVG拖拽手柄未变为可见状态')
     }
+    
+    this.log('✅ 拖拽手柄已准备就绪')
   }
 
   /**
@@ -439,28 +469,43 @@ export class DragTestHelper {
    * 🎯 优化: 状态捕获
    */
   private async captureState() {
-    const paragraphs = await this.getParagraphs()
-    const texts = []
-    
-    for (const p of paragraphs) {
-      const text = await this.getParagraphText(p)
-      texts.push(text.trim())
-    }
-
-    return {
-      paragraphTexts: texts,
-      paragraphCount: paragraphs.length,
-      timestamp: Date.now()
+    try {
+      const paragraphs = await this.getParagraphs()
+      const texts = []
+      
+      for (const p of paragraphs) {
+        const text = await this.getParagraphText(p)
+        texts.push(text.trim())
+      }
+      
+      const result = {
+        paragraphTexts: texts,
+        paragraphCount: paragraphs.length,
+        timestamp: Date.now()
+      }
+      
+      this.log(`状态捕获成功: ${texts.length} 个段落`, 'info')
+      this.log(`段落内容: [${texts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
+      
+      return result
+    } catch (error) {
+      this.log(`状态捕获失败: ${error.message}`, 'error')
+      return {
+        paragraphTexts: [],
+        paragraphCount: 0,
+        timestamp: Date.now(),
+        error: error.message
+      }
     }
   }
 
   /**
-   * 🎯 优化: 增强的结果验证
+   * 🎯 优化: 增强的结果验证（内部版本）
    */
-  private async verifyDragResult(beforeState: any, afterState: any) {
+  private async verifyDragResultInternal(beforeState: any, afterState: any) {
     this.log('开始拖拽结果验证', 'info')
-    this.log(`验证前状态: ${beforeState.paragraphTexts?.length || 0} 个段落`, 'info')
-    this.log(`验证后状态: ${afterState.paragraphTexts?.length || 0} 个段落`, 'info')
+    this.log(`验证前状态: ${beforeState?.paragraphTexts?.length || 0} 个段落`, 'info')
+    this.log(`验证后状态: ${afterState?.paragraphTexts?.length || 0} 个段落`, 'info')
 
     const verification = {
       domUpdated: false,
@@ -469,10 +514,30 @@ export class DragTestHelper {
       memoryLeakDetected: false
     }
 
+    // 防御性检查：确保状态对象存在
+    if (!beforeState || !afterState) {
+      this.log('❌ 状态对象无效', 'error')
+      return {
+        success: false,
+        message: '状态数据无效',
+        details: { beforeState, afterState }
+      }
+    }
+
     // 基础验证：检查段落位置是否改变
-    // 🎯 使用完整文本进行比较，而不是截断的文本
     const beforeTexts = beforeState.paragraphTexts || []
     const afterTexts = afterState.paragraphTexts || []
+    
+    // 额外防御性检查：确保是数组
+    if (!Array.isArray(beforeTexts) || !Array.isArray(afterTexts)) {
+      this.log('❌ 段落文本数据不是有效数组', 'error')
+      return {
+        success: false,
+        message: '段落文本数据格式无效',
+        details: { beforeTexts, afterTexts }
+      }
+    }
+    
     verification.positionChanged = !this.arraysEqual(beforeTexts, afterTexts)
     this.log(`段落位置是否改变: ${verification.positionChanged}`, 'info')
     
@@ -551,22 +616,11 @@ export class DragTestHelper {
           editor = (window as any).__tiptapEditor
           editorView = editor.view
           console.log('✅ [DirectMove] 从全局变量获取到编辑器', { hasView: !!editorView })
-        } else if ((editorElement as any).__prosemirrorView) {
-          // 方法2: 从ProseMirror DOM获取view
-          editorView = (editorElement as any).__prosemirrorView
-          console.log('✅ [DirectMove] 从DOM元素获取到ProseMirror view')
-        } else {
-          // 方法3: 尝试从React Fiber获取
-          const reactKey = Object.keys(editorElement).find(key => 
-            key.startsWith('__reactInternalInstance') || 
-            key.startsWith('_reactInternalFiber') ||
-            key.startsWith('__reactFiber')
-          )
-          
-          if (reactKey) {
-            console.log('🔍 [DirectMove] 找到React Fiber key:', reactKey)
-            // 暂时跳过复杂的React Fiber遍历
-          }
+        }
+        
+        // 如果没有editorView，尝试从编辑器实例获取
+        if (!editorView && editor) {
+          editorView = editor.view
         }
 
         if (!editorView) {
@@ -624,86 +678,86 @@ export class DragTestHelper {
         }
 
         try {
-          // 获取ProseMirror位置
-          const sourcePos = editorView.posAtDOM(sourceBlock, 0)
-          const targetPos = editorView.posAtDOM(targetBlock, 0)
-
-          if (sourcePos === -1 || targetPos === -1) {
-            console.log('❌ 无法获取ProseMirror位置')
-            return false
-          }
-
-          const { state } = editorView
+          console.log('✅ [DirectMove] 成功获取编辑器实例', {
+            hasView: !!editorView,
+            hasState: !!editorView.state,
+            hasDoc: !!editorView.state?.doc,
+            isEditable: editor.isEditable
+          })
+          
+          // 🎯 使用与成功测试相同的算法
+          const { view } = editor
+          const { state } = view
           const { doc, tr } = state
 
-          // 找到块级节点
-          const sourceResolve = doc.resolve(sourcePos)
-          const targetResolve = doc.resolve(targetPos)
+          // 找到第一个和第二个段落
+          let firstParagraphPos = -1, secondParagraphPos = -1
+          let firstParagraphNode = null, secondParagraphNode = null
 
-          // 查找包含的块级节点位置
-          let sourceBlockPos = null, targetBlockPos = null
-          
-          for (let depth = sourceResolve.depth; depth >= 0; depth--) {
-            const node = sourceResolve.node(depth)
-            if (node.isBlock && depth > 0) {
-              sourceBlockPos = { pos: sourceResolve.start(depth), size: node.nodeSize }
-              break
+          doc.descendants((node, pos) => {
+            if (node.type.name === 'paragraph') {
+              if (firstParagraphPos === -1) {
+                firstParagraphPos = pos
+                firstParagraphNode = node
+              } else if (secondParagraphPos === -1) {
+                secondParagraphPos = pos
+                secondParagraphNode = node
+                return false // 停止遍历
+              }
             }
-          }
-          
-          for (let depth = targetResolve.depth; depth >= 0; depth--) {
-            const node = targetResolve.node(depth)
-            if (node.isBlock && depth > 0) {
-              targetBlockPos = { pos: targetResolve.start(depth), size: node.nodeSize }
-              break
-            }
-          }
+            return true
+          })
 
-          if (!sourceBlockPos || !targetBlockPos) {
-            console.log('❌ 无法找到块级节点位置')
+          if (firstParagraphPos === -1 || secondParagraphPos === -1 || !firstParagraphNode || !secondParagraphNode) {
+            console.log('❌ [DirectMove] 无法找到段落位置')
             return false
           }
 
-          const sourceNode = doc.nodeAt(sourceBlockPos.pos)
-          if (!sourceNode) {
-            console.log('❌ 无法找到源节点')
-            return false
-          }
-
-          // 计算插入位置
-          let insertPos: number
-          if (dropPosition === 'above') {
-            insertPos = targetBlockPos.pos
-          } else {
-            insertPos = targetBlockPos.pos + targetBlockPos.size
-          }
-
-          console.log('🎯 执行直接移动:', {
-            sourceText: sourceNode.textContent?.slice(0, 30),
-            deleteFrom: sourceBlockPos.pos,
-            deleteTo: sourceBlockPos.pos + sourceBlockPos.size,
-            insertPos,
+          console.log('🎯 [DirectMove] 段落位置:', {
+            firstPos: firstParagraphPos,
+            secondPos: secondParagraphPos,
+            firstText: firstParagraphNode.textContent?.slice(0, 30),
+            secondText: secondParagraphNode.textContent?.slice(0, 30),
             dropPosition
           })
 
-          // 执行移动：先删除，再插入
-          let newTr = tr.delete(sourceBlockPos.pos, sourceBlockPos.pos + sourceBlockPos.size)
+          // 计算节点大小和目标位置
+          const firstNodeSize = firstParagraphNode.nodeSize
+          const secondNodeEnd = secondParagraphPos + secondParagraphNode.nodeSize
 
-          // 调整插入位置
-          let adjustedInsertPos = insertPos
-          if (sourceBlockPos.pos < insertPos) {
-            adjustedInsertPos -= sourceBlockPos.size
+          // 根据拖拽位置决定移动策略
+          let newTr = tr
+          
+          if (dropPosition === 'below') {
+            // 将第一个段落移动到第二个段落之后
+            console.log('🎯 [DirectMove] 执行向下移动：第1段 -> 第2段之后')
+            
+            // 1. 删除第一个段落
+            newTr = newTr.delete(firstParagraphPos, firstParagraphPos + firstNodeSize)
+            
+            // 2. 在第二个段落后插入（调整位置因为已经删除了第一个段落）
+            const adjustedInsertPos = secondNodeEnd - firstNodeSize
+            newTr = newTr.insert(adjustedInsertPos, firstParagraphNode)
+            
+          } else { // 'above'
+            // 将第二个段落移动到第一个段落之前
+            console.log('🎯 [DirectMove] 执行向上移动：第2段 -> 第1段之前')
+            
+            // 1. 删除第二个段落
+            newTr = newTr.delete(secondParagraphPos, secondNodeEnd)
+            
+            // 2. 在第一个段落前插入
+            newTr = newTr.insert(firstParagraphPos, secondParagraphNode)
           }
-
-          newTr = newTr.insert(adjustedInsertPos, sourceNode)
-
-          // 应用事务
-          editorView.dispatch(newTr)
-
-          console.log('✅ 直接移动完成')
+          
+          // 3. 应用事务
+          view.dispatch(newTr)
+          
+          console.log('✅ [DirectMove] 段落移动事务已执行')
           return true
+          
         } catch (error) {
-          console.error('❌ 直接移动失败:', error)
+          console.error('❌ [DirectMove] 段落移动失败:', error)
           return false
         }
       },
@@ -725,86 +779,106 @@ export class DragTestHelper {
     targetX: number,
     targetY: number
   ): Promise<boolean> {
-    // 🎯 修复：完全模仿简单测试的成功模式
-    await this.page.evaluate(
+    // 🎯 修复：触发拖拽手柄上的事件，而不是document级别
+    return await this.page.evaluate(
       async ([dragHandleSelector, targetSelector, targetX, targetY]) => {
-        console.log('🎯 [FIXED-DragTest] 开始简化的拖拽事件序列（模仿simple-drag-test成功模式）')
+        console.log('🎯 [FIXED-DragTest] 开始修复的拖拽事件序列')
 
-        // 🔧 修复1: 直接获取段落元素，而不是拖拽手柄
-        const paragraphs = document.querySelectorAll('p')
-        const firstParagraph = paragraphs[0] as HTMLElement
-        const secondParagraph = paragraphs[1] as HTMLElement
-
-        if (!firstParagraph || !secondParagraph) {
-          console.log('❌ [FIXED-DragTest] 找不到段落元素')
+        // 获取拖拽手柄 (SVG元素)
+        const dragHandleElement = document.querySelector('svg[draggable="true"]') as SVGElement
+        if (!dragHandleElement) {
+          console.log('❌ [FIXED-DragTest] 找不到拖拽手柄SVG')
           return false
         }
 
-        console.log('🎯 [FIXED-DragTest] 找到段落:', {
-          first: firstParagraph.textContent?.slice(0, 30),
-          second: secondParagraph.textContent?.slice(0, 30),
-          dragHandleSelector,
-          targetSelector
+        // 获取目标段落
+        const targetElement = document.evaluate(targetSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement
+        if (!targetElement) {
+          console.log('❌ [FIXED-DragTest] 找不到目标段落')
+          return false
+        }
+
+        console.log('🎯 [FIXED-DragTest] 找到元素:', {
+          dragHandle: dragHandleElement.tagName,
+          hasDraggable: dragHandleElement.getAttribute('draggable'),
+          target: targetElement.textContent?.slice(0, 30)
         })
 
-        // 🔧 修复2: 使用简化的事件序列（只有dragstart + drop）
+        // 创建 DataTransfer
         const dataTransfer = new DataTransfer()
         
-        // 1. dragstart on first paragraph (完全模仿简单测试)
+        // 1. 在拖拽手柄上触发 dragstart
         const dragStartEvent = new DragEvent('dragstart', {
           bubbles: true,
           cancelable: true,
-          dataTransfer
+          dataTransfer,
+          view: window,
+          clientX: 0,
+          clientY: 0
         })
         
-        // 🔧 修复3: 明确设置target为第一个段落
-        Object.defineProperty(dragStartEvent, 'target', { 
-          value: firstParagraph, 
-          configurable: true 
+        console.log('  🚀 [FIXED-DragTest] 触发 dragstart 事件在拖拽手柄上')
+        const dragStartNotCanceled = dragHandleElement.dispatchEvent(dragStartEvent)
+        console.log('  📊 [FIXED-DragTest] dragstart 事件结果:', { notCanceled: dragStartNotCanceled })
+
+        // 等待一下让拖拽状态初始化
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        // 2. 触发 dragover 事件在目标位置
+        const dragOverEvent = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: targetX,
+          clientY: targetY,
+          dataTransfer,
+          view: window
         })
         
-        console.log('  🚀 [FIXED-DragTest] 触发 dragstart 事件在第一个段落上')
-        document.dispatchEvent(dragStartEvent)
+        console.log('  🎯 [FIXED-DragTest] 触发 dragover 事件在目标位置')
+        targetElement.dispatchEvent(dragOverEvent)
 
-        // 等待一段时间模拟拖拽过程 (模仿简单测试)
-        await new Promise(resolve => setTimeout(resolve, 100))
+        await new Promise(resolve => setTimeout(resolve, 50))
 
-        // 2. drop on second paragraph (below position) - 完全模仿简单测试
-        const rect = secondParagraph.getBoundingClientRect()
+        // 3. 触发 drop 事件在目标位置
         const dropEvent = new DragEvent('drop', {
           bubbles: true,
           cancelable: true,
-          clientX: rect.x + rect.width / 2,
-          clientY: rect.y + rect.height + 5, // 在第二段落下方位置
-          dataTransfer
+          clientX: targetX,
+          clientY: targetY,
+          dataTransfer,
+          view: window
         })
         
-        // 🔧 修复4: 设置target为第二个段落
-        Object.defineProperty(dropEvent, 'target', { 
-          value: secondParagraph, 
-          configurable: true 
+        console.log('  📥 [FIXED-DragTest] 触发 drop 事件在目标位置:', {
+          clientX: targetX,
+          clientY: targetY,
+          targetTag: targetElement.tagName
         })
         
-        console.log('  🎯 [FIXED-DragTest] 触发 drop 事件在第二个段落下方位置:', {
-          clientX: rect.x + rect.width / 2,
-          clientY: rect.y + rect.height + 5,
-          targetTag: secondParagraph.tagName
-        })
-        
-        document.dispatchEvent(dropEvent)
+        const dropNotCanceled = targetElement.dispatchEvent(dropEvent)
+        console.log('  📊 [FIXED-DragTest] drop 事件结果:', { notCanceled: dropNotCanceled })
 
-        console.log('✅ [FIXED-DragTest] 简化拖拽事件序列完成（模仿simple-drag-test）')
+        // 4. 触发 dragend 事件
+        const dragEndEvent = new DragEvent('dragend', {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer,
+          view: window
+        })
+        
+        console.log('  🏁 [FIXED-DragTest] 触发 dragend 事件')
+        dragHandleElement.dispatchEvent(dragEndEvent)
+
+        console.log('✅ [FIXED-DragTest] 拖拽事件序列完成')
         return true
       },
       [
         await this.getElementSelector(dragHandle),
-        await this.getElementSelector(targetParagraph),
+        await this.getElementXPath(targetParagraph),
         targetX,
         targetY
       ] as const
     )
-    
-    return true
   }
 
   /**
@@ -932,8 +1006,16 @@ export class DragTestHelper {
     sourceIndex: number,
     targetIndex: number,
   ): Promise<{ success: boolean; message: string; details?: Record<string, any> }> {
+    // 🔍 调试日志：打印输入参数
+    this.log(`验证输入参数:`, 'info')
+    this.log(`  beforeTexts: ${JSON.stringify(beforeTexts)}`, 'info')
+    this.log(`  afterTexts: ${JSON.stringify(afterTexts)}`, 'info')
+    this.log(`  sourceIndex: ${sourceIndex}, targetIndex: ${targetIndex}`, 'info')
+    this.log(`  类型检查: beforeTexts isArray=${Array.isArray(beforeTexts)}, afterTexts isArray=${Array.isArray(afterTexts)}`, 'info')
+    
     // 基础数据验证
     if (!beforeTexts || !afterTexts || !Array.isArray(beforeTexts) || !Array.isArray(afterTexts)) {
+      this.log(`❌ 数据验证失败`, 'error')
       return { success: false, message: '输入数据无效', details: { beforeTexts, afterTexts } }
     }
 

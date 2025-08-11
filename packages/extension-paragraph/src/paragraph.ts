@@ -157,9 +157,10 @@ export const Paragraph = Node.create<ParagraphOptions>({
     return [{ tag: 'p' }]
   },
 
-  renderHTML({ HTMLAttributes }) {
+  renderHTML({ HTMLAttributes, node }) {
     // 🎨 应用全局样式 - 生成行内样式
-    const inlineStyle = generateInlineStyleForNode(HTMLAttributes as NodeAttributes)
+    // 使用 node.attrs 而不是 HTMLAttributes，因为后者已经是转换后的 data- 属性
+    const inlineStyle = generateInlineStyleForNode(node.attrs as NodeAttributes)
     const finalAttributes = mergeAttributes(
       this.options.HTMLAttributes,
       HTMLAttributes,

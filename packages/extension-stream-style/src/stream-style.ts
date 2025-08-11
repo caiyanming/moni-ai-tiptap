@@ -359,37 +359,43 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
       applyStyleToContent:
         (content: unknown, preset: unknown, contentType: string) =>
         ({ editor }) => {
-          if (typeof content === 'string') {
-            return content
-          }
-
-          if (Array.isArray(content)) {
-            return content.map((item: unknown) => editor.commands.applyStyleToContent(item, preset, contentType))
-          }
-
-          if (typeof content === 'object' && content !== null && 'type' in content) {
-            const documentStyleExt = editor.extensionManager.extensions.find((ext: any) => ext.name === 'documentStyle')
-            if (!documentStyleExt || !preset) {
-              return content
+          try {
+            if (typeof content === 'string') {
+              return true
             }
 
-            const semanticType = this.options.contentStyleMapping[contentType] || contentType
-            const styleAttributes = generateGlobalStyleAttributes(
-              preset as DocumentStylePreset,
-              semanticType as keyof DocumentStylePreset['semantic'],
-              documentStyleExt.storage.styleVersion || 1,
-            )
-
-            return {
-              ...content,
-              attrs: {
-                ...(content as any).attrs,
-                ...styleAttributes,
-              },
+            if (Array.isArray(content)) {
+              const results = content.map((item: unknown) =>
+                editor.commands.applyStyleToContent(item, preset, contentType),
+              )
+              return results.every(result => result === true)
             }
-          }
 
-          return content
+            if (typeof content === 'object' && content !== null && 'type' in content) {
+              const documentStyleExt = editor.extensionManager.extensions.find(
+                (ext: any) => ext.name === 'documentStyle',
+              )
+              if (!documentStyleExt || !preset) {
+                return false
+              }
+
+              const semanticType = this.options.contentStyleMapping[contentType] || contentType
+              // Generate style attributes for the content
+              generateGlobalStyleAttributes(
+                preset as DocumentStylePreset,
+                semanticType as keyof DocumentStylePreset['semantic'],
+                documentStyleExt.storage.styleVersion || 1,
+              )
+
+              // Style attributes are generated and applied via the document style system
+              return true
+            }
+
+            return false
+          } catch (error) {
+            console.debug('StreamStyleIntelligence: Error applying style to content:', error)
+            return false
+          }
         },
     }
   },

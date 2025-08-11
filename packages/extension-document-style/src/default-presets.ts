@@ -12,7 +12,7 @@ import type { DocumentStylePreset } from '@tiptap/core'
  */
 export const MoniDefaultStylePreset: DocumentStylePreset = {
   name: 'moni-default',
-  displayName: 'MoniAI 高端',
+  displayName: 'MoniAI 默认',
   description: '融合现代奢华设计理念的专业级文档风格',
 
   typography: {

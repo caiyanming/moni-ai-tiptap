@@ -873,11 +873,20 @@ export class StreamOperationManager {
       // INSERT操作：在指定block后插入
       const nodeInfo = this.findNodeByBlockId(operation.moniBlockId)
       if (!nodeInfo) {
-        console.warn(`[StreamOperationManager] 找不到目标block: ${operation.moniBlockId}`)
-        return false
+        console.warn(`[StreamOperationManager] 找不到目标block: ${operation.moniBlockId}，回退到APPEND模式`)
+        // 🔥 修复：回退到APPEND模式，插入到文档末尾
+        const doc = this.view.state.doc
+        let lastBlockEnd = 0
+        doc.descendants((node, pos) => {
+          if (node.isBlock && pos > lastBlockEnd) {
+            lastBlockEnd = pos + node.nodeSize
+          }
+        })
+        insertPosition = lastBlockEnd
+      } else {
+        // 在目标block后插入
+        insertPosition = nodeInfo.position + nodeInfo.node.nodeSize
       }
-      // 在目标block后插入
-      insertPosition = nodeInfo.position + nodeInfo.node.nodeSize
     }
 
     console.log(`[StreamOperationManager] 插入位置: ${insertPosition}, 文档大小: ${this.view.state.doc.content.size}`)

@@ -108,6 +108,7 @@ describe('🎯 DragHandle Core Functionality', () => {
         } finally {
           // Clean up the test element immediately
           container.remove()
+          memoryDetector.untrackElement(container)
         }
       }
     })
@@ -128,6 +129,7 @@ describe('🎯 DragHandle Core Functionality', () => {
           expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
         } finally {
           container.remove()
+          memoryDetector.untrackElement(container)
         }
       }
     })
@@ -159,6 +161,7 @@ describe('🎯 DragHandle Core Functionality', () => {
           expect(addButton.style.cursor).toBe('pointer')
         } finally {
           container.remove()
+          memoryDetector.untrackElement(container)
         }
       }
     })
@@ -172,17 +175,22 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        // 拖拽手柄可访问性
-        const dragHandle = container.querySelector('.drag-handle')
-        expect(dragHandle?.getAttribute('aria-label')).toBe('Drag to reorder')
-        expect(dragHandle?.getAttribute('title')).toBe('Drag to reorder')
-        expect(dragHandle?.getAttribute('data-moni-menu-drag')).toBe('true')
+        try {
+          // 拖拽手柄可访问性
+          const dragHandle = container.querySelector('.drag-handle')
+          expect(dragHandle?.getAttribute('aria-label')).toBe('Drag to reorder')
+          expect(dragHandle?.getAttribute('title')).toBe('Drag to reorder')
+          expect(dragHandle?.getAttribute('data-moni-menu-drag')).toBe('true')
 
-        // 添加按钮可访问性
-        const addButton = container.querySelector('.add-block-button')
-        expect(addButton?.getAttribute('aria-label')).toBe('Add block')
-        expect(addButton?.getAttribute('title')).toBe('Add block')
-        expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+          // 添加按钮可访问性
+          const addButton = container.querySelector('.add-block-button')
+          expect(addButton?.getAttribute('aria-label')).toBe('Add block')
+          expect(addButton?.getAttribute('title')).toBe('Add block')
+          expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+        } finally {
+          container.remove()
+          memoryDetector.untrackElement(container)
+        }
       }
     })
 
@@ -193,12 +201,17 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        const dragHandle = container.querySelector('.drag-handle') as HTMLElement
-        const addButton = container.querySelector('.add-block-button') as HTMLElement
+        try {
+          const dragHandle = container.querySelector('.drag-handle') as HTMLElement
+          const addButton = container.querySelector('.add-block-button') as HTMLElement
 
-        // 验证元素可聚焦（默认-1表示不可通过Tab访问，0或正数表示可访问）
-        expect(typeof dragHandle.tabIndex).toBe('number')
-        expect(typeof addButton.tabIndex).toBe('number')
+          // 验证元素可聚焦（默认-1表示不可通过Tab访问，0或正数表示可访问）
+          expect(typeof dragHandle.tabIndex).toBe('number')
+          expect(typeof addButton.tabIndex).toBe('number')
+        } finally {
+          container.remove()
+          memoryDetector.untrackElement(container)
+        }
       }
     })
   })
@@ -212,6 +225,10 @@ describe('🎯 DragHandle Core Functionality', () => {
       if (dragHandleExtension?.options.render) {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
+
+        // Clean up immediately for performance test
+        container.remove()
+        memoryDetector.untrackElement(container)
       }
 
       const duration = performance.now() - startTime
@@ -225,8 +242,13 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        const totalNodes = container.querySelectorAll('*').length
-        expect(totalNodes).toBeLessThanOrEqual(15) // 合理的DOM节点数量上限
+        try {
+          const totalNodes = container.querySelectorAll('*').length
+          expect(totalNodes).toBeLessThanOrEqual(15) // 合理的DOM节点数量上限
+        } finally {
+          container.remove()
+          memoryDetector.untrackElement(container)
+        }
       }
     })
   })
@@ -239,12 +261,17 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        const dragHandle = container.querySelector('.drag-handle')
-        const addButton = container.querySelector('.add-block-button')
+        try {
+          const dragHandle = container.querySelector('.drag-handle')
+          const addButton = container.querySelector('.add-block-button')
 
-        // 验证Moni系统专用属性
-        expect(dragHandle?.getAttribute('data-moni-menu-drag')).toBe('true')
-        expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+          // 验证Moni系统专用属性
+          expect(dragHandle?.getAttribute('data-moni-menu-drag')).toBe('true')
+          expect(addButton?.getAttribute('data-moni-menu-add')).toBe('true')
+        } finally {
+          container.remove()
+          memoryDetector.untrackElement(container)
+        }
       }
     })
 
@@ -255,9 +282,14 @@ describe('🎯 DragHandle Core Functionality', () => {
         const container = dragHandleExtension.options.render()
         memoryDetector.trackElement(container)
 
-        expect(container.classList.contains('drag-handle-container')).toBe(true)
-        expect(container.querySelector('.drag-handle')).toBeTruthy()
-        expect(container.querySelector('.add-block-button')).toBeTruthy()
+        try {
+          expect(container.classList.contains('drag-handle-container')).toBe(true)
+          expect(container.querySelector('.drag-handle')).toBeTruthy()
+          expect(container.querySelector('.add-block-button')).toBeTruthy()
+        } finally {
+          container.remove()
+          memoryDetector.untrackElement(container)
+        }
       }
     })
   })

@@ -144,6 +144,10 @@ export class MemoryLeakDetector {
     this.elements.add(element)
   }
 
+  untrackElement(element: HTMLElement) {
+    this.elements.delete(element)
+  }
+
   private getMemoryUsage(): number {
     // 在实际环境中，这里会使用 performance.memory 或其他内存监控工具
     // 在测试环境中，我们简化为计数DOM元素
@@ -155,7 +159,7 @@ export class MemoryLeakDetector {
     const memoryIncrease = currentMemory - this.initialMemory
 
     // 检查是否有DOM元素未被清理
-    const stillAttached = Array.from(this.elements).filter(el => el.isConnected || document.contains(el))
+    const stillAttached = Array.from(this.elements)
 
     const hasLeaks = stillAttached.length > 0 || memoryIncrease > 50
 

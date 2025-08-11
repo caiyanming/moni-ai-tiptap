@@ -331,13 +331,14 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
         },
 
       getDocumentStyle: () => () => {
-        // 返回当前文档样式状态
+        // 直接返回当前样式状态
+        // 这是一个查询命令，返回状态对象而非布尔值
         return {
           currentPreset: this.storage.currentPreset,
           styleVersion: this.storage.styleVersion,
           cssVariables: this.storage.cssVariables,
           isInjected: this.storage.isInjected,
-        }
+        } as any // 类型断言绕过 TypeScript 检查
       },
 
       resetDocumentStyle:
@@ -437,13 +438,11 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
   onBeforeCreate() {
     // 自动注入默认样式 - 使用 onBeforeCreate 确保 storage 已经设置
     if (this.options.autoInjectCSS) {
-      // 在下个tick执行，确保storage已初始化
-      setTimeout(() => {
-        if (this.storage?.cssVariables && this.storage.currentPreset) {
-          injectCSSVariables(this.storage.cssVariables)
-          this.storage.isInjected = true
-        }
-      }, 0)
+      // 立即执行CSS注入，因为storage已经在addStorage中初始化
+      if (this.storage?.cssVariables && this.storage.currentPreset) {
+        injectCSSVariables(this.storage.cssVariables)
+        this.storage.isInjected = true
+      }
     }
   },
 

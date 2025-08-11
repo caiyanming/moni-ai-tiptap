@@ -396,8 +396,18 @@ describe('StreamOperationManager - 重构后测试', () => {
       }
 
       const mockSchema = {
-        nodes: { paragraph: { create: vi.fn() } },
-        text: vi.fn(),
+        nodes: { paragraph: { create: vi.fn().mockReturnValue({
+          type: { name: 'paragraph' },
+          attrs: {},
+          content: null,
+          nodeSize: 2,
+          textContent: 'test',
+        }) } },
+        text: vi.fn().mockReturnValue({
+          type: 'text',
+          text: 'test',
+          nodeSize: 1,
+        }),
       }
 
       const smallQueueManager = new StreamOperationManager(mockView as any, mockSchema as any, {

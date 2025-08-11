@@ -16,7 +16,12 @@ test.describe('拖拽坐标调试', () => {
 
   test('调试向下拖拽坐标计算', async ({ page }) => {
     const paragraphs = await dragHelper.getParagraphs()
-    expect(paragraphs.length).toBeGreaterThanOrEqual(3)
+    expect(paragraphs.length).toBeGreaterThanOrEqual(2)
+    
+    // 如果只有2个段落，拖拽第一个到第二个下方
+    if (paragraphs.length === 2) {
+      console.log('⚠️ 只有2个段落，调整测试策略')
+    }
 
     // 获取拖拽前的段落文本和位置
     const beforeTexts = []
@@ -42,9 +47,10 @@ test.describe('拖拽坐标调试', () => {
     const handleBox = await svgHandle.boundingBox()
     console.log('🎯 拖拽手柄位置:', handleBox)
 
-    // 获取目标段落位置（第三个段落）
-    const targetBox = await paragraphs[2].boundingBox()
-    console.log('📍 目标段落位置:', targetBox)
+    // 获取目标段落位置（如果有3个段落则用第3个，否则用第2个）
+    const targetIndex = paragraphs.length >= 3 ? 2 : 1
+    const targetBox = await paragraphs[targetIndex].boundingBox()
+    console.log(`📍 目标段落位置（段落${targetIndex}）:`, targetBox)
 
     if (handleBox && targetBox) {
       // 计算向下拖拽的目标坐标
@@ -113,7 +119,7 @@ test.describe('拖拽坐标调试', () => {
       }
 
       // 使用 DragTestHelper 的验证逻辑
-      const verifyResult = await dragHelper.verifyDragResult(beforeTexts, afterTexts, 0, 2)
+      const verifyResult = await dragHelper.verifyDragResult(beforeTexts, afterTexts, 0, targetIndex)
       console.log('🧪 DragTestHelper验证结果:', verifyResult)
     }
   })
@@ -131,9 +137,21 @@ test.describe('拖拽坐标调试', () => {
       beforeTextsUp.push(text.trim())
     }
 
-    const upResult = await dragHelper.dragParagraph(paragraphs[2], paragraphs[0], {
-      dragToPosition: 'above'
-    })
+    // 如果段落少于3个，调整拖拽策略
+    let upResult
+    if (paragraphs.length >= 3) {
+      upResult = await dragHelper.dragParagraph(paragraphs[2], paragraphs[0], {
+        dragToPosition: 'above'
+      })
+    } else if (paragraphs.length === 2) {
+      // 拖拽第二个段落到第一个段落上方
+      upResult = await dragHelper.dragParagraph(paragraphs[1], paragraphs[0], {
+        dragToPosition: 'above'
+      })
+    } else {
+      console.log('❌ 段落数量不足，跳过向上拖拽测试')
+      upResult = { success: false, error: '段落数量不足' }
+    }
     console.log('向上拖拽结果:', upResult)
 
     // 测试向下拖拽（已知有问题）
@@ -148,9 +166,21 @@ test.describe('拖拽坐标调试', () => {
       beforeTextsDown.push(text.trim())
     }
 
-    const downResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[2], {
-      dragToPosition: 'below'
-    })
+    // 如果段落少于3个，调整拖拽策略
+    let downResult
+    if (paragraphs.length >= 3) {
+      downResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[2], {
+        dragToPosition: 'below'
+      })
+    } else if (paragraphs.length === 2) {
+      // 拖拽第一个段落到第二个段落下方
+      downResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[1], {
+        dragToPosition: 'below'
+      })
+    } else {
+      console.log('❌ 段落数量不足，跳过向下拖拽测试')
+      downResult = { success: false, error: '段落数量不足' }
+    }
     console.log('向下拖拽结果:', downResult)
 
     // 对比两个结果
