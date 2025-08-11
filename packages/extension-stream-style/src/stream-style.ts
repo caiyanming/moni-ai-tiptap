@@ -1,7 +1,7 @@
 import type { Content, DocumentStylePreset, StreamStyleConfig } from '@tiptap/core'
 import { Extension } from '@tiptap/core'
-import { Selection } from '@tiptap/pm/state'
 import { generateGlobalStyleAttributes } from '@tiptap/extension-document-style'
+import { TextSelection } from '@tiptap/pm/state'
 
 /**
  * 内容类型定义
@@ -142,7 +142,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
             if (targetPosition !== undefined) {
               return commands.insertContentAt(targetPosition, content as Content)
             }
-            
+
             return commands.insertContent(content as Content)
           } catch (error) {
             console.debug('StreamStyleIntelligence: Error applying styles, falling back to normal insert:', error)
@@ -171,7 +171,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
           try {
             // 批量收集样式更新，提高性能
             const updates: Array<{ pos: number; attrs: any }> = []
-            
+
             // 遍历指定范围内的节点并应用样式
             tr.doc.nodesBetween(from, to, (node, pos) => {
               if (this.options.contentStyleMapping[node.type.name]) {
@@ -184,7 +184,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
 
                 const currentAttrs = node.attrs || {}
                 const newAttrs = { ...currentAttrs, ...styleAttributes }
-                
+
                 // 仅在属性真正改变时才更新
                 if (JSON.stringify(currentAttrs) !== JSON.stringify(newAttrs)) {
                   updates.push({ pos, attrs: newAttrs })
@@ -197,11 +197,14 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
               tr.setNodeMarkup(pos, undefined, attrs)
             })
 
-            // 确保选择状态仍然有效
+            // 确保选择状态仍然有效 - 使用 prosemirror 标准的选择修复逻辑
             const { selection } = tr
-            if (selection && !selection.valid(tr.doc)) {
-              const $anchor = tr.doc.resolve(Math.min(selection.anchor, tr.doc.content.size))
-              tr.setSelection(Selection.near($anchor))
+            if (selection.$from.doc !== tr.doc) {
+              // 选择指向旧文档时，创建一个安全的文本选择
+              const safePos = Math.min(selection.anchor, tr.doc.content.size - 1)
+              const resolvedPos = Math.max(0, safePos)
+              const newSelection = TextSelection.create(tr.doc, resolvedPos)
+              tr.setSelection(newSelection)
             }
 
             if (dispatch) {
@@ -303,12 +306,12 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
   // 添加实例方法供测试使用
   onCreate() {
     // 绑定方法到扩展实例
-    const self = this as any;
-    
+    const self = this as any
+
     // 添加内容类型推断方法
     self.inferContentType = (content: unknown, context?: { parentType?: string }) => {
       self.storage.stats.inferenceCount += 1
-      
+
       if (typeof content === 'string') {
         if (content.startsWith('#')) {
           return 'heading'
@@ -317,22 +320,30 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
           return 'codeBlock'
         }
       }
-      
+
       if (typeof content === 'object' && content !== null) {
         if ('type' in content) {
           const nodeType = (content as any).type
-          if (nodeType === 'paragraph') return 'paragraph'
-          if (nodeType === 'heading') return 'heading'
-          if (nodeType === 'blockquote') return 'blockquote'
-          if (nodeType === 'codeBlock') return 'codeBlock'
+          if (nodeType === 'paragraph') {
+            return 'paragraph'
+          }
+          if (nodeType === 'heading') {
+            return 'heading'
+          }
+          if (nodeType === 'blockquote') {
+            return 'blockquote'
+          }
+          if (nodeType === 'codeBlock') {
+            return 'codeBlock'
+          }
         }
       }
-      
+
       // 基于上下文推断
       if (context?.parentType === 'bulletList' || context?.parentType === 'orderedList') {
         return 'listItem'
       }
-      
+
       return 'paragraph' // 默认类型
     }
 
@@ -341,24 +352,26 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
       if (typeof content === 'string') {
         return content
       }
-      
+
       if (Array.isArray(content)) {
         return content.map((item: unknown) => self.applyStyleToContent(item, preset, contentType))
       }
-      
+
       if (typeof content === 'object' && content !== null && 'type' in content) {
-        const documentStyleExt = self.editor.extensionManager.extensions.find((ext: any) => ext.name === 'documentStyle')
+        const documentStyleExt = self.editor.extensionManager.extensions.find(
+          (ext: any) => ext.name === 'documentStyle',
+        )
         if (!documentStyleExt || !preset) {
           return content
         }
-        
+
         const semanticType = self.options.contentStyleMapping[contentType] || contentType
         const styleAttributes = generateGlobalStyleAttributes(
           preset as DocumentStylePreset,
           semanticType as keyof DocumentStylePreset['semantic'],
           documentStyleExt.storage.styleVersion || 1,
         )
-        
+
         return {
           ...content,
           attrs: {
@@ -367,7 +380,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
           },
         }
       }
-      
+
       return content
     }
   },

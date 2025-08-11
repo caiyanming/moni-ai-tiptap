@@ -192,7 +192,7 @@ export const DocumentStyleExtension = Extension.create<DocumentStyleOptions>({
               if (hasAttributesChanged(currentAttrs, updatedAttrs)) {
                 updates.push({ pos, attrs: updatedAttrs })
                 updateCount += 1
-                
+
                 // 性能优化：限制批处理大小
                 if (updateCount >= batchSize) {
                   return false // 停止遍历

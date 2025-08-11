@@ -759,6 +759,8 @@ export interface StylePropagationOptions {
   updateStyleVersion?: boolean
   /** 传播延迟 (ms) - 用于批量更新优化 */
   debounceDelay?: number
+  /** 批处理大小 - 用于优化大文档的样式传播性能 */
+  batchSize?: number
 }
 
 /**
