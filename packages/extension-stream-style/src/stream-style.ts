@@ -360,15 +360,22 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
         (content: unknown, preset: unknown, contentType: string) =>
         ({ editor }) => {
           try {
+            // Delegate to the helper method which returns the actual styled content
+            const streamStyleExt = editor.extensionManager.extensions.find(
+              (ext: any) => ext.name === 'streamStyle',
+            ) as any
+
+            if (streamStyleExt && streamStyleExt.applyStyleToContent) {
+              return streamStyleExt.applyStyleToContent(content, preset, contentType)
+            }
+
+            // Fallback implementation if helper method not available
             if (typeof content === 'string') {
-              return true
+              return content
             }
 
             if (Array.isArray(content)) {
-              const results = content.map((item: unknown) =>
-                editor.commands.applyStyleToContent(item, preset, contentType),
-              )
-              return results.every(result => result === true)
+              return content.map((item: unknown) => editor.commands.applyStyleToContent(item, preset, contentType))
             }
 
             if (typeof content === 'object' && content !== null && 'type' in content) {
@@ -376,25 +383,29 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
                 (ext: any) => ext.name === 'documentStyle',
               )
               if (!documentStyleExt || !preset) {
-                return false
+                return content
               }
 
               const semanticType = this.options.contentStyleMapping[contentType] || contentType
-              // Generate style attributes for the content
-              generateGlobalStyleAttributes(
+              const styleAttributes = generateGlobalStyleAttributes(
                 preset as DocumentStylePreset,
                 semanticType as keyof DocumentStylePreset['semantic'],
                 documentStyleExt.storage.styleVersion || 1,
               )
 
-              // Style attributes are generated and applied via the document style system
-              return true
+              return {
+                ...content,
+                attrs: {
+                  ...(content as any).attrs,
+                  ...styleAttributes,
+                },
+              }
             }
 
-            return false
+            return content
           } catch (error) {
             console.debug('StreamStyleIntelligence: Error applying style to content:', error)
-            return false
+            return content
           }
         },
     }
