@@ -1,6 +1,7 @@
 import { type DragHandleManagerOptions, type Editor, DragHandleManager } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createCompatibleDragEvent } from '../../../utils/drag-event-helpers.js'
 
 // Mock NodeSelection and PluginKey
 vi.mock('@tiptap/pm/state', () => ({
@@ -297,8 +298,8 @@ describe('DragHandleManager', () => {
         mockOptions.onDragStart?.('block-1', { event, element: blockElement })
       })
 
-      // Create drag start event
-      const dragStartEvent = new DragEvent('dragstart', {
+      // Create drag start event using JSDOM-compatible helper
+      const dragStartEvent = createCompatibleDragEvent('dragstart', {
         dataTransfer: new DataTransfer(),
         clientX: 100,
         clientY: 120,
@@ -328,13 +329,13 @@ describe('DragHandleManager', () => {
       })
 
       // Start drag first
-      const dragStartEvent = new DragEvent('dragstart', {
+      const dragStartEvent = createCompatibleDragEvent('dragstart', {
         dataTransfer: new DataTransfer(),
       })
       handleElement.dispatchEvent(dragStartEvent)
 
       // End drag
-      const dragEndEvent = new DragEvent('dragend')
+      const dragEndEvent = createCompatibleDragEvent('dragend')
       handleElement.dispatchEvent(dragEndEvent)
 
       expect(mockOptions.onDragEnd).toHaveBeenCalledWith('block-1', expect.any(Object))
@@ -521,52 +522,67 @@ describe('DragHandleManager', () => {
   describe('拖拽数据设置', () => {
     beforeEach(() => {
       dragHandleManager = new DragHandleManager(editor, mockOptions)
-      mockDragMethods(dragHandleManager)
+      // 注意：这个测试不使用 mockDragMethods，因为我们需要测试真实的拖拽数据设置逻辑
     })
 
     it('should set correct drag data', () => {
       const blockElement = createMockBlockElement('block-1')
       editor.view.dom.appendChild(blockElement)
 
-      // Setup handle for block
+      // Setup handle for block - simulate proper mousemove to initialize state
       vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+      
+      // Mock findNodeByBlockId to return a proper node
+      const mockNode = {
+        attrs: {
+          'data-moni-drag-type': 'block',
+          'data-moni-level': 0,
+          'data-moni-parent-id': null,
+        }
+      }
+      vi.spyOn(dragHandleManager, 'findNodeByBlockId').mockReturnValue(mockNode)
+
+      // Mock selectNodeForDrag to prevent NodeSelection issues
+      vi.spyOn(dragHandleManager as any, 'selectNodeForDrag').mockImplementation(() => {
+        // Do nothing - prevent NodeSelection.create issues
+      })
+
+      // 关键修复：Mock findBlockElementByBlockId 方法
+      // setupDragImage 中会调用这个方法查找DOM元素
+      vi.spyOn(dragHandleManager as any, 'findBlockElementByBlockId').mockReturnValue(blockElement)
+
+      // Simulate mousemove event to properly initialize currentBlockId and currentNode
       const moveEvent = new MouseEvent('mousemove')
       Object.defineProperty(moveEvent, 'target', { value: blockElement })
       editor.view.dom.dispatchEvent(moveEvent)
 
-      // Mock handleDragStart to prevent actual ProseMirror operations
-      vi.spyOn(dragHandleManager as any, 'handleDragStart').mockImplementation(event => {
-        // Mock the drag data setting without calling ProseMirror
-        const dataTransfer = event.dataTransfer
-        if (dataTransfer) {
-          dataTransfer.effectAllowed = 'move'
-          dataTransfer.setData('text/plain', 'block-1')
-          dataTransfer.setData(
-            'application/moni-block',
-            JSON.stringify({
-              moniBlockId: 'block-1',
-              dragType: 'block',
-            }),
-          )
-        }
-      })
+      // Verify the state was set correctly by mousemove
+      expect((dragHandleManager as any).currentBlockId).toBe('block-1')
+      expect((dragHandleManager as any).currentNode).toBe(mockNode)
+
+      // 根本原因分析和修复：
+      // 问题是 handleDragStart 使用 .bind(this) 绑定到事件监听器
+      // 我们的 spy 无法拦截绑定后的函数
+      // 解决方案：直接模拟整个拖拽数据设置过程
 
       // Create drag start event with dataTransfer
       const dataTransfer = new DataTransfer()
-      const dragStartEvent = new DragEvent('dragstart', {
+      const dragStartEvent = createCompatibleDragEvent('dragstart', {
         dataTransfer,
         clientX: 100,
         clientY: 120,
       })
 
-      handleElement.dispatchEvent(dragStartEvent)
+      // 直接调用 handleDragStart 方法来测试拖拽数据设置逻辑
+      ;(dragHandleManager as any).handleDragStart.call(dragHandleManager, dragStartEvent)
 
+      // Verify drag data was set correctly
       expect(dataTransfer.effectAllowed).toBe('move')
       expect(dataTransfer.getData('text/plain')).toBe('block-1')
 
       const moniData = JSON.parse(dataTransfer.getData('application/moni-block'))
       expect(moniData.moniBlockId).toBe('block-1')
-      expect(moniData.dragType).toBeDefined()
+      expect(moniData.dragType).toBe('block')
     })
   })
 

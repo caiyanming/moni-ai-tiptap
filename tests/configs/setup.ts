@@ -14,11 +14,24 @@ declare global {
   
   interface DragEventInit extends EventInit {
     dataTransfer?: DataTransfer | null
+    clientX?: number
+    clientY?: number
+    screenX?: number
+    screenY?: number
+    button?: number
+    buttons?: number
+    ctrlKey?: boolean
+    shiftKey?: boolean
+    altKey?: boolean
+    metaKey?: boolean
   }
   
   interface MutationCallback {
     (mutations: MutationRecord[], observer: MutationObserver): void
   }
+
+  // Add our custom drag event creator
+  function createDragEvent(type: string, eventInitDict?: DragEventInit): DragEvent
 }
 
 // DOM环境设置
@@ -87,31 +100,74 @@ beforeAll(() => {
     return child
   })
 
-  // Mock DOM APIs with simplified approach to avoid class-count issues
-  const mockDataTransfer = {
-    clearData: vi.fn(),
-    getData: vi.fn(() => ''),
-    setData: vi.fn(),
-    setDragImage: vi.fn(),
-    files: [] as any,
-    items: [] as any,
-    types: [],
-    dropEffect: 'none' as any,
-    effectAllowed: 'all' as any,
+  // Create JSDOM-compatible DataTransfer constructor with working data storage
+  global.DataTransfer = class MockDataTransfer {
+    private data: Map<string, string> = new Map()
+    
+    files: FileList = [] as any
+    items: DataTransferItemList = [] as any
+    types: string[] = []
+    dropEffect: string = 'none'
+    effectAllowed: string = 'all'
+
+    clearData = vi.fn((format?: string) => {
+      if (format) {
+        this.data.delete(format)
+        const index = this.types.indexOf(format)
+        if (index > -1) {
+          this.types.splice(index, 1)
+        }
+      } else {
+        this.data.clear()
+        this.types.length = 0
+      }
+    })
+
+    getData = vi.fn((format: string) => {
+      return this.data.get(format) || ''
+    })
+
+    setData = vi.fn((format: string, data: string) => {
+      this.data.set(format, data)
+      if (!this.types.includes(format)) {
+        this.types.push(format)
+      }
+    })
+
+    setDragImage = vi.fn()
+  } as any
+
+  // Create JSDOM-compatible DragEvent factory
+  global.createDragEvent = (type: string, eventInitDict?: any) => {
+    // Use CustomEvent as base to ensure JSDOM compatibility
+    const customEvent = new CustomEvent(type, {
+      bubbles: eventInitDict?.bubbles ?? true,
+      cancelable: eventInitDict?.cancelable ?? true,
+    })
+
+    // Add drag-specific properties
+    return Object.assign(customEvent, {
+      dataTransfer: eventInitDict?.dataTransfer || new global.DataTransfer(),
+      clientX: eventInitDict?.clientX ?? 0,
+      clientY: eventInitDict?.clientY ?? 0,
+      screenX: eventInitDict?.screenX ?? 0,
+      screenY: eventInitDict?.screenY ?? 0,
+      button: eventInitDict?.button ?? 0,
+      buttons: eventInitDict?.buttons ?? 1,
+      ctrlKey: eventInitDict?.ctrlKey ?? false,
+      shiftKey: eventInitDict?.shiftKey ?? false,
+      altKey: eventInitDict?.altKey ?? false,
+      metaKey: eventInitDict?.metaKey ?? false,
+    })
   }
 
-  global.DataTransfer = vi.fn(() => mockDataTransfer) as any
-
-  global.DragEvent = vi.fn((type: string, eventInitDict?: any) => ({
-    type,
-    dataTransfer: eventInitDict?.dataTransfer || mockDataTransfer,
-    clientX: 0,
-    clientY: 0,
-    screenX: 0,
-    screenY: 0,
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-  })) as any
+  // Keep the original DragEvent as fallback for types
+  global.DragEvent = global.DragEvent || class DragEvent extends Event {
+    constructor(type: string, eventInitDict?: any) {
+      super(type, eventInitDict)
+      this.dataTransfer = eventInitDict?.dataTransfer || new global.DataTransfer()
+    }
+  }
 
   global.ResizeObserver = vi.fn(() => ({
     observe: vi.fn(),
