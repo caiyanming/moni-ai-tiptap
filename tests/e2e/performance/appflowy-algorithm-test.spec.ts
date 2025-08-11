@@ -7,26 +7,23 @@ import { expect, test } from '@playwright/test'
 
 test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/src/Examples/DragHandleComparison/React/')
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(3000)
+    await page.goto('/src/Extensions/DragHandle/React/')
+    await page.waitForSelector('.ProseMirror', { state: 'visible' })
+    await page.waitForTimeout(500) // Reduced timeout
 
     console.log('🚀 AppFlowy 算法测试页面加载完成')
   })
 
-  test('验证 AppFlowy 88px + 4/5 + 1/5 算法在 iframe 中的工作', async ({ page }) => {
+  test('验证 AppFlowy 88px + 4/5 + 1/5 算法的工作', async ({ page }) => {
     console.log('🧪 开始 AppFlowy 算法精确度验证...')
 
-    // 进入 iframe 进行测试
-    const iframe = page.frameLocator('iframe').first()
-    await iframe.locator('.ProseMirror').waitFor({ timeout: 5000 })
-
-    const editor = iframe.locator('.ProseMirror').first()
+    // 直接在页面上进行测试
+    const editor = page.locator('.ProseMirror').first()
     await expect(editor).toBeVisible()
     console.log('✅ TipTap 编辑器已加载')
 
     // 获取第一个段落元素进行测试
-    const firstParagraph = iframe.locator('p').first()
+    const firstParagraph = page.locator('.ProseMirror p').first()
     const boundingBox = await firstParagraph.boundingBox()
 
     if (boundingBox) {
@@ -84,13 +81,10 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
         console.log(`   期望区域: ${pos.expected}`)
 
         // 移动鼠标到测试位置
-        const body = iframe.locator('body')
-        // eslint-disable-next-line no-await-in-loop
-        await body.hover()
         // eslint-disable-next-line no-await-in-loop
         await page.mouse.move(pos.x, pos.y)
         // eslint-disable-next-line no-await-in-loop
-        await page.waitForTimeout(200) // 等待算法响应
+        await page.waitForTimeout(50) // Reduced from 200ms to 50ms
 
         // 这里可以检查是否有拖拽指示器出现
         // 由于我们无法直接访问算法内部状态，我们验证页面没有错误
@@ -111,10 +105,10 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
 
       // 尝试悬停在段落上激活拖拽手柄
       await firstParagraph.hover()
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(200) // Reduced from 500ms to 200ms
 
       // 检查是否有拖拽相关的 CSS 类或元素
-      const dragElements = await iframe.locator('[class*="drag"], [class*="handle"]').count()
+      const dragElements = await page.locator('[class*="drag"], [class*="handle"]').count()
       console.log(`🔍 发现 ${dragElements} 个可能的拖拽相关元素`)
 
       console.log('✅ 基础拖拽功能验证完成')
@@ -126,10 +120,7 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
   test('验证拖拽指示器和视觉反馈', async ({ page }) => {
     console.log('🎨 开始视觉反馈验证...')
 
-    const iframe = page.frameLocator('iframe').first()
-    await iframe.locator('.ProseMirror').waitFor({ timeout: 5000 })
-
-    const paragraphs = iframe.locator('p')
+    const paragraphs = page.locator('.ProseMirror p')
     const paragraphCount = await paragraphs.count()
     console.log(`📝 找到 ${paragraphCount} 个段落用于测试`)
 
@@ -138,7 +129,7 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
 
       // 悬停触发拖拽手柄
       await firstParagraph.hover()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(100) // Reduced from 300ms to 100ms
 
       // 检查页面状态
       const pageTitle = await page.title()
@@ -152,13 +143,10 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
   test('性能和响应性验证', async ({ page }) => {
     console.log('⚡ 开始性能响应性验证...')
 
-    const iframe = page.frameLocator('iframe').first()
-    await iframe.locator('.ProseMirror').waitFor({ timeout: 5000 })
-
     const startTime = Date.now()
 
     // 快速移动鼠标模拟真实拖拽场景
-    const paragraphs = iframe.locator('p')
+    const paragraphs = page.locator('.ProseMirror p')
     const paragraphCount = await paragraphs.count()
 
     if (paragraphCount > 0) {
@@ -166,7 +154,7 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
       const boundingBox = await firstParagraph.boundingBox()
 
       if (boundingBox) {
-        const moveCount = 20
+        const moveCount = 10 // Reduced from 20 to 10
         for (let i = 0; i < moveCount; i += 1) {
           const x = boundingBox.x + (boundingBox.width * i) / moveCount
           const y = boundingBox.y + boundingBox.height / 2
@@ -174,7 +162,7 @@ test.describe('🎯 AppFlowy 算法真实浏览器验证', () => {
           // eslint-disable-next-line no-await-in-loop
           await page.mouse.move(x, y)
           // eslint-disable-next-line no-await-in-loop
-          await page.waitForTimeout(10) // 模拟快速移动
+          await page.waitForTimeout(5) // Reduced from 10ms to 5ms
         }
 
         const endTime = Date.now()

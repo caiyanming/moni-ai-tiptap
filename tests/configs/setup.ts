@@ -11,7 +11,7 @@ declare global {
     cancelable?: boolean
     composed?: boolean
   }
-  
+
   interface DragEventInit extends EventInit {
     dataTransfer?: DataTransfer | null
     clientX?: number
@@ -25,7 +25,7 @@ declare global {
     altKey?: boolean
     metaKey?: boolean
   }
-  
+
   interface MutationCallback {
     (mutations: MutationRecord[], observer: MutationObserver): void
   }
@@ -69,7 +69,7 @@ beforeAll(() => {
 
   // Mock isConnected property
   Object.defineProperty(HTMLElement.prototype, 'isConnected', {
-    get () {
+    get() {
       return true
     }, // 默认返回true表示已连接
     configurable: true,
@@ -101,40 +101,40 @@ beforeAll(() => {
   })
 
   // Create JSDOM-compatible DataTransfer constructor with working data storage
-  global.DataTransfer = class MockDataTransfer {
-    private data: Map<string, string> = new Map()
-    
-    files: FileList = [] as any
-    items: DataTransferItemList = [] as any
-    types: string[] = []
-    dropEffect: string = 'none'
-    effectAllowed: string = 'all'
+  global.DataTransfer = function () {
+    const data = new Map<string, string>()
 
-    clearData = vi.fn((format?: string) => {
+    this.files = [] as any
+    this.items = [] as any
+    this.types = []
+    this.dropEffect = 'none'
+    this.effectAllowed = 'all'
+
+    this.clearData = vi.fn((format?: string) => {
       if (format) {
-        this.data.delete(format)
+        data.delete(format)
         const index = this.types.indexOf(format)
         if (index > -1) {
           this.types.splice(index, 1)
         }
       } else {
-        this.data.clear()
+        data.clear()
         this.types.length = 0
       }
     })
 
-    getData = vi.fn((format: string) => {
-      return this.data.get(format) || ''
+    this.getData = vi.fn((format: string) => {
+      return data.get(format) || ''
     })
 
-    setData = vi.fn((format: string, data: string) => {
-      this.data.set(format, data)
+    this.setData = vi.fn((format: string, dataValue: string) => {
+      data.set(format, dataValue)
       if (!this.types.includes(format)) {
         this.types.push(format)
       }
     })
 
-    setDragImage = vi.fn()
+    this.setDragImage = vi.fn()
   } as any
 
   // Create JSDOM-compatible DragEvent factory
@@ -161,12 +161,40 @@ beforeAll(() => {
     })
   }
 
-  // Keep the original DragEvent as fallback for types
-  global.DragEvent = global.DragEvent || class DragEvent extends Event {
-    constructor(type: string, eventInitDict?: any) {
-      super(type, eventInitDict)
-      this.dataTransfer = eventInitDict?.dataTransfer || new global.DataTransfer()
-    }
+  // JSDOM-compatible DragEvent constructor
+  if (!global.DragEvent || !global.DragEvent.prototype) {
+    global.DragEvent = class DragEvent extends Event {
+      dataTransfer: DataTransfer
+      clientX: number
+      clientY: number
+      screenX: number
+      screenY: number
+      button: number
+      buttons: number
+      ctrlKey: boolean
+      shiftKey: boolean
+      altKey: boolean
+      metaKey: boolean
+
+      constructor(type: string, eventInitDict?: any) {
+        super(type, {
+          bubbles: eventInitDict?.bubbles ?? true,
+          cancelable: eventInitDict?.cancelable ?? true,
+        })
+
+        this.dataTransfer = eventInitDict?.dataTransfer || new global.DataTransfer()
+        this.clientX = eventInitDict?.clientX ?? 0
+        this.clientY = eventInitDict?.clientY ?? 0
+        this.screenX = eventInitDict?.screenX ?? 0
+        this.screenY = eventInitDict?.screenY ?? 0
+        this.button = eventInitDict?.button ?? 0
+        this.buttons = eventInitDict?.buttons ?? 1
+        this.ctrlKey = eventInitDict?.ctrlKey ?? false
+        this.shiftKey = eventInitDict?.shiftKey ?? false
+        this.altKey = eventInitDict?.altKey ?? false
+        this.metaKey = eventInitDict?.metaKey ?? false
+      }
+    } as any
   }
 
   global.ResizeObserver = vi.fn(() => ({
