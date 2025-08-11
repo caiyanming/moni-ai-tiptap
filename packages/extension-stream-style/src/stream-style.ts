@@ -59,6 +59,16 @@ declare module '@tiptap/core' {
        * 清除样式缓存
        */
       clearStyleCache: () => ReturnType
+
+      /**
+       * 推断内容类型
+       */
+      inferContentType: (content: unknown, context?: { parentType?: string; siblings?: unknown[] }) => ReturnType
+
+      /**
+       * 应用样式到内容
+       */
+      applyStyleToContent: (content: unknown, preset: unknown, contentType: string) => ReturnType
     }
   }
 }
@@ -226,7 +236,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
           }
 
           try {
-            // 简化处理
+            // 直接使用扩展实例的存储，确保数据同步
             this.storage.stats.inferenceCount += 1
 
             // 直接使用内置的insertContent命令，避免手动管理事务
@@ -242,7 +252,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
         ({ editor }) => {
           const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')
           if (!documentStyleExt) {
-            return false
+            return null
           }
 
           const currentPreset = documentStyleExt.storage.currentPreset
@@ -254,7 +264,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
             // 生成缓存键
             const cacheKey = `${currentPreset.name}-${contentType}-${documentStyleExt.storage.styleVersion || 1}`
 
-            // 检查缓存
+            // 检查缓存 - 直接使用this.storage确保数据同步
             if (this.storage.styleCache.has(cacheKey)) {
               this.storage.stats.cacheHits += 1
               return this.storage.styleCache.get(cacheKey)
@@ -273,7 +283,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
               documentStyleExt.storage.styleVersion || 1,
             )
 
-            // 缓存结果
+            // 缓存结果 - 直接使用this.storage确保数据同步
             this.storage.stats.cacheMisses += 1
             this.storage.styleCache.set(cacheKey, styleAttributes)
 
@@ -291,6 +301,7 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
         },
 
       clearStyleCache: () => () => {
+        // 直接使用this.storage确保数据同步
         this.storage.styleCache.clear()
         this.storage.inferenceCache.clear()
         this.storage.stats = {
@@ -300,6 +311,86 @@ export const StreamStyleIntelligence = Extension.create<StreamStyleOptions>({
         }
         return true
       },
+
+      inferContentType: (content: unknown, context?: { parentType?: string }) => () => {
+        // 直接使用this.storage更新统计
+        this.storage.stats.inferenceCount += 1
+
+        // 生成缓存键
+        const cacheKey = `${JSON.stringify(content)}-${context?.parentType || 'none'}`
+
+        // 检查缓存
+        if (this.storage.inferenceCache.has(cacheKey)) {
+          return this.storage.inferenceCache.get(cacheKey)
+        }
+
+        let inferredType: string = 'paragraph' // 默认类型
+
+        if (typeof content === 'string') {
+          if (content.startsWith('#')) {
+            inferredType = 'heading'
+          } else if (content.startsWith('```')) {
+            inferredType = 'codeBlock'
+          }
+        } else if (typeof content === 'object' && content !== null && 'type' in content) {
+          const nodeType = (content as any).type
+          if (nodeType === 'paragraph') {
+            inferredType = 'paragraph'
+          } else if (nodeType === 'heading') {
+            inferredType = 'heading'
+          } else if (nodeType === 'blockquote') {
+            inferredType = 'blockquote'
+          } else if (nodeType === 'codeBlock') {
+            inferredType = 'codeBlock'
+          }
+        }
+
+        // 基于上下文推断
+        if (context?.parentType === 'bulletList' || context?.parentType === 'orderedList') {
+          inferredType = 'listItem'
+        }
+
+        // 缓存结果
+        this.storage.inferenceCache.set(cacheKey, inferredType)
+
+        return inferredType
+      },
+
+      applyStyleToContent:
+        (content: unknown, preset: unknown, contentType: string) =>
+        ({ editor }) => {
+          if (typeof content === 'string') {
+            return content
+          }
+
+          if (Array.isArray(content)) {
+            return content.map((item: unknown) => editor.commands.applyStyleToContent(item, preset, contentType))
+          }
+
+          if (typeof content === 'object' && content !== null && 'type' in content) {
+            const documentStyleExt = editor.extensionManager.extensions.find((ext: any) => ext.name === 'documentStyle')
+            if (!documentStyleExt || !preset) {
+              return content
+            }
+
+            const semanticType = this.options.contentStyleMapping[contentType] || contentType
+            const styleAttributes = generateGlobalStyleAttributes(
+              preset as DocumentStylePreset,
+              semanticType as keyof DocumentStylePreset['semantic'],
+              documentStyleExt.storage.styleVersion || 1,
+            )
+
+            return {
+              ...content,
+              attrs: {
+                ...(content as any).attrs,
+                ...styleAttributes,
+              },
+            }
+          }
+
+          return content
+        },
     }
   },
 

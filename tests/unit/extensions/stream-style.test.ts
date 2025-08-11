@@ -116,7 +116,9 @@ describe('StreamStyleIntelligence Extension', () => {
         content: [{ type: 'text', text: '插入的内容' }],
       }
 
-      const result = editor.commands.insertContentWithDocumentStyle(content, 8) // 在现有内容后插入
+      // 计算正确的插入位置（文档末尾）
+      const docSize = editor.state.doc.content.size
+      const result = editor.commands.insertContentWithDocumentStyle(content, docSize) // 在现有内容后插入
       expect(result).toBe(true)
 
       // 应该有两个段落
@@ -174,9 +176,9 @@ describe('StreamStyleIntelligence Extension', () => {
       const result = editor.commands.inferAndApplyStyle(content)
       expect(result).toBe(true)
 
-      // 检查推断统计
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-      expect(streamStyleExt.storage.stats.inferenceCount).toBeGreaterThan(0)
+      // 检查推断统计 - 使用正确的共享存储对象
+      const sharedStorage = (editor as any).extensionStorage.streamStyle
+      expect(sharedStorage.stats.inferenceCount).toBeGreaterThan(0)
     })
 
     it('应该在禁用智能推断时回退到普通插入', () => {
@@ -216,25 +218,53 @@ describe('StreamStyleIntelligence Extension', () => {
     })
 
     it('应该在没有当前预设时返回null', () => {
-      // 清除当前预设
-      const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
-      documentStyleExt.storage.documentStyle.currentPreset = null
+      // 创建一个没有默认预设的编辑器实例
+      const editorWithoutPreset = new Editor({
+        extensions: [
+          Document,
+          Paragraph,
+          Text,
+          DocumentStyleExtension.configure({
+            // 明确设置 defaultPreset 为 null
+            defaultPreset: null,
+            autoInjectCSS: false,
+          }),
+          StreamStyleIntelligence.configure({
+            config: {
+              autoApplyDocumentStyle: true,
+              inheritParentStyle: true,
+              stylePriority: 'document',
+              enableStyleCache: true,
+            },
+            enableStyleInference: true,
+            maxCacheSize: 100,
+          }),
+        ],
+      })
 
-      const recommendedStyle = editor.commands.getRecommendedStyle('paragraph')
+      // 验证没有预设 - 使用正确的共享存储对象
+      const documentSharedStorage = (editorWithoutPreset as any).extensionStorage.documentStyle
+      // 验证当前预设已经是 null
+      expect(documentSharedStorage.currentPreset).toBeNull()
+
+      const recommendedStyle = editorWithoutPreset.commands.getRecommendedStyle('paragraph')
       expect(recommendedStyle).toBeNull()
+
+      // 清理
+      editorWithoutPreset.destroy()
     })
 
     it('应该使用样式缓存提高性能', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
+      const sharedStorage = (editor as any).extensionStorage.streamStyle
 
       // 第一次调用
       const style1 = editor.commands.getRecommendedStyle('paragraph')
-      expect(streamStyleExt.storage.stats.cacheMisses).toBe(1)
-      expect(streamStyleExt.storage.stats.cacheHits).toBe(0)
+      expect(sharedStorage.stats.cacheMisses).toBe(1)
+      expect(sharedStorage.stats.cacheHits).toBe(0)
 
       // 第二次调用相同类型，应该命中缓存
       const style2 = editor.commands.getRecommendedStyle('paragraph')
-      expect(streamStyleExt.storage.stats.cacheHits).toBe(1)
+      expect(sharedStorage.stats.cacheHits).toBe(1)
 
       expect(style1).toEqual(style2)
     })
@@ -246,16 +276,16 @@ describe('StreamStyleIntelligence Extension', () => {
       editor.commands.getRecommendedStyle('paragraph')
       editor.commands.inferAndApplyStyle({ type: 'paragraph', content: [] })
 
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-      expect(streamStyleExt.storage.styleCache.size).toBeGreaterThan(0)
-      expect(streamStyleExt.storage.stats.inferenceCount).toBeGreaterThan(0)
+      const sharedStorage = (editor as any).extensionStorage.streamStyle
+      expect(sharedStorage.styleCache.size).toBeGreaterThan(0)
+      expect(sharedStorage.stats.inferenceCount).toBeGreaterThan(0)
 
       const result = editor.commands.clearStyleCache()
       expect(result).toBe(true)
 
-      expect(streamStyleExt.storage.styleCache.size).toBe(0)
-      expect(streamStyleExt.storage.inferenceCache.size).toBe(0)
-      expect(streamStyleExt.storage.stats).toEqual({
+      expect(sharedStorage.styleCache.size).toBe(0)
+      expect(sharedStorage.inferenceCache.size).toBe(0)
+      expect(sharedStorage.stats).toEqual({
         cacheHits: 0,
         cacheMisses: 0,
         inferenceCount: 0,
@@ -265,62 +295,56 @@ describe('StreamStyleIntelligence Extension', () => {
 
   describe('内容类型推断', () => {
     it('应该推断段落类型', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
+      const sharedStorage = (editor as any).extensionStorage.streamStyle
 
       const content = { type: 'paragraph', content: [] }
-      const inferredType = streamStyleExt.inferContentType(content)
+      // 使用命令接口
+      const inferredType = editor.commands.inferContentType(content)
 
       expect(inferredType).toBe('paragraph')
-      expect(streamStyleExt.storage.stats.inferenceCount).toBe(1)
+      expect(sharedStorage.stats.inferenceCount).toBe(1)
     })
 
     it('应该基于上下文推断列表项', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-
       const content = { type: 'text', text: '列表项内容' }
       const context = { parentType: 'bulletList' }
-      const inferredType = streamStyleExt.inferContentType(content, context)
+      const inferredType = editor.commands.inferContentType(content, context)
 
       expect(inferredType).toBe('listItem')
     })
 
     it('应该基于内容特征推断标题', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-
       const content = '# 这是标题'
-      const inferredType = streamStyleExt.inferContentType(content)
+      const inferredType = editor.commands.inferContentType(content)
 
       expect(inferredType).toBe('heading')
     })
 
     it('应该基于内容特征推断代码块', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-
       const content = '```javascript\nconsole.log("hello")\n```'
-      const inferredType = streamStyleExt.inferContentType(content)
+      const inferredType = editor.commands.inferContentType(content)
 
       expect(inferredType).toBe('codeBlock')
     })
 
     it('应该缓存推断结果', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
+      const sharedStorage = (editor as any).extensionStorage.streamStyle
 
       const content = { type: 'paragraph' }
 
       // 第一次推断
-      streamStyleExt.inferContentType(content)
-      expect(streamStyleExt.storage.inferenceCache.size).toBe(1)
+      editor.commands.inferContentType(content)
+      expect(sharedStorage.inferenceCache.size).toBe(1)
 
       // 第二次推断相同内容，应该使用缓存
-      const initialInferenceCount = streamStyleExt.storage.stats.inferenceCount
-      streamStyleExt.inferContentType(content)
-      expect(streamStyleExt.storage.stats.inferenceCount).toBe(initialInferenceCount + 1) // 只计算调用次数
+      const initialInferenceCount = sharedStorage.stats.inferenceCount
+      editor.commands.inferContentType(content)
+      expect(sharedStorage.stats.inferenceCount).toBe(initialInferenceCount + 1) // 只计算调用次数
     })
   })
 
   describe('样式应用到内容', () => {
     it('应该为简单内容应用样式', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
       const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
 
       const content = {
@@ -328,9 +352,9 @@ describe('StreamStyleIntelligence Extension', () => {
         content: [{ type: 'text', text: '测试内容' }],
       }
 
-      const styledContent = streamStyleExt.applyStyleToContent(
+      const styledContent = editor.commands.applyStyleToContent(
         content,
-        documentStyleExt.storage.documentStyle.currentPreset,
+        documentStyleExt.storage.currentPreset,
         'paragraph',
       )
 
@@ -340,7 +364,6 @@ describe('StreamStyleIntelligence Extension', () => {
     })
 
     it('应该递归处理数组内容', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
       const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
 
       const content = [
@@ -348,9 +371,9 @@ describe('StreamStyleIntelligence Extension', () => {
         { type: 'paragraph', content: [{ type: 'text', text: '第二段' }] },
       ]
 
-      const styledContent = streamStyleExt.applyStyleToContent(
+      const styledContent = editor.commands.applyStyleToContent(
         content,
-        documentStyleExt.storage.documentStyle.currentPreset,
+        documentStyleExt.storage.currentPreset,
         'paragraph',
       )
 
@@ -362,13 +385,12 @@ describe('StreamStyleIntelligence Extension', () => {
     })
 
     it('应该处理非对象内容', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
       const documentStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'documentStyle')!
 
       const content = '纯文本内容'
-      const styledContent = streamStyleExt.applyStyleToContent(
+      const styledContent = editor.commands.applyStyleToContent(
         content,
-        documentStyleExt.storage.documentStyle.currentPreset,
+        documentStyleExt.storage.currentPreset,
         'paragraph',
       )
 
@@ -411,10 +433,8 @@ describe('StreamStyleIntelligence Extension', () => {
     })
 
     it('应该处理无效的内容类型', () => {
-      const streamStyleExt = editor.extensionManager.extensions.find(ext => ext.name === 'streamStyle')!
-
       const invalidContent = null
-      const inferredType = streamStyleExt.inferContentType(invalidContent)
+      const inferredType = editor.commands.inferContentType(invalidContent)
 
       expect(inferredType).toBe('paragraph') // 默认类型
     })
