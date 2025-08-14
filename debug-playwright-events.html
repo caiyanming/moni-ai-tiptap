@@ -1,214 +1,238 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Playwright Events Debug</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .test-area { border: 1px solid #ccc; padding: 20px; margin: 10px 0; }
-        .draggable { 
-            width: 100px; 
-            height: 50px; 
-            background: #e0f2fe; 
-            border: 1px solid #0277bd; 
-            cursor: move; 
-            margin: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-        .drop-zone { 
-            width: 200px; 
-            height: 100px; 
-            background: #f3e5f5; 
-            border: 2px dashed #7b1fa2; 
-            margin: 10px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
-        .log { 
-            background: #f5f5f5; 
-            border: 1px solid #ddd; 
-            padding: 10px; 
-            margin: 10px 0; 
-            font-family: monospace; 
-            max-height: 300px; 
-            overflow-y: auto;
-        }
-        .log-entry { margin: 2px 0; }
-        .log-event { color: #1976d2; }
-        .log-playwright { color: #d32f2f; }
-        .clear-btn { margin: 5px; padding: 5px 10px; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test-area {
+        border: 1px solid #ccc;
+        padding: 20px;
+        margin: 10px 0;
+      }
+      .draggable {
+        width: 100px;
+        height: 50px;
+        background: #e0f2fe;
+        border: 1px solid #0277bd;
+        cursor: move;
+        margin: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .drop-zone {
+        width: 200px;
+        height: 100px;
+        background: #f3e5f5;
+        border: 2px dashed #7b1fa2;
+        margin: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .log {
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin: 10px 0;
+        font-family: monospace;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .log-entry {
+        margin: 2px 0;
+      }
+      .log-event {
+        color: #1976d2;
+      }
+      .log-playwright {
+        color: #d32f2f;
+      }
+      .clear-btn {
+        margin: 5px;
+        padding: 5px 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Playwright拖拽事件调试</h1>
     <p>用于测试Playwright的dragTo()是否触发标准的HTML5拖拽事件</p>
 
     <div class="test-area">
-        <h3>测试元素</h3>
-        <div id="draggable" class="draggable" draggable="true">
-            可拖拽元素
-        </div>
-        <div id="drop-zone" class="drop-zone">
-            放置区域
-        </div>
+      <h3>测试元素</h3>
+      <div id="draggable" class="draggable" draggable="true">可拖拽元素</div>
+      <div id="drop-zone" class="drop-zone">放置区域</div>
     </div>
 
     <div>
-        <button class="clear-btn" onclick="clearLog()">清除日志</button>
-        <button class="clear-btn" onclick="testManualEvents()">手动触发事件测试</button>
-        <button class="clear-btn" onclick="testDirectCall()">直接调用处理器测试</button>
+      <button class="clear-btn" onclick="clearLog()">清除日志</button>
+      <button class="clear-btn" onclick="testManualEvents()">手动触发事件测试</button>
+      <button class="clear-btn" onclick="testDirectCall()">直接调用处理器测试</button>
     </div>
 
     <div class="log" id="event-log">
-        <div class="log-entry">等待事件...</div>
+      <div class="log-entry">等待事件...</div>
     </div>
 
     <script>
-        const log = document.getElementById('event-log');
-        let eventCount = 0;
+      const log = document.getElementById('event-log')
+      let eventCount = 0
 
-        function addLog(message, type = 'event') {
-            eventCount++;
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${type}`;
-            entry.innerHTML = `[${eventCount.toString().padStart(3, '0')}] ${new Date().toLocaleTimeString()}: ${message}`;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
+      function addLog(message, type = 'event') {
+        eventCount++
+        const entry = document.createElement('div')
+        entry.className = `log-entry log-${type}`
+        entry.innerHTML = `[${eventCount.toString().padStart(3, '0')}] ${new Date().toLocaleTimeString()}: ${message}`
+        log.appendChild(entry)
+        log.scrollTop = log.scrollHeight
+      }
+
+      function clearLog() {
+        log.innerHTML = '<div class="log-entry">日志已清除，等待事件...</div>'
+        eventCount = 0
+      }
+
+      // 模拟TipTap插件的事件监听器
+      const draggable = document.getElementById('draggable')
+      const dropZone = document.getElementById('drop-zone')
+
+      // 全局事件监听器 - 模拟TipTap插件的做法
+      document.addEventListener(
+        'dragstart',
+        e => {
+          addLog(`🎯 Document dragstart: target=${e.target.id}, type=${e.type}`, 'event')
+          console.log('🎯 Document dragstart event:', e)
+        },
+        { passive: false },
+      )
+
+      document.addEventListener(
+        'dragover',
+        e => {
+          addLog(`🎯 Document dragover: target=${e.target.id}, clientX=${e.clientX}, clientY=${e.clientY}`, 'event')
+          console.log('🎯 Document dragover event:', e)
+          e.preventDefault() // 允许drop
+        },
+        { passive: false },
+      )
+
+      document.addEventListener(
+        'drop',
+        e => {
+          addLog(`🎯 Document drop: target=${e.target.id}, clientX=${e.clientX}, clientY=${e.clientY}`, 'event')
+          console.log('🎯 Document drop event:', e)
+          e.preventDefault()
+
+          // 模拟实际的移动操作
+          addLog('✅ 模拟段落移动操作完成', 'playwright')
+        },
+        { passive: false },
+      )
+
+      document.addEventListener('dragend', e => {
+        addLog(`🎯 Document dragend: target=${e.target.id}`, 'event')
+        console.log('🎯 Document dragend event:', e)
+      })
+
+      // 元素级监听器
+      draggable.addEventListener('dragstart', e => {
+        addLog(`📦 Element dragstart: ${e.target.id}`, 'event')
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('text/html', '')
         }
+      })
 
-        function clearLog() {
-            log.innerHTML = '<div class="log-entry">日志已清除，等待事件...</div>';
-            eventCount = 0;
-        }
+      dropZone.addEventListener('dragover', e => {
+        e.preventDefault() // 允许drop
+        addLog(`📦 Element dragover: ${e.target.id}`, 'event')
+      })
 
-        // 模拟TipTap插件的事件监听器
-        const draggable = document.getElementById('draggable');
-        const dropZone = document.getElementById('drop-zone');
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault()
+        addLog(`📦 Element drop: ${e.target.id}`, 'event')
+      })
 
-        // 全局事件监听器 - 模拟TipTap插件的做法
-        document.addEventListener('dragstart', (e) => {
-            addLog(`🎯 Document dragstart: target=${e.target.id}, type=${e.type}`, 'event');
-            console.log('🎯 Document dragstart event:', e);
-        }, { passive: false });
+      // 手动触发事件测试
+      function testManualEvents() {
+        addLog('🔧 开始手动触发事件测试', 'playwright')
 
-        document.addEventListener('dragover', (e) => {
-            addLog(`🎯 Document dragover: target=${e.target.id}, clientX=${e.clientX}, clientY=${e.clientY}`, 'event');
-            console.log('🎯 Document dragover event:', e);
-            e.preventDefault(); // 允许drop
-        }, { passive: false });
+        // 模拟Playwright可能的事件触发方式
+        const dragStartEvent = new DragEvent('dragstart', {
+          bubbles: true,
+          cancelable: true,
+          dataTransfer: new DataTransfer(),
+        })
 
-        document.addEventListener('drop', (e) => {
-            addLog(`🎯 Document drop: target=${e.target.id}, clientX=${e.clientX}, clientY=${e.clientY}`, 'event');
-            console.log('🎯 Document drop event:', e);
-            e.preventDefault();
-            
-            // 模拟实际的移动操作
-            addLog('✅ 模拟段落移动操作完成', 'playwright');
-        }, { passive: false });
+        const dragOverEvent = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 100,
+          dataTransfer: new DataTransfer(),
+        })
 
-        document.addEventListener('dragend', (e) => {
-            addLog(`🎯 Document dragend: target=${e.target.id}`, 'event');
-            console.log('🎯 Document dragend event:', e);
-        });
+        const dropEvent = new DragEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 100,
+          dataTransfer: new DataTransfer(),
+        })
 
-        // 元素级监听器
-        draggable.addEventListener('dragstart', (e) => {
-            addLog(`📦 Element dragstart: ${e.target.id}`, 'event');
-            if (e.dataTransfer) {
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', '');
-            }
-        });
+        const dragEndEvent = new DragEvent('dragend', {
+          bubbles: true,
+          cancelable: true,
+        })
 
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault(); // 允许drop
-            addLog(`📦 Element dragover: ${e.target.id}`, 'event');
-        });
+        // 按顺序触发事件
+        setTimeout(() => {
+          draggable.dispatchEvent(dragStartEvent)
+          addLog('🔧 已触发 dragstart 事件', 'playwright')
+        }, 100)
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            addLog(`📦 Element drop: ${e.target.id}`, 'event');
-        });
+        setTimeout(() => {
+          dropZone.dispatchEvent(dragOverEvent)
+          addLog('🔧 已触发 dragover 事件', 'playwright')
+        }, 200)
 
-        // 手动触发事件测试
-        function testManualEvents() {
-            addLog('🔧 开始手动触发事件测试', 'playwright');
-            
-            // 模拟Playwright可能的事件触发方式
-            const dragStartEvent = new DragEvent('dragstart', {
-                bubbles: true,
-                cancelable: true,
-                dataTransfer: new DataTransfer()
-            });
-            
-            const dragOverEvent = new DragEvent('dragover', {
-                bubbles: true,
-                cancelable: true,
-                clientX: 200,
-                clientY: 100,
-                dataTransfer: new DataTransfer()
-            });
-            
-            const dropEvent = new DragEvent('drop', {
-                bubbles: true,
-                cancelable: true,
-                clientX: 200,
-                clientY: 100,
-                dataTransfer: new DataTransfer()
-            });
-            
-            const dragEndEvent = new DragEvent('dragend', {
-                bubbles: true,
-                cancelable: true
-            });
-            
-            // 按顺序触发事件
-            setTimeout(() => {
-                draggable.dispatchEvent(dragStartEvent);
-                addLog('🔧 已触发 dragstart 事件', 'playwright');
-            }, 100);
-            
-            setTimeout(() => {
-                dropZone.dispatchEvent(dragOverEvent);
-                addLog('🔧 已触发 dragover 事件', 'playwright');
-            }, 200);
-            
-            setTimeout(() => {
-                dropZone.dispatchEvent(dropEvent);
-                addLog('🔧 已触发 drop 事件', 'playwright');
-            }, 300);
-            
-            setTimeout(() => {
-                draggable.dispatchEvent(dragEndEvent);
-                addLog('🔧 已触发 dragend 事件', 'playwright');
-            }, 400);
-        }
+        setTimeout(() => {
+          dropZone.dispatchEvent(dropEvent)
+          addLog('🔧 已触发 drop 事件', 'playwright')
+        }, 300)
 
-        // 直接调用处理器测试
-        function testDirectCall() {
-            addLog('🎯 测试直接调用事件处理器', 'playwright');
-            
-            // 模拟直接调用TipTap插件的内部方法
-            addLog('✅ 如果这是TipTap插件，可以直接调用 executeNotionStyleMove() 方法', 'playwright');
-            addLog('✅ 这样可以绕过事件系统，直接执行段落移动', 'playwright');
-        }
+        setTimeout(() => {
+          draggable.dispatchEvent(dragEndEvent)
+          addLog('🔧 已触发 dragend 事件', 'playwright')
+        }, 400)
+      }
 
-        // 页面加载完成提示
-        window.addEventListener('DOMContentLoaded', () => {
-            addLog('✅ 页面加载完成，Document级别事件监听器已设置', 'playwright');
-            addLog('📌 提示：使用Playwright的page.dragTo()来测试是否触发事件', 'playwright');
-        });
+      // 直接调用处理器测试
+      function testDirectCall() {
+        addLog('🎯 测试直接调用事件处理器', 'playwright')
 
-        // 暴露给Playwright测试使用的全局函数
-        window.getEventCount = () => eventCount;
-        window.getLastLogs = (count = 5) => {
-            const entries = Array.from(log.querySelectorAll('.log-entry'));
-            return entries.slice(-count).map(entry => entry.textContent);
-        };
+        // 模拟直接调用TipTap插件的内部方法
+        addLog('✅ 如果这是TipTap插件，可以直接调用 executeNotionStyleMove() 方法', 'playwright')
+        addLog('✅ 这样可以绕过事件系统，直接执行段落移动', 'playwright')
+      }
+
+      // 页面加载完成提示
+      window.addEventListener('DOMContentLoaded', () => {
+        addLog('✅ 页面加载完成，Document级别事件监听器已设置', 'playwright')
+        addLog('📌 提示：使用Playwright的page.dragTo()来测试是否触发事件', 'playwright')
+      })
+
+      // 暴露给Playwright测试使用的全局函数
+      window.getEventCount = () => eventCount
+      window.getLastLogs = (count = 5) => {
+        const entries = Array.from(log.querySelectorAll('.log-entry'))
+        return entries.slice(-count).map(entry => entry.textContent)
+      }
     </script>
-</body>
+  </body>
 </html>

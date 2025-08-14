@@ -35,18 +35,19 @@ function createCompatibleDragEvent(type: string, options = {}) {
   const customEvent = new CustomEvent(type, {
     bubbles: options.bubbles ?? true,
     cancelable: options.cancelable ?? true,
-  });
+  })
 
   return Object.assign(customEvent, {
     dataTransfer: options.dataTransfer || new DataTransfer(),
     clientX: options.clientX ?? 0,
     clientY: options.clientY ?? 0,
     // ... 其他拖拽属性
-  });
+  })
 }
 ```
 
 **优势:**
+
 - ✅ 完全兼容 JSDOM
 - ✅ 保持原有 API 接口不变
 - ✅ 支持所有拖拽事件属性
@@ -59,17 +60,19 @@ function createCompatibleDragEvent(type: string, options = {}) {
 ```typescript
 global.DragEvent = class DragEvent extends Event {
   constructor(type, eventInitDict) {
-    super(type, eventInitDict);
-    this.dataTransfer = eventInitDict?.dataTransfer || new DataTransfer();
+    super(type, eventInitDict)
+    this.dataTransfer = eventInitDict?.dataTransfer || new DataTransfer()
   }
-};
+}
 ```
 
 **优势:**
+
 - ✅ 无需修改现有测试代码
 - ✅ 全局统一处理
 
 **劣势:**
+
 - ❌ 可能与其他测试环境冲突
 - ❌ 维护复杂度较高
 
@@ -78,6 +81,7 @@ global.DragEvent = class DragEvent extends Event {
 ### 1. 更新测试环境配置
 
 已修改 `tests/configs/setup.ts`：
+
 - 添加 JSDOM 兼容的 DataTransfer mock
 - 实现 `createDragEvent` 全局函数
 - 增强 TypeScript 类型声明
@@ -85,6 +89,7 @@ global.DragEvent = class DragEvent extends Event {
 ### 2. 创建工具函数
 
 创建 `tests/utils/drag-event-helpers.ts`：
+
 - `createCompatibleDragEvent()` - 创建兼容事件
 - `createDragEventSequence()` - 创建完整拖拽序列
 - `createMockDataTransfer()` - 创建模拟数据传输对象
@@ -92,25 +97,27 @@ global.DragEvent = class DragEvent extends Event {
 ### 3. 代码迁移
 
 #### 旧代码模式:
+
 ```typescript
 const dragStartEvent = new DragEvent('dragstart', {
   dataTransfer: new DataTransfer(),
   clientX: 100,
   clientY: 120,
-});
-element.dispatchEvent(dragStartEvent);
+})
+element.dispatchEvent(dragStartEvent)
 ```
 
 #### 新代码模式:
+
 ```typescript
-import { createCompatibleDragEvent } from '../utils/drag-event-helpers';
+import { createCompatibleDragEvent } from '../utils/drag-event-helpers'
 
 const dragStartEvent = createCompatibleDragEvent('dragstart', {
   dataTransfer: new DataTransfer(),
   clientX: 100,
   clientY: 120,
-});
-element.dispatchEvent(dragStartEvent);
+})
+element.dispatchEvent(dragStartEvent)
 ```
 
 ### 4. 自动化迁移脚本
@@ -124,16 +131,19 @@ node scripts/fix-drag-event-compatibility.js
 ## 验证步骤
 
 ### 1. 运行单元测试
+
 ```bash
 npm run test:unit
 ```
 
 ### 2. 运行拖拽相关测试
+
 ```bash
 npm run test:drag
 ```
 
 ### 3. 完整测试套件
+
 ```bash
 npm run test
 ```
@@ -147,14 +157,17 @@ npm run test
 ## 维护建议
 
 ### 1. 代码规范
+
 - 统一使用 `createCompatibleDragEvent` 创建拖拽事件
 - 在 ESLint 中添加规则禁止直接使用 `new DragEvent()`
 
 ### 2. 文档更新
+
 - 更新测试编写指南
 - 在 README 中添加拖拽测试最佳实践
 
 ### 3. 持续监控
+
 - 监控 JSDOM 版本更新
 - 关注上游修复进展
 

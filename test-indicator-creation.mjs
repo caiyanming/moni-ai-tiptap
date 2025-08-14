@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom'
 // 模拟EditorView
 const mockEditorView = {
   dom: null,
-  isDestroyed: false
+  isDestroyed: false,
 }
 
 // 设置DOM环境
@@ -37,9 +37,7 @@ console.log('  view.dom.isConnected:', mockEditorView.dom?.isConnected)
 console.log('  view.isDestroyed:', mockEditorView.isDestroyed)
 
 // 关键测试：验证创建条件
-const shouldCreateIndicator = mockEditorView.dom && 
-                              mockEditorView.dom.isConnected && 
-                              !mockEditorView.isDestroyed
+const shouldCreateIndicator = mockEditorView.dom && mockEditorView.dom.isConnected && !mockEditorView.isDestroyed
 
 console.log('  ✅ 应该创建指示器:', shouldCreateIndicator)
 
@@ -55,10 +53,10 @@ let eventListenersAdded = false
 
 if (shouldCreateIndicator) {
   console.log('🎯 模拟事件监听器绑定...')
-  
+
   // 模拟成功创建指示器
   const mockDragIndicator = { show: () => {}, hide: () => {} }
-  
+
   if (mockDragIndicator) {
     console.log('✅ 事件监听器会被绑定到document')
     eventListenersAdded = true

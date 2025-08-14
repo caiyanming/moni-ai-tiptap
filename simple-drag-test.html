@@ -1,114 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Drag Test</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-            line-height: 1.6;
-        }
-        .ProseMirror {
-            border: 2px solid #ddd;
-            padding: 20px;
-            min-height: 200px;
-            outline: none;
-        }
-        .drag-handle {
-            position: absolute;
-            cursor: grab;
-            z-index: 1000;
-        }
-        .drag-handle svg {
-            width: 20px;
-            height: 20px;
-            color: #666;
-        }
-        .drag-handle:hover svg {
-            color: #333;
-        }
-        button {
-            margin: 10px;
-            padding: 5px 10px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 50px;
+        line-height: 1.6;
+      }
+      .ProseMirror {
+        border: 2px solid #ddd;
+        padding: 20px;
+        min-height: 200px;
+        outline: none;
+      }
+      .drag-handle {
+        position: absolute;
+        cursor: grab;
+        z-index: 1000;
+      }
+      .drag-handle svg {
+        width: 20px;
+        height: 20px;
+        color: #666;
+      }
+      .drag-handle:hover svg {
+        color: #333;
+      }
+      button {
+        margin: 10px;
+        padding: 5px 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Simple Drag Test - With Fixed SVG Visibility</h1>
     <button id="toggle">Toggle Editable</button>
     <div id="app"></div>
 
     <script type="module">
-        import { Editor } from '/packages/core/src/index.ts'
-        import { DragHandle } from '/packages/extension-drag-handle-react/src/index.ts'
-        import StarterKit from '/packages/starter-kit/src/index.ts'
-        import React from '/node_modules/.vite/deps/react.js'
-        import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js'
-        import { EditorContent, useEditor } from '/packages/react/src/index.ts'
+      import { Editor } from '/packages/core/src/index.ts'
+      import { DragHandle } from '/packages/extension-drag-handle-react/src/index.ts'
+      import StarterKit from '/packages/starter-kit/src/index.ts'
+      import React from '/node_modules/.vite/deps/react.js'
+      import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js'
+      import { EditorContent, useEditor } from '/packages/react/src/index.ts'
 
-        function TestEditor() {
-            const editor = useEditor({
-                extensions: [StarterKit],
-                content: `
+      function TestEditor() {
+        const editor = useEditor({
+          extensions: [StarterKit],
+          content: `
                     <h1>Test Document</h1>
                     <p>First paragraph for drag testing.</p>
                     <p>Second paragraph for drag testing.</p>
                     <p>Third paragraph for drag testing.</p>
                 `,
-            })
-
-            React.useEffect(() => {
-                if (editor) {
-                    console.log('✅ Editor initialized')
-                    // Add global toggle functionality
-                    window.toggleEditable = () => {
-                        editor.setEditable(!editor.isEditable)
-                        console.log('Editor editable:', editor.isEditable)
-                    }
-                }
-            }, [editor])
-
-            if (!editor) {
-                return React.createElement('div', null, 'Loading...')
-            }
-
-            return React.createElement('div', null, 
-                React.createElement(DragHandle, {
-                    editor: editor,
-                    showIndicators: true,
-                    onDragStart: (event) => {
-                        console.log('🚀 拖拽开始 - React回调')
-                    },
-                    onDrop: (event, dropInfo) => {
-                        console.log('📥 拖拽完成 - React回调:', dropInfo)
-                    }
-                }, React.createElement('svg', {
-                    xmlns: "http://www.w3.org/2000/svg",
-                    fill: "none",
-                    viewBox: "0 0 24 24",
-                    strokeWidth: "1.5",
-                    stroke: "currentColor"
-                }, React.createElement('path', {
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    d: "M3.75 9h16.5m-16.5 6.75h16.5"
-                }))),
-                React.createElement(EditorContent, { editor: editor })
-            )
-        }
-
-        // Connect toggle button
-        document.getElementById('toggle').addEventListener('click', () => {
-            if (window.toggleEditable) {
-                window.toggleEditable()
-            }
         })
 
-        // Render the component
-        const root = ReactDOM.createRoot(document.getElementById('app'))
-        root.render(React.createElement(TestEditor))
+        React.useEffect(() => {
+          if (editor) {
+            console.log('✅ Editor initialized')
+            // Add global toggle functionality
+            window.toggleEditable = () => {
+              editor.setEditable(!editor.isEditable)
+              console.log('Editor editable:', editor.isEditable)
+            }
+          }
+        }, [editor])
+
+        if (!editor) {
+          return React.createElement('div', null, 'Loading...')
+        }
+
+        return React.createElement(
+          'div',
+          null,
+          React.createElement(
+            DragHandle,
+            {
+              editor: editor,
+              showIndicators: true,
+              onDragStart: event => {
+                console.log('🚀 拖拽开始 - React回调')
+              },
+              onDrop: (event, dropInfo) => {
+                console.log('📥 拖拽完成 - React回调:', dropInfo)
+              },
+            },
+            React.createElement(
+              'svg',
+              {
+                xmlns: 'http://www.w3.org/2000/svg',
+                fill: 'none',
+                viewBox: '0 0 24 24',
+                strokeWidth: '1.5',
+                stroke: 'currentColor',
+              },
+              React.createElement('path', {
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                d: 'M3.75 9h16.5m-16.5 6.75h16.5',
+              }),
+            ),
+          ),
+          React.createElement(EditorContent, { editor: editor }),
+        )
+      }
+
+      // Connect toggle button
+      document.getElementById('toggle').addEventListener('click', () => {
+        if (window.toggleEditable) {
+          window.toggleEditable()
+        }
+      })
+
+      // Render the component
+      const root = ReactDOM.createRoot(document.getElementById('app'))
+      root.render(React.createElement(TestEditor))
     </script>
-</body>
+  </body>
 </html>
