@@ -117,6 +117,9 @@ importers:
       jsdom:
         specifier: ^25.0.1
         version: 25.0.1
+      katex:
+        specifier: ^0.16.4
+        version: 0.16.22
       lint-staged:
         specifier: ^15.3.0
         version: 15.4.1
@@ -493,6 +496,22 @@ importers:
       '@tiptap/extension-list':
         specifier: workspace:*
         version: link:../extension-list
+
+  packages/extension-chemistry:
+    dependencies:
+      katex:
+        specifier: ^0.16.4
+        version: 0.16.22
+    devDependencies:
+      '@tiptap/core':
+        specifier: workspace:*
+        version: link:../core
+      '@tiptap/pm':
+        specifier: workspace:*
+        version: link:../pm
+      '@types/katex':
+        specifier: ^0.16.7
+        version: 0.16.7
 
   packages/extension-code:
     devDependencies:
