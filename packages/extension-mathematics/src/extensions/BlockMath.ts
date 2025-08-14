@@ -36,7 +36,7 @@ export type BlockMathOptions = {
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    insertBlockMath: {
+    blockMath: {
       /**
        * Inserts a math block node with LaTeX string.
        * @param options - Options for inserting block math.
@@ -304,6 +304,36 @@ export const BlockMath = Node.create<BlockMathOptions>({
       innerWrapper.className = 'block-math-inner'
       wrapper.dataset.type = 'block-math'
       wrapper.setAttribute('data-latex', node.attrs.latex)
+
+      // 🔥 设置 moni block 属性
+      if (node.attrs.moniBlockId) {
+        wrapper.setAttribute('data-moni-block-id', node.attrs.moniBlockId)
+      }
+      if (node.attrs.moniParentId) {
+        wrapper.setAttribute('data-moni-parent-id', node.attrs.moniParentId)
+      }
+      if (node.attrs.moniLevel !== undefined && node.attrs.moniLevel !== 0) {
+        wrapper.setAttribute('data-moni-level', node.attrs.moniLevel.toString())
+      }
+      if (node.attrs.moniDragEnabled !== true) {
+        wrapper.setAttribute('data-moni-drag-enabled', 'false')
+      }
+      if (node.attrs.moniDragHandle !== true) {
+        wrapper.setAttribute('data-moni-drag-handle', 'false')
+      }
+      if (node.attrs.moniNestable === true) {
+        wrapper.setAttribute('data-moni-nestable', 'true')
+      }
+      if (node.attrs.moniDragType && node.attrs.moniDragType !== 'block') {
+        wrapper.setAttribute('data-moni-drag-type', node.attrs.moniDragType)
+      }
+      if (node.attrs.moniStreamType && node.attrs.moniStreamType !== 'math') {
+        wrapper.setAttribute('data-moni-stream-type', node.attrs.moniStreamType)
+      }
+      if (node.attrs.moniStreamMode && node.attrs.moniStreamMode !== 'replace') {
+        wrapper.setAttribute('data-moni-stream-mode', node.attrs.moniStreamMode)
+      }
+
       wrapper.appendChild(innerWrapper)
 
       function renderMath() {
