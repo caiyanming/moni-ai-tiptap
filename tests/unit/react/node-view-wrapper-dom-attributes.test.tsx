@@ -94,7 +94,7 @@ describe('NodeViewWrapper DOM Attributes', () => {
 
     // kebab-case data 属性应该被保持
     expect(wrapper.getAttribute('data-moni-block-id')).toBe('block-123')
-    
+
     // 验证实际DOM属性列表
     const attributeNames = Array.from(wrapper.attributes).map(attr => attr.name)
     expect(attributeNames).toContain('data-moni-block-id')
@@ -111,7 +111,7 @@ describe('NodeViewWrapper DOM Attributes', () => {
 
     expect(wrapper.className).toContain('normal-wrapper')
     expect(wrapper.getAttribute('data-other')).toBe('other-value')
-    
+
     // 确认没有 moni 相关属性
     expect(wrapper.getAttribute('data-moni-block-id')).toBeNull()
   })
@@ -152,7 +152,7 @@ describe('NodeViewWrapper DOM Attributes', () => {
     expect(wrapper.getAttribute('data-test')).toBe('test-value')
     expect(wrapper.getAttribute('data-index')).toBe('5')
     expect(wrapper.getAttribute('data-active')).toBe('true')
-    
+
     // 验证所有属性都存在于DOM中
     const attributeNames = Array.from(wrapper.attributes).map(attr => attr.name)
     expect(attributeNames).toContain('data-moni-block-id')

@@ -224,7 +224,7 @@ describe('DocumentStyleExtension', () => {
     it('应该为新插入的段落应用当前样式', () => {
       // 插入新段落
       editor.commands.setContent('<p>测试段落</p>')
-      
+
       // 设置一个自定义字体 (这会传播样式到现有内容)
       editor.commands.setDocumentFont('"New Font", sans-serif')
 
