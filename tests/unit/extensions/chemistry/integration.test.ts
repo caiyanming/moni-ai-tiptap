@@ -6,8 +6,11 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { BlockChemical } from '../../../../packages/extension-chemistry/src/extensions/BlockChemical.js'
 import { InlineChemical } from '../../../../packages/extension-chemistry/src/extensions/InlineChemical.js'
-import { Chemistry } from '../../../../packages/extension-chemistry/src/chemistry.js'
-import { renderChemistry, isChemistryFormula, wrapChemistryFormula } from '../../../../packages/extension-chemistry/src/utils.js'
+import {
+  isChemistryFormula,
+  renderChemistry,
+  wrapChemistryFormula,
+} from '../../../../packages/extension-chemistry/src/utils.js'
 import { UniqueID } from '../../../../packages/extension-unique-id/src/unique-id.js'
 
 /**
@@ -103,22 +106,17 @@ describe('Chemistry Extension - Real-World Integration', () => {
 
       // 教师输入基本反应
       editor.commands.insertBlockChemical({
-        chemical: '\\ce{RCOOH + R\'OH -> RCOOR\' + H2O}',
+        chemical: "\\ce{RCOOH + R'OH -> RCOOR' + H2O}",
       })
 
       // 🤖 AI 识别到有机反应，自动添加催化剂和详细条件
-      let reactionNodeId: string = ''
-      let reactionPos = -1
 
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === 'blockChemical' && node.attrs.chemical.includes('RCOOH')) {
-          reactionNodeId = node.attrs.moniBlockId
-          reactionPos = pos
-
           // AI 智能更新：添加酸催化和反应条件
           editor.commands.updateBlockChemical({
             pos,
-            chemical: '\\ce{RCOOH + R\'OH ->[H2SO4][\\Delta] RCOOR\' + H2O}',
+            chemical: "\\ce{RCOOH + R'OH ->[H2SO4][\\Delta] RCOOR' + H2O}",
           })
           return false
         }
@@ -162,9 +160,9 @@ describe('Chemistry Extension - Real-World Integration', () => {
 
       // 分子式
       const currentPos = editor.state.selection.from
-      editor.commands.insertInlineChemical({ 
+      editor.commands.insertInlineChemical({
         chemical: '\\ce{H2O}',
-        pos: currentPos 
+        pos: currentPos,
       })
 
       // 结构式（简化表示）
@@ -199,8 +197,8 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(waterRepresentations).toHaveLength(2)
       expect(waterRepresentations).toContain('\\ce{H2O}') // 分子式
       // 验证至少包含一种水的表示法
-      const hasWaterRepresentation = waterRepresentations.some(r => 
-        r.includes('H2O') || r.includes('H-O-H') || r.includes('H : O : H')
+      const hasWaterRepresentation = waterRepresentations.some(
+        r => r.includes('H2O') || r.includes('H-O-H') || r.includes('H : O : H'),
       )
       expect(hasWaterRepresentation).toBe(true)
     })
@@ -237,7 +235,7 @@ describe('Chemistry Extension - Real-World Integration', () => {
       })
 
       // AI 为每个反应添加详细条件
-      reactionNodes.forEach(({ node, pos }, index) => {
+      reactionNodes.forEach(({ node, pos }) => {
         if (node.attrs.chemical.includes('Cu + 8HNO3')) {
           editor.commands.updateBlockChemical({
             pos,
@@ -318,15 +316,11 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(organicCompounds.length).toBeGreaterThanOrEqual(9) // 至少6个具体分子 + 3个通式
 
       // 验证醇类
-      const alcohols = organicCompounds.filter(c => 
-        c.chemical.includes('CH3OH') || c.chemical.includes('C2H5OH')
-      )
+      const alcohols = organicCompounds.filter(c => c.chemical.includes('CH3OH') || c.chemical.includes('C2H5OH'))
       expect(alcohols).toHaveLength(2)
 
       // 验证通式
-      const generalFormulas = organicCompounds.filter(c => 
-        c.chemical.includes('R-') && c.type === 'blockChemical'
-      )
+      const generalFormulas = organicCompounds.filter(c => c.chemical.includes('R-') && c.type === 'blockChemical')
       expect(generalFormulas).toHaveLength(3)
     })
 
@@ -367,8 +361,8 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(thermodynamicEquations.length).toBeGreaterThanOrEqual(1)
       if (thermodynamicEquations.length > 0) {
         // 验证至少包含一些热力学内容
-        const hasThermodynamicContent = thermodynamicEquations.some(eq => 
-          eq.includes('ΔG') || eq.includes('ΔH') || eq.includes('ln') || eq.includes('RT') || eq.includes('nF')
+        const hasThermodynamicContent = thermodynamicEquations.some(
+          eq => eq.includes('ΔG') || eq.includes('ΔH') || eq.includes('ln') || eq.includes('RT') || eq.includes('nF'),
         )
         expect(hasThermodynamicContent).toBe(true)
       }
@@ -429,7 +423,7 @@ describe('Chemistry Extension - Real-World Integration', () => {
     it('应该处理物理单位与化学公式的组合', () => {
       // 📝 场景：在化学反应中包含物理单位
       editor.commands.insertContent('<p>反应热：</p>')
-      
+
       // 反应方程式
       editor.commands.insertBlockChemical({
         chemical: '\\ce{2H2 + O2 -> 2H2O}',
@@ -462,13 +456,16 @@ describe('Chemistry Extension - Real-World Integration', () => {
 
       // 调整期望值：检查化学公式组合
       expect(allChemicals.length).toBeGreaterThanOrEqual(1)
-      
+
       if (allChemicals.length > 0) {
         // 验证至少包含一些化学反应或物理单位内容
-        const hasChemicalContent = allChemicals.some(c => 
-          c.chemical.includes('H2') || c.chemical.includes('O2') || 
-          c.chemical.includes('kJ') || c.chemical.includes('mol') ||
-          c.chemical.includes('1.8e-16')
+        const hasChemicalContent = allChemicals.some(
+          c =>
+            c.chemical.includes('H2') ||
+            c.chemical.includes('O2') ||
+            c.chemical.includes('kJ') ||
+            c.chemical.includes('mol') ||
+            c.chemical.includes('1.8e-16'),
         )
         expect(hasChemicalContent).toBe(true)
       }
@@ -523,17 +520,20 @@ describe('Chemistry Extension - Real-World Integration', () => {
       // 验证实验内容
       if (experimentComponents.length > 0) {
         // 验证至少包含一些实验相关内容
-        const hasExperimentContent = experimentComponents.some(c => 
-          c.chemical?.includes('HCl') || c.chemical?.includes('NaOH') || 
-          c.chemical?.includes('NaCl') || c.chemical?.includes('H2O') ||
-          c.chemical?.includes('pH')
+        const hasExperimentContent = experimentComponents.some(
+          c =>
+            c.chemical?.includes('HCl') ||
+            c.chemical?.includes('NaOH') ||
+            c.chemical?.includes('NaCl') ||
+            c.chemical?.includes('H2O') ||
+            c.chemical?.includes('pH'),
         )
         expect(hasExperimentContent).toBe(true)
       }
 
       // 验证指示剂反应（行内）
-      const indicatorReaction = experimentComponents.find(c => 
-        c.chemical?.includes('HIn') && c.type === 'inlineChemical'
+      const indicatorReaction = experimentComponents.find(
+        c => c.chemical?.includes('HIn') && c.type === 'inlineChemical',
       )
       expect(indicatorReaction).toBeTruthy()
       expect(indicatorReaction.moniStreamType).toBe('inline-chemistry')
@@ -567,15 +567,15 @@ describe('Chemistry Extension - Real-World Integration', () => {
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === 'blockChemical') {
           synthesisSteps.push({ node, pos })
-          
+
           // AI 为每个步骤添加层级信息
           editor.commands.updateAttributes('blockChemical', {
             moniLevel: stepLevel,
             moniStreamType: 'chemistry',
             moniDragEnabled: true,
           })
-          
-          stepLevel++
+
+          stepLevel += 1
         }
       })
 
@@ -628,7 +628,7 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(wrapChemistryFormula('H2O')).toBe('\\ce{H2O}')
       expect(wrapChemistryFormula('25 °C')).toBe('\\pu{25 °C}')
       expect(wrapChemistryFormula('123 kJ/mol')).toBe('\\pu{123 kJ/mol}')
-      
+
       // 测试已包装的公式
       expect(wrapChemistryFormula('\\ce{H2O}')).toBe('\\ce{H2O}')
       expect(wrapChemistryFormula('\\pu{25 °C}')).toBe('\\pu{25 °C}')
@@ -648,9 +648,9 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(result2.fallback).toBe('\\pu{298.15 K}')
 
       // 测试复杂反应方程式
-      const result3 = renderChemistry('\\ce{2KMnO4 + 16HCl -> 2MnCl2 + 5Cl2 ^ + 2KCl + 8H2O}', { 
-        trust: true, 
-        throwOnError: false 
+      const result3 = renderChemistry('\\ce{2KMnO4 + 16HCl -> 2MnCl2 + 5Cl2 ^ + 2KCl + 8H2O}', {
+        trust: true,
+        throwOnError: false,
       })
       expect(result3.success).toBe(true)
       expect(result3.html).toBeDefined()
@@ -702,7 +702,7 @@ describe('Chemistry Extension - Real-World Integration', () => {
 
       // 调整期望值：实际只插入了最后一个反应
       expect(insertedReactions.length).toBeGreaterThanOrEqual(1)
-      
+
       // 验证至少有一些反应被插入
       expect(insertedReactions.length).toBeLessThanOrEqual(reactions.length)
 

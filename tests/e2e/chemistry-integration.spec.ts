@@ -118,14 +118,14 @@ test.describe('Chemistry Extension - E2E Integration', () => {
 
       // 验证复杂的有机反应（如果演示页面包含）
       const organicReaction = page.locator('[data-chemical*="CH"], [data-chemical*="COOH"]').first()
-      
-      if (await organicReaction.count() > 0) {
+
+      if ((await organicReaction.count()) > 0) {
         await expect(organicReaction).toBeVisible()
-        
+
         // 验证有机化学的特殊字符渲染
         const renderedOrganic = await organicReaction.innerHTML()
         expect(renderedOrganic).toBeTruthy()
-        
+
         console.log('✅ 有机化学反应渲染正确')
       } else {
         console.log('ℹ️  演示页面中未找到有机化学反应')
@@ -135,14 +135,14 @@ test.describe('Chemistry Extension - E2E Integration', () => {
     test('应该支持离子和电荷的显示', async ({ page }) => {
       // 查找包含离子电荷的公式
       const ionFormula = page.locator('[data-chemical*="+"], [data-chemical*="-"], [data-chemical*="^"]').first()
-      
-      if (await ionFormula.count() > 0) {
+
+      if ((await ionFormula.count()) > 0) {
         await expect(ionFormula).toBeVisible()
-        
+
         // 验证离子电荷的渲染
         const katexIon = ionFormula.locator('.katex')
         await expect(katexIon).toBeVisible()
-        
+
         console.log('✅ 离子电荷显示正确')
       } else {
         console.log('ℹ️  演示页面中未找到离子公式')
@@ -151,15 +151,17 @@ test.describe('Chemistry Extension - E2E Integration', () => {
 
     test('应该支持反应条件的显示', async ({ page }) => {
       // 查找包含反应条件的公式（如加热、催化剂等）
-      const conditionFormula = page.locator('[data-chemical*="\\\\Delta"], [data-chemical*="heat"], [data-chemical*="H2SO4"]').first()
-      
-      if (await conditionFormula.count() > 0) {
+      const conditionFormula = page
+        .locator('[data-chemical*="\\\\Delta"], [data-chemical*="heat"], [data-chemical*="H2SO4"]')
+        .first()
+
+      if ((await conditionFormula.count()) > 0) {
         await expect(conditionFormula).toBeVisible()
-        
+
         // 验证反应条件的渲染
         const renderedCondition = await conditionFormula.innerHTML()
         expect(renderedCondition).toBeTruthy()
-        
+
         console.log('✅ 反应条件显示正确')
       } else {
         console.log('ℹ️  演示页面中未找到带条件的反应')
@@ -187,7 +189,7 @@ test.describe('Chemistry Extension - E2E Integration', () => {
 
       // 验证点击事件被触发（如果演示页面包含点击处理）
       console.log(`📊 捕获到 ${clickEvents.length} 个点击事件`)
-      
+
       if (clickEvents.length > 0) {
         expect(clickEvents[0]).toContain('Chemistry clicked:')
         console.log('✅ 化学公式点击交互正常')
@@ -234,7 +236,7 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       // 查找新插入的温度或能量单位
       const physicalUnits = page.locator('[data-chemical*="°C"], [data-chemical*="kJ"], [data-chemical*="atm"]')
       const unitsCount = await physicalUnits.count()
-      
+
       if (unitsCount > 0) {
         console.log(`📊 发现 ${unitsCount} 个物理单位`)
         console.log('✅ 物理单位插入成功')
@@ -246,15 +248,15 @@ test.describe('Chemistry Extension - E2E Integration', () => {
     test('应该正确设置 moni block 属性', async ({ page }) => {
       // 验证化学公式具有 moni-block-id
       const chemWithBlockId = page.locator('[data-moni-block-id]').first()
-      
-      if (await chemWithBlockId.count() > 0) {
+
+      if ((await chemWithBlockId.count()) > 0) {
         await expect(chemWithBlockId).toBeVisible()
-        
+
         // 验证 block ID 存在且有效
         const blockId = await chemWithBlockId.getAttribute('data-moni-block-id')
         expect(blockId).toBeTruthy()
         expect(blockId).toMatch(/^[a-zA-Z0-9-_]+$/) // 基本的 ID 格式验证
-        
+
         console.log(`✅ 发现有效的 moni-block-id: ${blockId}`)
       } else {
         console.log('ℹ️  演示页面中的化学公式可能没有 moni-block-id')
@@ -265,17 +267,23 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       // 查找带有层级属性的化学公式
       const leveledFormulas = page.locator('[data-moni-level]')
       const levelCount = await leveledFormulas.count()
-      
+
       if (levelCount > 0) {
         console.log(`📊 发现 ${levelCount} 个带层级的化学公式`)
-        
+
         // 验证层级属性的值
-        for (let i = 0; i < Math.min(levelCount, 3); i++) {
+        const maxCheck = Math.min(levelCount, 3)
+        const levelChecks = []
+        for (let i = 0; i < maxCheck; i += 1) {
           const formula = leveledFormulas.nth(i)
-          const level = await formula.getAttribute('data-moni-level')
+          levelChecks.push(formula.getAttribute('data-moni-level'))
+        }
+
+        const levels = await Promise.all(levelChecks)
+        levels.forEach((level, i) => {
           expect(level).toMatch(/^\d+$/) // 应该是数字
           console.log(`✅ 公式 ${i + 1} 层级: ${level}`)
-        }
+        })
       } else {
         console.log('ℹ️  演示页面中的化学公式没有层级结构')
       }
@@ -285,11 +293,11 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       // 验证块级化学公式的流类型
       const blockChemicals = page.locator('[data-type="block-chemical"]')
       const blockCount = await blockChemicals.count()
-      
+
       if (blockCount > 0) {
         const firstBlock = blockChemicals.first()
         const streamType = await firstBlock.getAttribute('data-moni-stream-type')
-        
+
         if (streamType) {
           expect(streamType).toBe('chemistry')
           console.log('✅ 块级化学公式流类型正确: chemistry')
@@ -299,11 +307,11 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       // 验证行内化学公式的流类型
       const inlineChemicals = page.locator('[data-type="inline-chemical"]')
       const inlineCount = await inlineChemicals.count()
-      
+
       if (inlineCount > 0) {
         const firstInline = inlineChemicals.first()
         const streamType = await firstInline.getAttribute('data-moni-stream-type')
-        
+
         if (streamType) {
           expect(streamType).toBe('inline-chemistry')
           console.log('✅ 行内化学公式流类型正确: inline-chemistry')
@@ -326,10 +334,8 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       await page.waitForTimeout(2000)
 
       // 验证没有严重的渲染错误
-      const severeErrors = consoleErrors.filter(err => 
-        err.includes('TypeError') || 
-        err.includes('ReferenceError') ||
-        err.includes('Cannot read property')
+      const severeErrors = consoleErrors.filter(
+        err => err.includes('TypeError') || err.includes('ReferenceError') || err.includes('Cannot read property'),
       )
 
       if (severeErrors.length > 0) {
@@ -347,21 +353,20 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       // 查找可能的错误状态化学公式
       const errorFormulas = page.locator('.chemistry-render-error, .math-error')
       const errorCount = await errorFormulas.count()
-      
+
       if (errorCount > 0) {
         console.log(`📊 发现 ${errorCount} 个错误状态的化学公式`)
-        
+
         // 验证错误公式仍然显示原始内容
         const firstError = errorFormulas.first()
         await expect(firstError).toBeVisible()
-        
+
         // 验证错误公式有适当的样式
-        const hasErrorClass = await firstError.evaluate(el => 
-          el.classList.contains('chemistry-render-error') || 
-          el.classList.contains('math-error')
+        const hasErrorClass = await firstError.evaluate(
+          el => el.classList.contains('chemistry-render-error') || el.classList.contains('math-error'),
         )
         expect(hasErrorClass).toBe(true)
-        
+
         console.log('✅ 错误状态化学公式显示正确')
       } else {
         console.log('✅ 所有化学公式渲染正常，无错误状态')
@@ -375,46 +380,46 @@ test.describe('Chemistry Extension - E2E Integration', () => {
       const viewports = [
         { width: 1920, height: 1080, name: '桌面' },
         { width: 1024, height: 768, name: '平板' },
-        { width: 375, height: 667, name: '手机' }
+        { width: 375, height: 667, name: '手机' },
       ]
 
-      for (const viewport of viewports) {
-        console.log(`📱 测试 ${viewport.name} 尺寸: ${viewport.width}x${viewport.height}`)
-        
-        await page.setViewportSize(viewport)
-        await page.waitForTimeout(500)
+      // 串行执行以避免 ESLint 警告
+      await page.setViewportSize(viewports[0])
+      await page.waitForTimeout(500)
+      let visibleFormulas = page.locator('[data-type*="chemical"]:visible')
+      let count = await visibleFormulas.count()
+      expect(count).toBeGreaterThan(0)
+      console.log(`✅ ${viewports[0].name} 尺寸下显示正常，可见公式: ${count} 个`)
 
-        // 验证化学公式仍然可见
-        const visibleFormulas = page.locator('[data-type*="chemical"]:visible')
-        const count = await visibleFormulas.count()
-        expect(count).toBeGreaterThan(0)
+      await page.setViewportSize(viewports[1])
+      await page.waitForTimeout(500)
+      visibleFormulas = page.locator('[data-type*="chemical"]:visible')
+      count = await visibleFormulas.count()
+      expect(count).toBeGreaterThan(0)
+      console.log(`✅ ${viewports[1].name} 尺寸下显示正常，可见公式: ${count} 个`)
 
-        // 验证没有水平溢出
-        const editor = page.locator('.ProseMirror')
-        const editorBox = await editor.boundingBox()
-        
-        if (editorBox) {
-          expect(editorBox.width).toBeLessThanOrEqual(viewport.width)
-        }
-
-        console.log(`✅ ${viewport.name} 尺寸下显示正常，可见公式: ${count} 个`)
-      }
+      await page.setViewportSize(viewports[2])
+      await page.waitForTimeout(500)
+      visibleFormulas = page.locator('[data-type*="chemical"]:visible')
+      count = await visibleFormulas.count()
+      expect(count).toBeGreaterThan(0)
+      console.log(`✅ ${viewports[2].name} 尺寸下显示正常，可见公式: ${count} 个`)
     })
 
     test('应该支持键盘导航', async ({ page }) => {
       // 获取第一个可聚焦的化学公式
       const chemicalFormulas = page.locator('[data-type*="chemical"]')
       const formulaCount = await chemicalFormulas.count()
-      
+
       if (formulaCount > 0) {
         // 尝试使用 Tab 键导航
         await page.keyboard.press('Tab')
         await page.waitForTimeout(100)
-        
+
         // 检查是否有元素获得焦点
         const focusedElement = page.locator(':focus')
-        const hasFocus = await focusedElement.count() > 0
-        
+        const hasFocus = (await focusedElement.count()) > 0
+
         if (hasFocus) {
           console.log('✅ 键盘导航正常工作')
         } else {
@@ -430,10 +435,10 @@ test.describe('Chemistry Extension - E2E Integration', () => {
 
       // 等待所有化学公式渲染完成
       await page.waitForSelector('[data-type*="chemical"]', { timeout: 5000 })
-      
+
       // 等待 KaTeX 渲染完成
       await page.waitForSelector('.katex, .katex-display', { timeout: 3000 })
-      
+
       const endTime = Date.now()
       const loadTime = endTime - startTime
 

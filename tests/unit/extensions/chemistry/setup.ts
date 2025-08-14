@@ -1,8 +1,8 @@
-import { beforeAll, beforeEach, afterEach, afterAll, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest'
 
 /**
  * Chemistry Extension Tests Setup
- * 
+ *
  * 为化学公式扩展测试提供通用的设置和清理
  */
 
@@ -29,7 +29,7 @@ beforeAll(() => {
 beforeEach(() => {
   // 清理 DOM
   document.body.innerHTML = ''
-  
+
   // 重置所有 mock
   vi.clearAllMocks()
 })
@@ -52,7 +52,9 @@ export const createTestElement = (tagName: string = 'div'): HTMLElement => {
 }
 
 export const waitForNextTick = (): Promise<void> => {
-  return new Promise(resolve => setTimeout(resolve, 0))
+  return new Promise(resolve => {
+    setTimeout(resolve, 0)
+  })
 }
 
 // 化学公式测试数据
@@ -109,52 +111,29 @@ export const teachingScenarios = {
   highSchool: {
     atomicStructure: {
       title: '原子结构',
-      formulas: [
-        '\\ce{H}', '\\ce{He}', '\\ce{Li}', '\\ce{Be}',
-        '\\ce{O: 1s^2 2s^2 2p^4}',
-      ],
+      formulas: ['\\ce{H}', '\\ce{He}', '\\ce{Li}', '\\ce{Be}', '\\ce{O: 1s^2 2s^2 2p^4}'],
     },
     chemicalBonds: {
       title: '化学键',
-      formulas: [
-        '\\ce{H-H}', '\\ce{H-O-H}', '\\ce{Na+ Cl-}',
-        '\\ce{H^* + Cl^* -> H-Cl}',
-      ],
+      formulas: ['\\ce{H-H}', '\\ce{H-O-H}', '\\ce{Na+ Cl-}', '\\ce{H^* + Cl^* -> H-Cl}'],
     },
     reactions: {
       title: '化学反应',
-      formulas: [
-        '\\ce{2H2 + O2 -> 2H2O}',
-        '\\ce{CaCO3 ->[\\Delta] CaO + CO2 ^}',
-        '\\ce{Zn + 2HCl -> ZnCl2 + H2 ^}',
-      ],
+      formulas: ['\\ce{2H2 + O2 -> 2H2O}', '\\ce{CaCO3 ->[\\Delta] CaO + CO2 ^}', '\\ce{Zn + 2HCl -> ZnCl2 + H2 ^}'],
     },
   },
   university: {
     organicChemistry: {
       title: '有机化学',
-      formulas: [
-        '\\ce{CH3-CH2-OH}',
-        '\\ce{C6H5-OH}',
-        '\\ce{CH3-CO-CH3}',
-        '\\ce{RCOOH + R\'OH ->[H+] RCOOR\' + H2O}',
-      ],
+      formulas: ['\\ce{CH3-CH2-OH}', '\\ce{C6H5-OH}', '\\ce{CH3-CO-CH3}', "\\ce{RCOOH + R'OH ->[H+] RCOOR' + H2O}"],
     },
     physicalChemistry: {
       title: '物理化学',
-      formulas: [
-        '\\pu{ΔH = -394.36 kJ/mol}',
-        '\\pu{ΔS = -2.86 J/(mol·K)}',
-        '\\pu{K = 1.8 × 10^{-5}}',
-      ],
+      formulas: ['\\pu{ΔH = -394.36 kJ/mol}', '\\pu{ΔS = -2.86 J/(mol·K)}', '\\pu{K = 1.8 × 10^{-5}}'],
     },
     inorganicChemistry: {
       title: '无机化学',
-      formulas: [
-        '\\ce{[Cu(NH3)4]^2+}',
-        '\\ce{[Fe(CN)6]^3-}',
-        '\\ce{K3[Fe(CN)6]}',
-      ],
+      formulas: ['\\ce{[Cu(NH3)4]^2+}', '\\ce{[Fe(CN)6]^3-}', '\\ce{K3[Fe(CN)6]}'],
     },
   },
 }
@@ -175,11 +154,7 @@ export const errorScenarios = {
     '\\ce{}', // 空内容
     '\\pu{}', // 空单位
   ],
-  unknownCommands: [
-    '\\invalid{H2O}',
-    '\\ce{\\unknown{command}}',
-    '\\pu{\\bad{unit}}',
-  ],
+  unknownCommands: ['\\invalid{H2O}', '\\ce{\\unknown{command}}', '\\pu{\\bad{unit}}'],
   malformedContent: [
     '\\ce{H2O + }', // 不完整反应
     '\\ce{+ H2O}', // 错误开头

@@ -1,18 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
-import {
-  renderChemistry,
-  isChemistryFormula,
-  wrapChemistryFormula,
-  validateChemistryFormula,
-  extractChemistryFormulas,
-  mathToChemistry,
-  defaultChemistryKatexOptions,
-} from '../../../../packages/extension-chemistry/src/utils.js'
+
 import { ChemicalRenderer } from '../../../../packages/extension-chemistry/src/ChemicalRenderer.js'
+import {
+  defaultChemistryKatexOptions,
+  extractChemistryFormulas,
+  isChemistryFormula,
+  mathToChemistry,
+  renderChemistry,
+  validateChemistryFormula,
+  wrapChemistryFormula,
+} from '../../../../packages/extension-chemistry/src/utils.js'
 
 /**
  * Chemistry Utils 单元测试
- * 
+ *
  * 测试化学公式处理的核心工具函数：
  * 1. ✅ 化学公式识别和验证
  * 2. ✅ mhchem 语法处理
@@ -193,23 +194,20 @@ describe('Chemistry Utils', () => {
 
     it('应该处理复杂的化学表达式', () => {
       // 带状态符号的反应
-      expect(wrapChemistryFormula('CaCO3 (s) -> CaO (s) + CO2 (g)'))
-        .toBe('\\ce{CaCO3 (s) -> CaO (s) + CO2 (g)}')
+      expect(wrapChemistryFormula('CaCO3 (s) -> CaO (s) + CO2 (g)')).toBe('\\ce{CaCO3 (s) -> CaO (s) + CO2 (g)}')
 
       // 带电荷的离子
-      expect(wrapChemistryFormula('Ca2+ + CO3^2- -> CaCO3'))
-        .toBe('\\ce{Ca2+ + CO3^2- -> CaCO3}')
+      expect(wrapChemistryFormula('Ca2+ + CO3^2- -> CaCO3')).toBe('\\ce{Ca2+ + CO3^2- -> CaCO3}')
 
       // 带气体符号的反应
-      expect(wrapChemistryFormula('Zn + 2HCl -> ZnCl2 + H2 ^'))
-        .toBe('\\ce{Zn + 2HCl -> ZnCl2 + H2 ^}')
+      expect(wrapChemistryFormula('Zn + 2HCl -> ZnCl2 + H2 ^')).toBe('\\ce{Zn + 2HCl -> ZnCl2 + H2 ^}')
     })
   })
 
   describe('⚗️ Chemical Rendering', () => {
     it('应该成功渲染基础化学公式', () => {
       const result = renderChemistry('\\ce{H2O}', { trust: true, throwOnError: false })
-      
+
       expect(result.success).toBe(true)
       expect(result.html).toBe('<span class="katex">\\ce{H2O}</span>')
       expect(result.fallback).toBe('\\ce{H2O}')
@@ -219,7 +217,7 @@ describe('Chemistry Utils', () => {
     it('应该成功渲染复杂反应方程式', () => {
       const complexReaction = '\\ce{2KMnO4 + 16HCl -> 2MnCl2 + 5Cl2 ^ + 2KCl + 8H2O}'
       const result = renderChemistry(complexReaction, { trust: true })
-      
+
       expect(result.success).toBe(true)
       expect(result.html).toContain('katex')
       expect(result.fallback).toBe(complexReaction)
@@ -228,7 +226,7 @@ describe('Chemistry Utils', () => {
     it('应该成功渲染物理单位', () => {
       const unit = '\\pu{-394.36 kJ/mol}'
       const result = renderChemistry(unit, { trust: true })
-      
+
       expect(result.success).toBe(true)
       expect(result.html).toContain('katex')
       expect(result.fallback).toBe(unit)
@@ -237,7 +235,7 @@ describe('Chemistry Utils', () => {
     it('应该处理渲染错误并提供降级', () => {
       const invalidFormula = '\\invalid{syntax}}}'
       const result = renderChemistry(invalidFormula, { trust: true, throwOnError: false })
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toContain('Unknown command')
       expect(result.fallback).toBe(invalidFormula)
@@ -245,7 +243,7 @@ describe('Chemistry Utils', () => {
 
     it('应该处理空公式', () => {
       const result = renderChemistry('', { trust: true })
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toBe('Empty chemistry formula')
       expect(result.fallback).toBe('')
@@ -253,7 +251,7 @@ describe('Chemistry Utils', () => {
 
     it('应该处理只有空格的公式', () => {
       const result = renderChemistry('   ', { trust: true })
-      
+
       expect(result.success).toBe(false)
       expect(result.error).toBe('Empty chemistry formula')
       expect(result.fallback).toBe('   ')
@@ -276,7 +274,7 @@ describe('Chemistry Utils', () => {
     it('应该在真实教学场景中正确验证', () => {
       // 学生常见的输入错误
       expect(validateChemistryFormula('\\ce{H2O}')).toBe(true) // 正确
-      
+
       // 无效语法
       expect(validateChemistryFormula('\\ce{H2O')).toBe(false) // 缺少右括号
     })
@@ -286,7 +284,7 @@ describe('Chemistry Utils', () => {
     it('应该从文本中提取化学公式', () => {
       const text = '水的分子式是 \\ce{H2O}，在标准状况下 \\pu{0 °C} 时结冰。'
       const formulas = extractChemistryFormulas(text)
-      
+
       expect(formulas).toHaveLength(2)
       expect(formulas).toContain('\\ce{H2O}')
       expect(formulas).toContain('\\pu{0 °C}')
@@ -300,7 +298,7 @@ describe('Chemistry Utils', () => {
         标准温度：\\pu{298.15 K}
       `
       const formulas = extractChemistryFormulas(text)
-      
+
       expect(formulas).toHaveLength(4)
       expect(formulas).toContain('\\ce{HCl + NaOH -> NaCl + H2O}')
       expect(formulas).toContain('\\pu{-57.32 kJ/mol}')
@@ -311,7 +309,7 @@ describe('Chemistry Utils', () => {
     it('应该处理没有公式的文本', () => {
       const text = '这是一段普通的文本，没有化学公式。'
       const formulas = extractChemistryFormulas(text)
-      
+
       expect(formulas).toHaveLength(0)
     })
   })
@@ -358,7 +356,7 @@ describe('Chemistry Utils', () => {
         displayMode: true,
         trust: false,
       }
-      
+
       const result = renderChemistry('\\ce{H2O}', customOptions)
       expect(result).toBeDefined()
     })
@@ -380,7 +378,7 @@ describe('ChemicalRenderer Class', () => {
           '\\water': '\\ce{H2O}',
         },
       }
-      
+
       const renderer = new ChemicalRenderer(customOptions)
       expect(renderer.getOptions()).toMatchObject(customOptions)
     })
@@ -388,7 +386,7 @@ describe('ChemicalRenderer Class', () => {
     it('应该支持选项更新', () => {
       const renderer = new ChemicalRenderer()
       const newOptions = { displayMode: true }
-      
+
       renderer.updateOptions(newOptions)
       expect(renderer.getOptions().displayMode).toBe(true)
     })
@@ -398,9 +396,9 @@ describe('ChemicalRenderer Class', () => {
     it('应该渲染到 DOM 元素', () => {
       const renderer = new ChemicalRenderer()
       const element = document.createElement('div')
-      
+
       const result = renderer.render('\\ce{H2O}', element)
-      
+
       expect(result.success).toBe(true)
       expect(element.innerHTML).toContain('katex')
       expect(element.getAttribute('data-chemistry-original')).toBe('\\ce{H2O}')
@@ -409,9 +407,9 @@ describe('ChemicalRenderer Class', () => {
     it('应该处理渲染错误', () => {
       const renderer = new ChemicalRenderer()
       const element = document.createElement('div')
-      
+
       const result = renderer.render('\\invalid{syntax}', element)
-      
+
       expect(result.success).toBe(false)
       expect(element.textContent).toBe('\\invalid{syntax}')
       expect(element.classList.contains('chemistry-render-error')).toBe(true)
@@ -419,18 +417,18 @@ describe('ChemicalRenderer Class', () => {
 
     it('应该支持字符串渲染', () => {
       const renderer = new ChemicalRenderer()
-      
+
       const result = renderer.renderToString('\\ce{H2O}')
-      
+
       expect(result.success).toBe(true)
       expect(result.html).toContain('katex')
     })
 
     it('应该创建预览元素', () => {
       const renderer = new ChemicalRenderer()
-      
+
       const preview = renderer.createPreview('\\ce{H2O}', 'custom-class')
-      
+
       expect(preview).toBeInstanceOf(HTMLElement)
       expect(preview.className).toContain('custom-class')
     })
@@ -439,14 +437,14 @@ describe('ChemicalRenderer Class', () => {
   describe('🔧 Utility Methods', () => {
     it('应该验证渲染能力', () => {
       const renderer = new ChemicalRenderer()
-      
+
       expect(renderer.canRender('\\ce{H2O}')).toBe(true)
       expect(renderer.canRender('\\invalid{syntax}')).toBe(false)
     })
 
     it('应该支持静态创建方法', () => {
       const renderer = ChemicalRenderer.create({ displayMode: true })
-      
+
       expect(renderer).toBeInstanceOf(ChemicalRenderer)
       expect(renderer.getOptions().displayMode).toBe(true)
     })
@@ -455,15 +453,15 @@ describe('ChemicalRenderer Class', () => {
   describe('🧪 Real Chemistry Teaching Scenarios', () => {
     it('应该支持完整的化学实验报告渲染', () => {
       const renderer = new ChemicalRenderer({ trust: true })
-      
+
       // 实验原理
       const principle = renderer.renderToString('\\ce{CaCO3 ->[\\Delta] CaO + CO2 ^}')
       expect(principle.success).toBe(true)
-      
+
       // 实验条件
       const temperature = renderer.renderToString('\\pu{1000 °C}')
       expect(temperature.success).toBe(true)
-      
+
       // 产物分析
       const products = renderer.renderToString('\\ce{CaO + H2O -> Ca(OH)2}')
       expect(products.success).toBe(true)
@@ -471,13 +469,13 @@ describe('ChemicalRenderer Class', () => {
 
     it('应该支持有机化学合成路径', () => {
       const renderer = new ChemicalRenderer({ trust: true })
-      
+
       // 多步合成反应
       const reactions = [
         '\\ce{C6H5OH + CO2 ->[NaOH][140°C] C7H6O3}',
         '\\ce{C7H6O3 + (CH3CO)2O ->[H3PO4] C9H8O4 + CH3COOH}',
       ]
-      
+
       reactions.forEach(reaction => {
         const result = renderer.renderToString(reaction)
         expect(result.success).toBe(true)
@@ -487,14 +485,10 @@ describe('ChemicalRenderer Class', () => {
 
     it('应该支持物理化学计算', () => {
       const renderer = new ChemicalRenderer({ trust: true })
-      
+
       // 热力学数据
-      const thermodynamics = [
-        '\\pu{ΔH = -394.36 kJ/mol}',
-        '\\pu{ΔS = -2.86 J/(mol·K)}',
-        '\\pu{ΔG = -394.38 kJ/mol}',
-      ]
-      
+      const thermodynamics = ['\\pu{ΔH = -394.36 kJ/mol}', '\\pu{ΔS = -2.86 J/(mol·K)}', '\\pu{ΔG = -394.38 kJ/mol}']
+
       thermodynamics.forEach(formula => {
         const result = renderer.renderToString(formula)
         expect(result.success).toBe(true)

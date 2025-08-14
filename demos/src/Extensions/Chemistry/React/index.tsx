@@ -1,10 +1,9 @@
-import React from 'react'
-import { Editor } from '@tiptap/core'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { Chemistry } from '@tiptap/extension-chemistry'
 import { Document } from '@tiptap/extension-document'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { Chemistry, InlineChemical, BlockChemical } from '@tiptap/extension-chemistry'
+import { EditorContent, useEditor } from '@tiptap/react'
+import React from 'react'
 
 const ChemistryDemo = () => {
   const editor = useEditor({
@@ -18,6 +17,7 @@ const ChemistryDemo = () => {
           throwOnError: false,
         },
         onClick: (node, pos) => {
+          // eslint-disable-next-line no-console
           console.log('Chemistry formula clicked:', node.attrs.chemical, 'at position:', pos)
         },
       }),
@@ -74,7 +74,9 @@ const ChemistryDemo = () => {
   })
 
   const insertSampleFormulas = () => {
-    if (!editor) return
+    if (!editor) {
+      return
+    }
 
     // Insert sample formulas
     editor
@@ -94,14 +96,16 @@ const ChemistryDemo = () => {
     editor
       .chain()
       .insertContent('<br>')
-      .insertBlockChemical({ 
-        chemical: '\\ce{CaCO3 ->[\\Delta] CaO + CO2 ^}' 
+      .insertBlockChemical({
+        chemical: '\\ce{CaCO3 ->[\\Delta] CaO + CO2 ^}',
       })
       .run()
   }
 
   const insertPhysicalUnits = () => {
-    if (!editor) return
+    if (!editor) {
+      return
+    }
 
     editor
       .chain()
@@ -122,13 +126,11 @@ const ChemistryDemo = () => {
         <button onClick={insertSampleFormulas} style={{ marginRight: '0.5rem' }}>
           Insert Sample Chemistry
         </button>
-        <button onClick={insertPhysicalUnits}>
-          Insert Physical Units
-        </button>
+        <button onClick={insertPhysicalUnits}>Insert Physical Units</button>
       </div>
-      
-      <EditorContent 
-        editor={editor} 
+
+      <EditorContent
+        editor={editor}
         className="chemistry-editor"
         style={{
           border: '1px solid #ccc',
@@ -137,7 +139,7 @@ const ChemistryDemo = () => {
           minHeight: '400px',
         }}
       />
-      
+
       <style>{`
         .chemistry-editor {
           font-family: 'Times New Roman', serif;

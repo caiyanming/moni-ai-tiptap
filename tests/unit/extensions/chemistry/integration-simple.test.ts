@@ -1,8 +1,8 @@
 import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
+import { Heading } from '@tiptap/extension-heading'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { Heading } from '@tiptap/extension-heading'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { BlockChemical } from '../../../../packages/extension-chemistry/src/extensions/BlockChemical.js'
@@ -134,13 +134,14 @@ describe('Chemistry Extension - Simplified Integration', () => {
       // 🎯 AI 精确定位第二个行内公式（分解反应）
       let targetNodeId: string = ''
       let foundCount = 0
-      
+
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === 'inlineChemical') {
-          foundCount++
-          if (foundCount === 2) { // 第二个行内化学公式
+          foundCount += 1
+          if (foundCount === 2) {
+            // 第二个行内化学公式
             targetNodeId = node.attrs.moniBlockId
-            
+
             // AI 更新为更具体的分解反应示例
             editor.commands.updateInlineChemical({
               pos,
@@ -163,10 +164,10 @@ describe('Chemistry Extension - Simplified Integration', () => {
       })
 
       expect(inlineChemicals).toHaveLength(2)
-      
+
       const targetNode = inlineChemicals.find(n => n.moniBlockId === targetNodeId)
       const otherNode = inlineChemicals.find(n => n.moniBlockId !== targetNodeId)
-      
+
       expect(targetNode.chemical).toBe('\\ce{2H2O2 -> 2H2O + O2}') // 更新后的
       expect(otherNode.chemical).toBe('\\ce{A + B -> AB}') // 保持原样
     })
@@ -224,15 +225,13 @@ describe('Chemistry Extension - Simplified Integration', () => {
       `)
 
       // 模拟并发修改
-      const modifications: Array<{pos: number, chemical: string}> = []
-      
+      const modifications: Array<{ pos: number; chemical: string }> = []
+
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === 'blockChemical') {
           modifications.push({
             pos,
-            chemical: node.attrs.chemical === '\\ce{NaCl}' 
-              ? '\\ce{NaCl (s)}' 
-              : '\\ce{KBr (s)}',
+            chemical: node.attrs.chemical === '\\ce{NaCl}' ? '\\ce{NaCl (s)}' : '\\ce{KBr (s)}',
           })
         }
       })
@@ -279,19 +278,22 @@ describe('Chemistry Extension - Simplified Integration', () => {
       editor.state.doc.descendants(node => {
         switch (node.type.name) {
           case 'heading':
-            documentStructure.headings++
+            documentStructure.headings += 1
             break
           case 'paragraph':
-            documentStructure.paragraphs++
+            documentStructure.paragraphs += 1
             break
           case 'inlineChemical':
-            documentStructure.inlineChemicals++
+            documentStructure.inlineChemicals += 1
             break
           case 'blockChemical':
-            documentStructure.blockChemicals++
+            documentStructure.blockChemicals += 1
             break
           case 'text':
             documentStructure.text += node.textContent
+            break
+          default:
+            // Handle other node types
             break
         }
       })
@@ -308,14 +310,8 @@ describe('Chemistry Extension - Simplified Integration', () => {
     it('应该能处理包含大量化学公式的文档', () => {
       // 创建包含多个化学公式的文档
       let content = '<h1>化学公式集合</h1>'
-      
-      const formulas = [
-        '\\ce{H2SO4}',
-        '\\ce{NaOH}', 
-        '\\ce{CaCO3}',
-        '\\ce{NH4Cl}',
-        '\\ce{KMnO4}',
-      ]
+
+      const formulas = ['\\ce{H2SO4}', '\\ce{NaOH}', '\\ce{CaCO3}', '\\ce{NH4Cl}', '\\ce{KMnO4}']
 
       formulas.forEach((formula, index) => {
         content += `<p>公式 ${index + 1}: <span data-type="inline-chemical" data-chemical="${formula}"></span></p>`
@@ -335,7 +331,7 @@ describe('Chemistry Extension - Simplified Integration', () => {
       })
 
       expect(chemicalNodes).toHaveLength(formulas.length)
-      
+
       // 验证每个公式都有唯一的 moniBlockId
       const blockIds = chemicalNodes.map(n => n.moniBlockId)
       const uniqueBlockIds = [...new Set(blockIds)]
