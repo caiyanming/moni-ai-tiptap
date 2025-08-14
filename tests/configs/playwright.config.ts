@@ -34,7 +34,7 @@ export default defineConfig({
   /* 全局配置 */
   use: {
     /* 基础 URL */
-    baseURL: 'http://localhost:3666',
+    baseURL: 'http://localhost:3667',
 
     /* 追踪和调试 */
     trace: 'on-first-retry',
