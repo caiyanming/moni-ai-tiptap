@@ -3,7 +3,7 @@
  * 验证拖拽功能的实际可用性和用户体验
  */
 
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('🚀 Notion 级别拖拽功能验证', () => {
   test('🔍 拖拽功能状态检查 - 快速检查拖拽功能实际状态', async ({ page }) => {

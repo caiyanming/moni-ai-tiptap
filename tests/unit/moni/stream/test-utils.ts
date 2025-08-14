@@ -1,5 +1,5 @@
 // Test utilities for stream operation tests
-import { type BlockContent,type StreamOperation, BlockOperationStatus, BlockOperationType } from '@tiptap/core'
+import { type BlockContent, type StreamOperation, BlockOperationStatus, BlockOperationType } from '@tiptap/core'
 
 export const cleanupDOM = () => {
   // Clean up any existing DOM elements after tests

@@ -4,12 +4,8 @@
  */
 
 import type { IndicatorDirection, IndicatorPosition } from '@tiptap/extension-drag-handle/drop-position-calculator.js'
-import type {
-  ModernDragIndicator} from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
-import {
-  createDragIndicator,
-  DEFAULT_THEMES
-} from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
+import type { ModernDragIndicator } from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
+import { createDragIndicator, DEFAULT_THEMES } from '@tiptap/extension-drag-handle/modern-drag-indicator.js'
 import type { EditorView } from '@tiptap/pm/view'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 

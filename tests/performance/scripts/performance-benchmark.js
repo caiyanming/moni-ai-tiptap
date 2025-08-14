@@ -22,8 +22,12 @@ function originalAlgorithm(x, y, rect) {
   const bottomThreshold = rect.bottom - rect.height * 0.25
   const isInNestZone = x < rect.left + 40
 
-  if (y < topThreshold) {return 'above'}
-  if (y > bottomThreshold) {return 'below'}
+  if (y < topThreshold) {
+    return 'above'
+  }
+  if (y > bottomThreshold) {
+    return 'below'
+  }
   return isInNestZone ? 'inside-nest' : 'inside'
 }
 
@@ -48,9 +52,13 @@ function appflowyAlgorithm(x, y, rect) {
   const bottomThreshold = rect.bottom - rect.height * VERTICAL_SPLIT_RATIO
 
   let dropPosition
-  if (y < topThreshold) {dropPosition = 'above'}
-  else if (y > bottomThreshold) {dropPosition = 'below'}
-  else {dropPosition = horizontalPosition === 'center' ? 'inside-nest' : 'inside'}
+  if (y < topThreshold) {
+    dropPosition = 'above'
+  } else if (y > bottomThreshold) {
+    dropPosition = 'below'
+  } else {
+    dropPosition = horizontalPosition === 'center' ? 'inside-nest' : 'inside'
+  }
 
   // 置信度计算
   const confidence = 0.8 + (horizontalPosition === 'center' ? 0.1 : 0.15)
@@ -113,7 +121,9 @@ keyPositions.forEach((pos, index) => {
   )
 
   accuracyTests += 1
-  if (appflowyResult.confidence > 0.9) {appflowyAccurate += 1}
+  if (appflowyResult.confidence > 0.9) {
+    appflowyAccurate += 1
+  }
   console.log('')
 })
 

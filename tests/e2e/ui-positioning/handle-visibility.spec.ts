@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { DragTestHelper } from '../utils/DragTestHelper.js'
 
@@ -117,7 +117,7 @@ test.describe('拖拽手柄可见性', () => {
     dragHelper.recordTest('空行手柄行为', emptyLineHandlesWork, {
       emptyLineCount: emptyLineResults.length,
       visibleCount,
-      consistencyRate: `${(consistencyRate * 100).toFixed(1)  }%`,
+      consistencyRate: `${(consistencyRate * 100).toFixed(1)}%`,
     })
   })
 

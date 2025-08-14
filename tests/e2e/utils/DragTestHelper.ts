@@ -8,7 +8,7 @@
  * - 详细错误报告
  */
 
-import type { Locator,Page} from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 
 export interface DragTestConfig {
@@ -122,12 +122,15 @@ export class DragTestHelper {
 
     // 等待编辑器加载
     await this.proseMirror.waitFor({ state: 'visible', timeout: 10000 })
-    
+
     // 等待编辑器实例就绪
-    await this.page.waitForFunction(() => {
-      return (window as any).__tiptapEditor !== undefined
-    }, { timeout: 5000 })
-    
+    await this.page.waitForFunction(
+      () => {
+        return (window as any).__tiptapEditor !== undefined
+      },
+      { timeout: 5000 },
+    )
+
     // 额外等待以确保所有插件加载完成
     await this.page.waitForTimeout(1000)
 
@@ -244,11 +247,11 @@ export class DragTestHelper {
     // 不需要重新插入内容，直接使用演示页面的现有内容
     // 演示页面已经有标准的段落结构
     console.log('✅ 使用演示页面现有内容')
-    
+
     // 验证现有段落
     const paragraphs = await this.proseMirror.locator('p').all()
     console.log(`✅ 找到 ${paragraphs.length} 个现有段落`)
-    
+
     for (let i = 0; i < paragraphs.length; i++) {
       const text = await paragraphs[i].textContent()
       console.log(`段落 ${i}: ${text?.trim() || '(空段落)'}`)
@@ -270,7 +273,7 @@ export class DragTestHelper {
   ): Promise<{ success: boolean; error?: string; details?: any }> {
     const { dragToPosition = 'below', holdTime = 800, moveSteps = 8, waitAfterDrag = 1000 } = options
     const startTime = performance.now()
-    
+
     const result: any = {
       success: false,
       duration: 0,
@@ -278,8 +281,8 @@ export class DragTestHelper {
       details: {
         attemptedMethods: [],
         failureReasons: [],
-        verification: undefined
-      }
+        verification: undefined,
+      },
     }
 
     try {
@@ -287,29 +290,29 @@ export class DragTestHelper {
 
       // Step 1: 准备工作 - 激活拖拽手柄
       await this.prepareDragHandle(sourceParagraph)
-      
+
       // Step 2: 获取拖拽坐标和元素
       const dragContext = await this.getDragContext(sourceParagraph, targetParagraph, dragToPosition)
-      
+
       // Step 3: 获取拖拽前状态（用于验证）
       const beforeState = await this.captureState()
-      
+
       // Step 4: 执行智能方法选择和拖拽
       const dragSuccess = await this.executeSmartDrag(dragContext, result)
-      
+
       if (dragSuccess) {
         // Step 5: 等待动画完成
         await this.page.waitForTimeout(waitAfterDrag)
-        
+
         // Step 6: 验证拖拽结果
         const afterState = await this.captureState()
-        
+
         // 🔧 修复: 使用内部的verifyDragResult方法，传入状态对象
         const verificationResult = await this.verifyDragResultInternal(beforeState, afterState)
-        
+
         result.details.verification = verificationResult
         result.success = verificationResult.positionChanged || false
-        
+
         this.log(`${result.success ? '✅' : '❌'} 拖拽操作${result.success ? '成功' : '失败'}`)
       } else {
         // 🎯 明确处理拖拽失败的情况
@@ -317,11 +320,10 @@ export class DragTestHelper {
         result.details.verification = {
           success: false,
           message: '所有拖拽方法都未成功执行',
-          details: { attemptedMethods: result.details.attemptedMethods }
+          details: { attemptedMethods: result.details.attemptedMethods },
         }
         this.log(`❌ 拖拽操作失败：所有方法都未成功执行`)
       }
-
     } catch (error: any) {
       result.success = false
       result.error = error.message
@@ -330,13 +332,13 @@ export class DragTestHelper {
     }
 
     result.duration = performance.now() - startTime
-    
+
     // 🎯 最终安全检查：确保success属性始终存在
     if (result.success === undefined || result.success === null) {
       this.log(`⚠️ 警告: result.success为undefined，设置为false`, 'warn')
       result.success = false
     }
-    
+
     return result
   }
 
@@ -345,7 +347,7 @@ export class DragTestHelper {
    */
   private async executeSmartDrag(dragContext: any, result: any): Promise<boolean> {
     const methods = this.getDragMethodsOrder()
-    
+
     for (const method of methods) {
       if (!this.config.enableFallbackMethods && result.details.attemptedMethods.length > 0) {
         break // 如果禁用备用方法，只尝试第一个
@@ -360,9 +362,9 @@ export class DragTestHelper {
           result.method = method.id
           this.log(`✅ 方法 ${method.name} 执行成功`)
           return true
-        } else {
+        } 
           result.details.failureReasons.push(`${method.name}: 执行失败但无异常`)
-        }
+        
       } catch (error: any) {
         const errorMsg = `${method.name}: ${error.message}`
         result.details.failureReasons.push(errorMsg)
@@ -382,20 +384,21 @@ export class DragTestHelper {
         id: 'direct' as const,
         name: '直接调用插件方法',
         priority: 1,
-        execute: (ctx: any) => this.executeDirectMove(ctx.sourceParagraph, ctx.targetParagraph, ctx.position)
+        execute: (ctx: any) => this.executeDirectMove(ctx.sourceParagraph, ctx.targetParagraph, ctx.position),
       },
       {
         id: 'events' as const,
         name: '手动HTML5事件',
         priority: 2,
-        execute: (ctx: any) => this.executeManualDragEvents(ctx.svgHandle, ctx.targetParagraph, ctx.targetX, ctx.targetY)
+        execute: (ctx: any) =>
+          this.executeManualDragEvents(ctx.svgHandle, ctx.targetParagraph, ctx.targetX, ctx.targetY),
       },
       {
         id: 'mouse' as const,
         name: '鼠标API模拟',
         priority: 3,
-        execute: (ctx: any) => this.executeMouseDrag(ctx.handleBox, { x: ctx.targetX, y: ctx.targetY }, 8, 800)
-      }
+        execute: (ctx: any) => this.executeMouseDrag(ctx.handleBox, { x: ctx.targetX, y: ctx.targetY }, 8, 800),
+      },
     ]
 
     // 根据配置调整方法顺序
@@ -419,7 +422,7 @@ export class DragTestHelper {
 
     // 查找具有draggable属性的SVG手柄
     const svgHandle = this.page.locator('svg[draggable="true"]').first()
-    
+
     // 等待手柄出现
     try {
       await svgHandle.waitFor({ state: 'visible', timeout: 3000 })
@@ -434,7 +437,7 @@ export class DragTestHelper {
     if (!isVisible) {
       throw new Error('SVG拖拽手柄未变为可见状态')
     }
-    
+
     this.log('✅ 拖拽手柄已准备就绪')
   }
 
@@ -461,7 +464,7 @@ export class DragTestHelper {
       handleBox,
       targetBox,
       targetX,
-      targetY
+      targetY,
     }
   }
 
@@ -472,21 +475,21 @@ export class DragTestHelper {
     try {
       const paragraphs = await this.getParagraphs()
       const texts = []
-      
+
       for (const p of paragraphs) {
         const text = await this.getParagraphText(p)
         texts.push(text.trim())
       }
-      
+
       const result = {
         paragraphTexts: texts,
         paragraphCount: paragraphs.length,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }
-      
+
       this.log(`状态捕获成功: ${texts.length} 个段落`, 'info')
       this.log(`段落内容: [${texts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
-      
+
       return result
     } catch (error) {
       this.log(`状态捕获失败: ${error.message}`, 'error')
@@ -494,7 +497,7 @@ export class DragTestHelper {
         paragraphTexts: [],
         paragraphCount: 0,
         timestamp: Date.now(),
-        error: error.message
+        error: error.message,
       }
     }
   }
@@ -511,7 +514,7 @@ export class DragTestHelper {
       domUpdated: false,
       positionChanged: false,
       editorStateConsistent: false,
-      memoryLeakDetected: false
+      memoryLeakDetected: false,
     }
 
     // 防御性检查：确保状态对象存在
@@ -520,27 +523,27 @@ export class DragTestHelper {
       return {
         success: false,
         message: '状态数据无效',
-        details: { beforeState, afterState }
+        details: { beforeState, afterState },
       }
     }
 
     // 基础验证：检查段落位置是否改变
     const beforeTexts = beforeState.paragraphTexts || []
     const afterTexts = afterState.paragraphTexts || []
-    
+
     // 额外防御性检查：确保是数组
     if (!Array.isArray(beforeTexts) || !Array.isArray(afterTexts)) {
       this.log('❌ 段落文本数据不是有效数组', 'error')
       return {
         success: false,
         message: '段落文本数据格式无效',
-        details: { beforeTexts, afterTexts }
+        details: { beforeTexts, afterTexts },
       }
     }
-    
+
     verification.positionChanged = !this.arraysEqual(beforeTexts, afterTexts)
     this.log(`段落位置是否改变: ${verification.positionChanged}`, 'info')
-    
+
     if (this.config.debugMode) {
       // 同时显示截断和完整版本用于调试
       this.log(`拖拽前(截断): [${beforeTexts.map((t: string) => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
@@ -548,7 +551,7 @@ export class DragTestHelper {
       this.log(`拖拽前(完整): [${beforeTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
       this.log(`拖拽后(完整): [${afterTexts.map((t: string) => `"${t}"`).join(', ')}]`, 'info')
     }
-    
+
     // 标准验证：检查段落数量和内容完整性
     if (this.config.verificationLevel !== 'basic') {
       verification.editorStateConsistent = beforeState.paragraphCount === afterState.paragraphCount
@@ -563,7 +566,10 @@ export class DragTestHelper {
       this.log(`内存泄漏检测: ${verification.memoryLeakDetected ? '发现泄漏' : '无泄漏'}`, 'info')
     }
 
-    this.log(`验证结果: ${verification.positionChanged ? '成功' : '失败'}`, verification.positionChanged ? 'info' : 'warn')
+    this.log(
+      `验证结果: ${verification.positionChanged ? '成功' : '失败'}`,
+      verification.positionChanged ? 'info' : 'warn',
+    )
     return verification
   }
 
@@ -575,7 +581,7 @@ export class DragTestHelper {
       const prefix = {
         info: '🔍',
         warn: '⚠️',
-        error: '❌'
+        error: '❌',
       }[level]
       console.log(`${prefix} [DragTest] ${message}`)
     }
@@ -586,8 +592,8 @@ export class DragTestHelper {
    */
   private arraysEqual(a: any[], b: any[]): boolean {
     // 防御性编程：处理undefined/null情况
-    if (!a || !b) return false
-    if (!Array.isArray(a) || !Array.isArray(b)) return false
+    if (!a || !b) {return false}
+    if (!Array.isArray(a) || !Array.isArray(b)) {return false}
     return a.length === b.length && a.every((val, index) => val === b[index])
   }
 
@@ -595,29 +601,29 @@ export class DragTestHelper {
    * 🎯 优化: 方法1 - 直接调用TipTap插件的内部移动方法
    */
   private async executeDirectMove(
-    sourceParagraph: Locator, 
-    targetParagraph: Locator, 
-    position: 'above' | 'below'
+    sourceParagraph: Locator,
+    targetParagraph: Locator,
+    position: 'above' | 'below',
   ): Promise<boolean> {
     return await this.page.evaluate(
       ([sourceSelector, targetSelector, dropPosition]) => {
         // 获取TipTap编辑器实例
         const editorElement = document.querySelector('.ProseMirror')
-        if (!editorElement) return false
+        if (!editorElement) {return false}
 
         // 尝试从全局或DOM获取编辑器实例
         let editorView = null
         let editor = null
-        
+
         console.log('🔍 [DirectMove] 开始查找编辑器实例')
-        
+
         // 方法1: 从全局变量获取（最可靠）
         if ((window as any).__tiptapEditor) {
           editor = (window as any).__tiptapEditor
           editorView = editor.view
           console.log('✅ [DirectMove] 从全局变量获取到编辑器', { hasView: !!editorView })
         }
-        
+
         // 如果没有editorView，尝试从编辑器实例获取
         if (!editorView && editor) {
           editorView = editor.view
@@ -631,11 +637,11 @@ export class DragTestHelper {
             globalEditorType: typeof (window as any).__tiptapEditor,
             hasProseMirrorView: !!(editorElement as any).__prosemirrorView,
             proseMirrorViewType: typeof (editorElement as any).__prosemirrorView,
-            editorElementKeys: Object.keys(editorElement).filter(k => 
-              k.includes('react') || k.includes('prosemirror') || k.includes('tiptap')
+            editorElementKeys: Object.keys(editorElement).filter(
+              k => k.includes('react') || k.includes('prosemirror') || k.includes('tiptap'),
             ),
             editorElementTagName: editorElement.tagName,
-            editorElementClasses: editorElement.className
+            editorElementClasses: editorElement.className,
           })
           return false
         }
@@ -644,12 +650,24 @@ export class DragTestHelper {
           hasView: !!editorView,
           viewType: typeof editorView,
           hasState: !!editorView.state,
-          hasDoc: !!editorView.state?.doc
+          hasDoc: !!editorView.state?.doc,
         })
 
         // 获取源和目标段落的DOM元素
-        const sourceElement = document.evaluate(sourceSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement
-        const targetElement = document.evaluate(targetSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement
+        const sourceElement = document.evaluate(
+          sourceSelector,
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null,
+        ).singleNodeValue as HTMLElement
+        const targetElement = document.evaluate(
+          targetSelector,
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null,
+        ).singleNodeValue as HTMLElement
 
         if (!sourceElement || !targetElement) {
           console.log('❌ 无法找到源或目标段落元素')
@@ -660,8 +678,10 @@ export class DragTestHelper {
         const findBlockElement = (element: HTMLElement): HTMLElement | null => {
           let current = element
           while (current && current !== editorView.dom) {
-            if (current.getAttribute('data-moni-block-id') || 
-                ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE'].includes(current.tagName)) {
+            if (
+              current.getAttribute('data-moni-block-id') ||
+              ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE'].includes(current.tagName)
+            ) {
               return current
             }
             current = current.parentElement
@@ -682,17 +702,19 @@ export class DragTestHelper {
             hasView: !!editorView,
             hasState: !!editorView.state,
             hasDoc: !!editorView.state?.doc,
-            isEditable: editor.isEditable
+            isEditable: editor.isEditable,
           })
-          
+
           // 🎯 使用与成功测试相同的算法
           const { view } = editor
           const { state } = view
           const { doc, tr } = state
 
           // 找到第一个和第二个段落
-          let firstParagraphPos = -1, secondParagraphPos = -1
-          let firstParagraphNode = null, secondParagraphNode = null
+          let firstParagraphPos = -1
+            let secondParagraphPos = -1
+          let firstParagraphNode = null
+            let secondParagraphNode = null
 
           doc.descendants((node, pos) => {
             if (node.type.name === 'paragraph') {
@@ -718,7 +740,7 @@ export class DragTestHelper {
             secondPos: secondParagraphPos,
             firstText: firstParagraphNode.textContent?.slice(0, 30),
             secondText: secondParagraphNode.textContent?.slice(0, 30),
-            dropPosition
+            dropPosition,
           })
 
           // 计算节点大小和目标位置
@@ -727,35 +749,34 @@ export class DragTestHelper {
 
           // 根据拖拽位置决定移动策略
           let newTr = tr
-          
+
           if (dropPosition === 'below') {
             // 将第一个段落移动到第二个段落之后
             console.log('🎯 [DirectMove] 执行向下移动：第1段 -> 第2段之后')
-            
+
             // 1. 删除第一个段落
             newTr = newTr.delete(firstParagraphPos, firstParagraphPos + firstNodeSize)
-            
+
             // 2. 在第二个段落后插入（调整位置因为已经删除了第一个段落）
             const adjustedInsertPos = secondNodeEnd - firstNodeSize
             newTr = newTr.insert(adjustedInsertPos, firstParagraphNode)
-            
-          } else { // 'above'
+          } else {
+            // 'above'
             // 将第二个段落移动到第一个段落之前
             console.log('🎯 [DirectMove] 执行向上移动：第2段 -> 第1段之前')
-            
+
             // 1. 删除第二个段落
             newTr = newTr.delete(secondParagraphPos, secondNodeEnd)
-            
+
             // 2. 在第一个段落前插入
             newTr = newTr.insert(firstParagraphPos, secondParagraphNode)
           }
-          
+
           // 3. 应用事务
           view.dispatch(newTr)
-          
+
           console.log('✅ [DirectMove] 段落移动事务已执行')
           return true
-          
         } catch (error) {
           console.error('❌ [DirectMove] 段落移动失败:', error)
           return false
@@ -765,8 +786,8 @@ export class DragTestHelper {
         // 生成XPath选择器
         await this.getElementXPath(sourceParagraph),
         await this.getElementXPath(targetParagraph),
-        position
-      ] as const
+        position,
+      ] as const,
     )
   }
 
@@ -777,7 +798,7 @@ export class DragTestHelper {
     dragHandle: Locator,
     targetParagraph: Locator,
     targetX: number,
-    targetY: number
+    targetY: number,
   ): Promise<boolean> {
     // 🎯 修复：触发拖拽手柄上的事件，而不是document级别
     return await this.page.evaluate(
@@ -792,7 +813,13 @@ export class DragTestHelper {
         }
 
         // 获取目标段落
-        const targetElement = document.evaluate(targetSelector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement
+        const targetElement = document.evaluate(
+          targetSelector,
+          document,
+          null,
+          XPathResult.FIRST_ORDERED_NODE_TYPE,
+          null,
+        ).singleNodeValue as HTMLElement
         if (!targetElement) {
           console.log('❌ [FIXED-DragTest] 找不到目标段落')
           return false
@@ -801,12 +828,12 @@ export class DragTestHelper {
         console.log('🎯 [FIXED-DragTest] 找到元素:', {
           dragHandle: dragHandleElement.tagName,
           hasDraggable: dragHandleElement.getAttribute('draggable'),
-          target: targetElement.textContent?.slice(0, 30)
+          target: targetElement.textContent?.slice(0, 30),
         })
 
         // 创建 DataTransfer
         const dataTransfer = new DataTransfer()
-        
+
         // 1. 在拖拽手柄上触发 dragstart
         const dragStartEvent = new DragEvent('dragstart', {
           bubbles: true,
@@ -814,9 +841,9 @@ export class DragTestHelper {
           dataTransfer,
           view: window,
           clientX: 0,
-          clientY: 0
+          clientY: 0,
         })
-        
+
         console.log('  🚀 [FIXED-DragTest] 触发 dragstart 事件在拖拽手柄上')
         const dragStartNotCanceled = dragHandleElement.dispatchEvent(dragStartEvent)
         console.log('  📊 [FIXED-DragTest] dragstart 事件结果:', { notCanceled: dragStartNotCanceled })
@@ -831,9 +858,9 @@ export class DragTestHelper {
           clientX: targetX,
           clientY: targetY,
           dataTransfer,
-          view: window
+          view: window,
         })
-        
+
         console.log('  🎯 [FIXED-DragTest] 触发 dragover 事件在目标位置')
         targetElement.dispatchEvent(dragOverEvent)
 
@@ -846,15 +873,15 @@ export class DragTestHelper {
           clientX: targetX,
           clientY: targetY,
           dataTransfer,
-          view: window
+          view: window,
         })
-        
+
         console.log('  📥 [FIXED-DragTest] 触发 drop 事件在目标位置:', {
           clientX: targetX,
           clientY: targetY,
-          targetTag: targetElement.tagName
+          targetTag: targetElement.tagName,
         })
-        
+
         const dropNotCanceled = targetElement.dispatchEvent(dropEvent)
         console.log('  📊 [FIXED-DragTest] drop 事件结果:', { notCanceled: dropNotCanceled })
 
@@ -863,9 +890,9 @@ export class DragTestHelper {
           bubbles: true,
           cancelable: true,
           dataTransfer,
-          view: window
+          view: window,
         })
-        
+
         console.log('  🏁 [FIXED-DragTest] 触发 dragend 事件')
         dragHandleElement.dispatchEvent(dragEndEvent)
 
@@ -876,8 +903,8 @@ export class DragTestHelper {
         await this.getElementSelector(dragHandle),
         await this.getElementXPath(targetParagraph),
         targetX,
-        targetY
-      ] as const
+        targetY,
+      ] as const,
     )
   }
 
@@ -888,11 +915,11 @@ export class DragTestHelper {
     sourceBox: { x: number; y: number; width: number; height: number },
     targetPos: { x: number; y: number },
     steps: number,
-    holdTime: number
+    holdTime: number,
   ): Promise<boolean> {
     const sourceCenter = {
       x: sourceBox.x + sourceBox.width / 2,
-      y: sourceBox.y + sourceBox.height / 2
+      y: sourceBox.y + sourceBox.height / 2,
     }
 
     // 移动到源位置
@@ -908,7 +935,7 @@ export class DragTestHelper {
       const progress = i / steps
       const intermediateX = sourceCenter.x + (targetPos.x - sourceCenter.x) * progress
       const intermediateY = sourceCenter.y + (targetPos.y - sourceCenter.y) * progress
-      
+
       await this.page.mouse.move(intermediateX, intermediateY)
       await this.page.waitForTimeout(50)
     }
@@ -917,7 +944,7 @@ export class DragTestHelper {
 
     // 释放鼠标
     await this.page.mouse.up()
-    
+
     console.log('✅ [MouseDrag] 鼠标模拟拖拽完成')
     return true
   }
@@ -926,34 +953,34 @@ export class DragTestHelper {
    * 获取元素的XPath选择器
    */
   private async getElementXPath(locator: Locator): Promise<string> {
-    return await locator.evaluate((element) => {
+    return await locator.evaluate(element => {
       const getElementXPath = (el: Element): string => {
         if (el.id) {
           return `//*[@id="${el.id}"]`
         }
-        
+
         if (el === document.body) {
           return '/html/body'
         }
 
         let ix = 0
         const siblings = el.parentNode ? Array.from(el.parentNode.childNodes) : []
-        
+
         for (const sibling of siblings) {
           if (sibling === el) {
             const tagName = el.tagName.toLowerCase()
             const parentXPath = el.parentElement ? getElementXPath(el.parentElement) : ''
             return `${parentXPath}/${tagName}[${ix + 1}]`
           }
-          
+
           if (sibling.nodeType === 1 && (sibling as Element).tagName === el.tagName) {
             ix++
           }
         }
-        
+
         return ''
       }
-      
+
       return getElementXPath(element)
     })
   }
@@ -962,7 +989,7 @@ export class DragTestHelper {
    * 获取元素的CSS选择器（用于事件触发）
    */
   private async getElementSelector(locator: Locator): Promise<string> {
-    return await locator.evaluate((element) => {
+    return await locator.evaluate(element => {
       // 优先使用ID
       if (element.id) {
         return `#${element.id}`
@@ -972,7 +999,7 @@ export class DragTestHelper {
       if (element.className && typeof element.className === 'string') {
         const classes = element.className.split(' ').filter(c => c.trim())
         if (classes.length > 0) {
-          const classSelector = '.' + classes.join('.')
+          const classSelector = `.${  classes.join('.')}`
           if (document.querySelectorAll(classSelector).length === 1) {
             return classSelector
           }
@@ -982,13 +1009,11 @@ export class DragTestHelper {
       // 使用标签名 + nth-child
       const tagName = element.tagName.toLowerCase()
       const parent = element.parentElement
-      
+
       if (parent) {
-        const siblings = Array.from(parent.children).filter(child => 
-          child.tagName.toLowerCase() === tagName
-        )
+        const siblings = Array.from(parent.children).filter(child => child.tagName.toLowerCase() === tagName)
         const index = siblings.indexOf(element) + 1
-        
+
         return `${tagName}:nth-child(${index})`
       }
 
@@ -1011,8 +1036,11 @@ export class DragTestHelper {
     this.log(`  beforeTexts: ${JSON.stringify(beforeTexts)}`, 'info')
     this.log(`  afterTexts: ${JSON.stringify(afterTexts)}`, 'info')
     this.log(`  sourceIndex: ${sourceIndex}, targetIndex: ${targetIndex}`, 'info')
-    this.log(`  类型检查: beforeTexts isArray=${Array.isArray(beforeTexts)}, afterTexts isArray=${Array.isArray(afterTexts)}`, 'info')
-    
+    this.log(
+      `  类型检查: beforeTexts isArray=${Array.isArray(beforeTexts)}, afterTexts isArray=${Array.isArray(afterTexts)}`,
+      'info',
+    )
+
     // 基础数据验证
     if (!beforeTexts || !afterTexts || !Array.isArray(beforeTexts) || !Array.isArray(afterTexts)) {
       this.log(`❌ 数据验证失败`, 'error')
@@ -1026,24 +1054,24 @@ export class DragTestHelper {
 
     // 简单但有效的验证逻辑：检查段落顺序是否改变
     const textsChanged = JSON.stringify(beforeTexts) !== JSON.stringify(afterTexts)
-    
+
     this.log(`验证拖拽结果: 文本变化=${textsChanged}`, 'info')
-    this.log(`拖拽前: [${beforeTexts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info') 
+    this.log(`拖拽前: [${beforeTexts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
     this.log(`拖拽后: [${afterTexts.map(t => `"${t.slice(0, 20)}"`).join(', ')}]`, 'info')
 
     if (textsChanged) {
       return {
         success: true,
         message: '拖拽操作成功：段落顺序已改变',
-        details: { beforeTexts, afterTexts, sourceIndex, targetIndex }
+        details: { beforeTexts, afterTexts, sourceIndex, targetIndex },
       }
-    } else {
+    } 
       return {
         success: false,
         message: '拖拽操作失败：段落顺序未改变',
-        details: { beforeTexts, afterTexts, sourceIndex, targetIndex }
+        details: { beforeTexts, afterTexts, sourceIndex, targetIndex },
       }
-    }
+    
   }
 
   /**
@@ -1057,8 +1085,14 @@ export class DragTestHelper {
     targetIndex: number,
   ): Promise<{ success: boolean; message: string; details?: Record<string, any> }> {
     console.log('🔍 [LEGACY] 拖拽结果验证:')
-    console.log('  拖拽前文本:', beforeTexts.map((text, i) => `[${i}] "${text.slice(0, 30)}"`))
-    console.log('  拖拽后文本:', afterTexts.map((text, i) => `[${i}] "${text.slice(0, 30)}"`))
+    console.log(
+      '  拖拽前文本:',
+      beforeTexts.map((text, i) => `[${i}] "${text.slice(0, 30)}"`),
+    )
+    console.log(
+      '  拖拽后文本:',
+      afterTexts.map((text, i) => `[${i}] "${text.slice(0, 30)}"`),
+    )
     console.log('  源索引:', sourceIndex, '目标索引:', targetIndex)
 
     const sourceText = beforeTexts[sourceIndex]
@@ -1291,7 +1325,9 @@ export class DragTestHelper {
 
     for (const p of paragraphs) {
       const text = await this.getParagraphText(p)
-      if (text.trim()) {actualTexts.push(text.trim())}
+      if (text.trim()) {
+        actualTexts.push(text.trim())
+      }
     }
 
     expect(actualTexts).toEqual(expectedOrder)
@@ -1315,7 +1351,7 @@ export const DragTestPresets = {
     enableFallbackMethods: false,
     debugMode: true,
     verificationLevel: 'basic' as const,
-    animationWaitTime: 100
+    animationWaitTime: 100,
   },
 
   /**
@@ -1326,7 +1362,7 @@ export const DragTestPresets = {
     enableFallbackMethods: true,
     debugMode: false,
     verificationLevel: 'standard' as const,
-    animationWaitTime: 500
+    animationWaitTime: 500,
   },
 
   /**
@@ -1338,7 +1374,7 @@ export const DragTestPresets = {
     debugMode: true,
     verificationLevel: 'comprehensive' as const,
     animationWaitTime: 1000,
-    enablePerformanceMonitoring: true
+    enablePerformanceMonitoring: true,
   },
 
   /**
@@ -1350,16 +1386,19 @@ export const DragTestPresets = {
     debugMode: false,
     verificationLevel: 'basic' as const,
     animationWaitTime: 50,
-    enablePerformanceMonitoring: true
-  }
+    enablePerformanceMonitoring: true,
+  },
 } satisfies Record<string, Partial<DragTestConfig>>
 
 /**
  * 🎯 优化: 创建拖拽测试助手的工厂函数
  */
-export function createDragTestHelper(page: Page, configOrPreset?: DragTestConfig | keyof typeof DragTestPresets): DragTestHelper {
+export function createDragTestHelper(
+  page: Page,
+  configOrPreset?: DragTestConfig | keyof typeof DragTestPresets,
+): DragTestHelper {
   let config: DragTestConfig = {}
-  
+
   if (typeof configOrPreset === 'string') {
     // 使用预设配置
     config = DragTestPresets[configOrPreset] || {}
@@ -1367,7 +1406,7 @@ export function createDragTestHelper(page: Page, configOrPreset?: DragTestConfig
     // 使用自定义配置
     config = configOrPreset
   }
-  
+
   return new DragTestHelper(page, config)
 }
 

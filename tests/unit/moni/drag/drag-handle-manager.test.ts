@@ -1,6 +1,7 @@
 import { type DragHandleManagerOptions, type Editor, DragHandleManager } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { createCompatibleDragEvent } from '../../../utils/drag-event-helpers.js'
 
 // Mock NodeSelection and PluginKey
@@ -531,14 +532,14 @@ describe('DragHandleManager', () => {
 
       // Setup handle for block - simulate proper mousemove to initialize state
       vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
-      
+
       // Mock findNodeByBlockId to return a proper node
       const mockNode = {
         attrs: {
           'data-moni-drag-type': 'block',
           'data-moni-level': 0,
           'data-moni-parent-id': null,
-        }
+        },
       }
       vi.spyOn(dragHandleManager, 'findNodeByBlockId').mockReturnValue(mockNode)
 

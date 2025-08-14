@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+
 import { createCompatibleDragEvent, createDragEventSequence } from '../utils/drag-event-helpers.js'
 
 describe('JSDOM DragEvent Compatibility', () => {

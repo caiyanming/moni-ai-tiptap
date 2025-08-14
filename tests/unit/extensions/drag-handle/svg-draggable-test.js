@@ -3,9 +3,9 @@
  * 关键假设：React组件的SVG必须有draggable="true"才能触发HTML5拖拽
  */
 
-import { test } from 'node:test'
-import assert from 'node:assert'
 import { JSDOM } from 'jsdom'
+import assert from 'node:assert'
+import { test } from 'node:test'
 
 test('SVG draggable属性验证', async () => {
   // 设置DOM环境
@@ -26,11 +26,11 @@ test('SVG draggable属性验证', async () => {
   global.window = dom.window
 
   const svg = document.querySelector('svg')
-  
+
   // 关键验证
   assert.strictEqual(svg.draggable, true, 'SVG元素必须设置draggable="true"')
   assert.strictEqual(svg.getAttribute('draggable'), 'true', '应有draggable属性')
-  
+
   console.log('✅ SVG draggable属性验证通过')
 })
 
@@ -50,7 +50,7 @@ test('拖拽事件绑定验证', async () => {
   let dragStartCalled = false
 
   // 绑定事件监听器
-  svg.addEventListener('dragstart', (e) => {
+  svg.addEventListener('dragstart', e => {
     dragStartCalled = true
     console.log('🎯 dragstart事件被触发')
   })
@@ -59,7 +59,7 @@ test('拖拽事件绑定验证', async () => {
   const dragEvent = new dom.window.DragEvent('dragstart', {
     bubbles: true,
     cancelable: true,
-    dataTransfer: new dom.window.DataTransfer()
+    dataTransfer: new dom.window.DataTransfer(),
   })
 
   svg.dispatchEvent(dragEvent)

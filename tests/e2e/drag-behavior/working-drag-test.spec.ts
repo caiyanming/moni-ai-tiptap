@@ -8,12 +8,15 @@ test.describe('修复后的拖拽测试', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/src/Extensions/DragHandle/React/')
     await page.waitForSelector('.ProseMirror', { state: 'visible' })
-    
+
     // 等待编辑器实例就绪
-    await page.waitForFunction(() => {
-      return (window as any).__tiptapEditor !== undefined
-    }, { timeout: 5000 })
-    
+    await page.waitForFunction(
+      () => {
+        return (window as any).__tiptapEditor !== undefined
+      },
+      { timeout: 5000 },
+    )
+
     await page.waitForTimeout(1000)
   })
 
@@ -39,7 +42,7 @@ test.describe('修复后的拖拽测试', () => {
     // 模拟真实的拖拽操作：使用拖拽手柄
     const result = await page.evaluate(async () => {
       console.log('🎯 [WORKING] 开始模拟拖拽操作')
-      
+
       const editor = (window as any).__tiptapEditor
       if (!editor) {
         console.log('❌ [WORKING] 编辑器不存在')
@@ -49,7 +52,7 @@ test.describe('修复后的拖拽测试', () => {
       // 获取拖拽手柄和段落
       const dragHandle = document.querySelector('svg[draggable="true"]') as SVGElement
       const paragraphs = Array.from(document.querySelectorAll('p'))
-      
+
       if (!dragHandle || paragraphs.length < 2) {
         console.log('❌ [WORKING] 缺少必要元素')
         return false
@@ -57,10 +60,10 @@ test.describe('修复后的拖拽测试', () => {
 
       try {
         console.log('🎯 [WORKING] 触发拖拽事件序列')
-        
+
         // 创建 DataTransfer 对象
         const dataTransfer = new DataTransfer()
-        
+
         // 1. 在拖拽手柄上触发 dragstart
         const dragStartEvent = new DragEvent('dragstart', {
           bubbles: true,
@@ -68,16 +71,16 @@ test.describe('修复后的拖拽测试', () => {
           dataTransfer,
           clientX: 0,
           clientY: 0,
-          view: window
+          view: window,
         })
-        
+
         const dragStartResult = dragHandle.dispatchEvent(dragStartEvent)
         console.log('  ✅ [WORKING] dragstart 触发结果:', dragStartResult)
-        
+
         // 短暂延迟
         await new Promise(resolve => setTimeout(resolve, 100))
-        
-        // 2. 在第二个段落上方触发 dragover  
+
+        // 2. 在第二个段落上方触发 dragover
         const targetRect = paragraphs[1].getBoundingClientRect()
         const dragOverEvent = new DragEvent('dragover', {
           bubbles: true,
@@ -85,12 +88,12 @@ test.describe('修复后的拖拽测试', () => {
           dataTransfer,
           clientX: targetRect.left + targetRect.width / 2,
           clientY: targetRect.top - 10, // 在段落上方
-          view: window
+          view: window,
         })
-        
+
         paragraphs[1].dispatchEvent(dragOverEvent)
         console.log('  ✅ [WORKING] dragover 已触发')
-        
+
         // 3. 触发 drop 事件
         const dropEvent = new DragEvent('drop', {
           bubbles: true,
@@ -98,25 +101,24 @@ test.describe('修复后的拖拽测试', () => {
           dataTransfer,
           clientX: targetRect.left + targetRect.width / 2,
           clientY: targetRect.top - 10,
-          view: window
+          view: window,
         })
-        
+
         const dropResult = paragraphs[1].dispatchEvent(dropEvent)
         console.log('  ✅ [WORKING] drop 触发结果:', dropResult)
-        
+
         // 4. 触发 dragend
         const dragEndEvent = new DragEvent('dragend', {
           bubbles: true,
           cancelable: true,
           dataTransfer,
-          view: window
+          view: window,
         })
-        
+
         dragHandle.dispatchEvent(dragEndEvent)
         console.log('  ✅ [WORKING] dragend 已触发')
-        
+
         return true
-        
       } catch (error) {
         console.error('❌ [WORKING] 拖拽操作失败:', error)
         return false
@@ -161,14 +163,16 @@ test.describe('修复后的拖拽测试', () => {
     // 如果拖拽不工作，使用编辑器API作为备用
     const apiMoveResult = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) return false
+      if (!editor) {return false}
 
       try {
         const { view } = editor
         const { state } = view
         const { doc, tr } = state
 
-        let firstPos = -1, secondPos = -1, firstNode = null
+        let firstPos = -1
+          let secondPos = -1
+          let firstNode = null
 
         doc.descendants((node, pos) => {
           if (node.type.name === 'paragraph') {
@@ -183,7 +187,7 @@ test.describe('修复后的拖拽测试', () => {
           return true
         })
 
-        if (firstPos === -1 || secondPos === -1 || !firstNode) return false
+        if (firstPos === -1 || secondPos === -1 || !firstNode) {return false}
 
         const firstNodeSize = firstNode.nodeSize
         const secondNodeEnd = secondPos + doc.nodeAt(secondPos).nodeSize
@@ -191,10 +195,9 @@ test.describe('修复后的拖拽测试', () => {
         let newTr = tr.delete(firstPos, firstPos + firstNodeSize)
         const adjustedInsertPos = secondNodeEnd - firstNodeSize
         newTr = newTr.insert(adjustedInsertPos, firstNode)
-        
+
         view.dispatch(newTr)
         return true
-
       } catch (error) {
         console.error('API move failed:', error)
         return false
@@ -210,7 +213,7 @@ test.describe('修复后的拖拽测试', () => {
 
     expect(apiMoveResult).toBe(true)
     expect(afterTexts).not.toEqual(beforeTexts)
-    
+
     console.log('✅ [WORKING] 编辑器API备用方案正常工作')
   })
 })

@@ -1,4 +1,4 @@
-import { expect, Page,test } from '@playwright/test'
+import { expect, Page, test } from '@playwright/test'
 
 /**
  * 🎯 真实浏览器拖拽流畅度测试
@@ -86,7 +86,7 @@ test.describe('🎨 真实拖拽流畅度验证', () => {
     // 测试页面已经有默认内容，检查并添加更多内容
     const initialParagraphs = await page.locator('p').count()
     console.log(`🔍 初始段落数量: ${initialParagraphs}`)
-    
+
     // 如果段落少于4个，添加更多内容
     if (initialParagraphs < 4) {
       await page.locator('.ProseMirror').click()
@@ -193,16 +193,16 @@ test.describe('🎨 真实拖拽流畅度验证', () => {
       // 检查所有可能的指示器元素
       const indicatorSelectors = [
         '.moni-drag-indicator',
-        '.drag-indicator', 
+        '.drag-indicator',
         '[class*="indicator"]',
         '.drag-line',
         '.drop-indicator',
-        '.drop-line'
+        '.drop-line',
       ]
-      
+
       let totalIndicators = 0
       let visibleIndicators = 0
-      
+
       for (const selector of indicatorSelectors) {
         const count = await page.locator(selector).count()
         const visibleCount = await page.locator(`${selector}:visible`).count()
@@ -238,7 +238,7 @@ test.describe('🎨 真实拖拽流畅度验证', () => {
     await page.locator('.ProseMirror').click()
     await page.keyboard.press('Control+A')
     await page.keyboard.press('Delete')
-    
+
     // 逐个添加段落以确保正确的段落结构
     for (let i = 0; i < 20; i++) {
       await page.keyboard.type(`段落 ${i + 1} - 用于测试拖拽自动滚动和性能的长文档内容，包含足够的文字让页面产生滚动条`)
@@ -246,7 +246,7 @@ test.describe('🎨 真实拖拽流畅度验证', () => {
         await page.keyboard.press('Enter')
       }
     }
-    
+
     console.log('📜 长文档内容创建完成 (20 段落)')
     await page.waitForTimeout(500) // 等待渲染完成
 
@@ -327,7 +327,7 @@ test.describe('🎨 真实拖拽流畅度验证', () => {
     expect(browserPerformanceData.avgFrameTime).toBeLessThan(50) // <50ms 帧时间 (测试环境标准)
     expect(browserPerformanceData.frameDrops).toBeLessThan(browserPerformanceData.totalFrames * 0.6) // <60% 掉帧率 (测试环境允许更高)
     expect(browserPerformanceData.fps).toBeGreaterThan(20) // >20fps (测试环境最低标准)
-    
+
     // 添加测试环境说明
     if (browserPerformanceData.frameDrops > browserPerformanceData.totalFrames * 0.3) {
       console.log('⚠️  注意: 测试环境性能受限，生产环境性能应更好')

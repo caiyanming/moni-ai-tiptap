@@ -3,7 +3,8 @@
  * 专门用于调试拖拽坐标计算和执行
  */
 
-import { test, expect } from '@playwright/test'
+import { expect,test } from '@playwright/test'
+
 import { DragTestHelper } from '../utils/DragTestHelper'
 
 test.describe('拖拽坐标调试', () => {
@@ -17,7 +18,7 @@ test.describe('拖拽坐标调试', () => {
   test('调试向下拖拽坐标计算', async ({ page }) => {
     const paragraphs = await dragHelper.getParagraphs()
     expect(paragraphs.length).toBeGreaterThanOrEqual(2)
-    
+
     // 如果只有2个段落，拖拽第一个到第二个下方
     if (paragraphs.length === 2) {
       console.log('⚠️ 只有2个段落，调整测试策略')
@@ -62,7 +63,7 @@ test.describe('拖拽坐标调试', () => {
       console.log('🚀 开始拖拽操作...')
       const startX = handleBox.x + handleBox.width / 2
       const startY = handleBox.y + handleBox.height / 2
-      
+
       await page.mouse.move(startX, startY)
       await page.waitForTimeout(200)
       console.log('📍 移动到拖拽手柄:', { x: startX, y: startY })
@@ -77,7 +78,7 @@ test.describe('拖拽坐标调试', () => {
         const progress = i / steps
         const currentX = startX + (targetX - startX) * progress
         const currentY = startY + (targetYBelow - startY) * progress
-        
+
         await page.mouse.move(currentX, currentY)
         console.log(`📍 移动步骤 ${i}/${steps}: (${Math.round(currentX)}, ${Math.round(currentY)})`)
         await page.waitForTimeout(100)
@@ -96,8 +97,14 @@ test.describe('拖拽坐标调试', () => {
       }
 
       console.log('📊 拖拽结果对比:')
-      console.log('拖拽前:', beforeTexts.map((t, i) => `[${i}] ${t.slice(0, 20)}...`))
-      console.log('拖拽后:', afterTexts.map((t, i) => `[${i}] ${t.slice(0, 20)}...`))
+      console.log(
+        '拖拽前:',
+        beforeTexts.map((t, i) => `[${i}] ${t.slice(0, 20)}...`),
+      )
+      console.log(
+        '拖拽后:',
+        afterTexts.map((t, i) => `[${i}] ${t.slice(0, 20)}...`),
+      )
 
       // 验证第一个段落是否成功移动
       const firstParagraphText = beforeTexts[0]
@@ -109,7 +116,7 @@ test.describe('拖拽坐标调试', () => {
         console.error('❌ 错误：第一个段落消失了')
       } else if (newPosition === 0) {
         console.error('❌ 错误：第一个段落没有移动')
-        
+
         // 进一步调试：检查DOM结构
         const proseMirror = page.locator('.ProseMirror')
         const html = await proseMirror.innerHTML()
@@ -141,12 +148,12 @@ test.describe('拖拽坐标调试', () => {
     let upResult
     if (paragraphs.length >= 3) {
       upResult = await dragHelper.dragParagraph(paragraphs[2], paragraphs[0], {
-        dragToPosition: 'above'
+        dragToPosition: 'above',
       })
     } else if (paragraphs.length === 2) {
       // 拖拽第二个段落到第一个段落上方
       upResult = await dragHelper.dragParagraph(paragraphs[1], paragraphs[0], {
-        dragToPosition: 'above'
+        dragToPosition: 'above',
       })
     } else {
       console.log('❌ 段落数量不足，跳过向上拖拽测试')
@@ -170,12 +177,12 @@ test.describe('拖拽坐标调试', () => {
     let downResult
     if (paragraphs.length >= 3) {
       downResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[2], {
-        dragToPosition: 'below'
+        dragToPosition: 'below',
       })
     } else if (paragraphs.length === 2) {
       // 拖拽第一个段落到第二个段落下方
       downResult = await dragHelper.dragParagraph(paragraphs[0], paragraphs[1], {
-        dragToPosition: 'below'
+        dragToPosition: 'below',
       })
     } else {
       console.log('❌ 段落数量不足，跳过向下拖拽测试')

@@ -90,7 +90,9 @@ export function createMockDragEvent(clientX: number, clientY: number): Partial<D
  */
 export function validateSVGHandle(container: HTMLElement) {
   const svg = container.querySelector('svg')
-  if (!svg) {return { isValid: false, error: 'SVG not found' }}
+  if (!svg) {
+    return { isValid: false, error: 'SVG not found' }
+  }
 
   const circles = svg.querySelectorAll('circle')
   if (circles.length !== 6) {

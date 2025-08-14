@@ -8,12 +8,15 @@ test.describe('简单编辑器拖拽测试', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/src/Extensions/DragHandle/React/')
     await page.waitForSelector('.ProseMirror', { state: 'visible' })
-    
+
     // 等待编辑器实例就绪
-    await page.waitForFunction(() => {
-      return (window as any).__tiptapEditor !== undefined
-    }, { timeout: 5000 })
-    
+    await page.waitForFunction(
+      () => {
+        return (window as any).__tiptapEditor !== undefined
+      },
+      { timeout: 5000 },
+    )
+
     await page.waitForTimeout(1000)
   })
 
@@ -40,7 +43,7 @@ test.describe('简单编辑器拖拽测试', () => {
         hasView: !!editor.view,
         hasState: !!editor.view?.state,
         hasDoc: !!editor.view?.state?.doc,
-        isEditable: editor.isEditable
+        isEditable: editor.isEditable,
       })
 
       try {
@@ -49,7 +52,8 @@ test.describe('简单编辑器拖拽测试', () => {
         const { doc, tr } = state
 
         // 找到第一个和第二个段落
-        let firstParagraphPos = -1, secondParagraphPos = -1
+        let firstParagraphPos = -1
+          let secondParagraphPos = -1
         let firstParagraphNode = null
 
         doc.descendants((node, pos) => {
@@ -73,7 +77,7 @@ test.describe('简单编辑器拖拽测试', () => {
         console.log('🔍 [SIMPLE] 段落位置:', {
           firstPos: firstParagraphPos,
           secondPos: secondParagraphPos,
-          firstText: firstParagraphNode.textContent?.slice(0, 30)
+          firstText: firstParagraphNode.textContent?.slice(0, 30),
         })
 
         // 计算节点大小和目标位置
@@ -82,20 +86,19 @@ test.describe('简单编辑器拖拽测试', () => {
 
         // 创建移动事务：将第一个段落移动到第二个段落之后
         let newTr = tr
-        
+
         // 1. 删除第一个段落
         newTr = newTr.delete(firstParagraphPos, firstParagraphPos + firstNodeSize)
-        
+
         // 2. 在第二个段落后插入（调整位置因为已经删除了第一个段落）
         const adjustedInsertPos = secondNodeEnd - firstNodeSize
         newTr = newTr.insert(adjustedInsertPos, firstParagraphNode)
-        
+
         // 3. 应用事务
         view.dispatch(newTr)
-        
+
         console.log('✅ [SIMPLE] 段落移动事务已执行')
         return true
-
       } catch (error) {
         console.error('❌ [SIMPLE] 段落移动失败:', error)
         return false

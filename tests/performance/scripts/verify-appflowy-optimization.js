@@ -51,7 +51,9 @@ testCases.forEach((testCase, index) => {
   console.log(`${status} 测试 ${index + 1}: ${testCase.description}`)
   console.log(`   坐标: x=${testCase.x}, 期望: ${testCase.expected}, 实际: ${result}`)
 
-  if (passed) {passedTests += 1}
+  if (passed) {
+    passedTests += 1
+  }
   console.log('')
 })
 

@@ -5,7 +5,7 @@ import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import type { Node } from '@tiptap/pm/model'
 import { EditorState } from '@tiptap/pm/state'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('splitBlock command - moniBlockId generation', () => {
   let editor: Editor

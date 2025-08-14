@@ -75,7 +75,7 @@ describe('✅ 简化的 Reject 功能验证', () => {
       nodes: {
         paragraph: mockParagraphNode,
       },
-      text: vi.fn((text) => ({
+      text: vi.fn(text => ({
         type: 'text',
         text,
         nodeSize: 1,
