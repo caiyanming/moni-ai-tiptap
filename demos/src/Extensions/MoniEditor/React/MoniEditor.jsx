@@ -7,7 +7,9 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
   const [characterCount, setCharacterCount] = useState(0)
 
   useEffect(() => {
-    if (!editor) {return}
+    if (!editor) {
+      return
+    }
 
     // Update counts when content changes
     const updateCounts = () => {
@@ -43,7 +45,7 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
         .insertContent({
           type: 'hiddenBlock',
           attrs: {
-            id: `hidden-${  Date.now()}`,
+            id: `hidden-${Date.now()}`,
           },
         })
         .run()
@@ -52,7 +54,7 @@ const MoniEditor = ({ editor, onStreamOperation, isSimulating }) => {
       setTimeout(() => {
         onStreamOperation({
           type: 'insert',
-          targetId: `hidden-${  Date.now()}`,
+          targetId: `hidden-${Date.now()}`,
           content: '<p data-type="paragraph">🎯 This content was inserted via a hidden block target!</p>',
           description: 'AI inserted content targeting hidden block',
         })

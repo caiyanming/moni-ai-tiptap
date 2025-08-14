@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 /**
  * Playwright 迁移测试 - StreamOperationManager

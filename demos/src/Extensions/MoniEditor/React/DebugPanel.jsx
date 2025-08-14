@@ -1,4 +1,4 @@
-import React, { useEffect,useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const DebugPanel = ({ editor, streamOperations }) => {
   const [editorState, setEditorState] = useState(null)
@@ -6,7 +6,9 @@ const DebugPanel = ({ editor, streamOperations }) => {
   const [refreshCount, setRefreshCount] = useState(0)
 
   useEffect(() => {
-    if (!editor) {return}
+    if (!editor) {
+      return
+    }
 
     const updateState = () => {
       try {

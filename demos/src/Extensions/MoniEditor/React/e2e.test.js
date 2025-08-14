@@ -382,7 +382,9 @@ describe('🎭 MoniAI Editor Demo - 端到端测试', () => {
         click: vi.fn(),
       }
       vi.spyOn(document, 'createElement').mockImplementation(tagName => {
-        if (tagName === 'a') {return mockLink}
+        if (tagName === 'a') {
+          return mockLink
+        }
         return document.createElement(tagName)
       })
 

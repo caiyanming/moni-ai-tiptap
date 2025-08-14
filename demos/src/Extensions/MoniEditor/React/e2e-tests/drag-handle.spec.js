@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 /**
  * Playwright E2E 测试 - DragHandle Extension 真实浏览器测试

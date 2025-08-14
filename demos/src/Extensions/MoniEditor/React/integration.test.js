@@ -69,7 +69,9 @@ const createRealisticTipTapMock = () => {
       if (mockEditor.eventListeners.has(event)) {
         const listeners = mockEditor.eventListeners.get(event)
         const index = listeners.indexOf(callback)
-        if (index > -1) {listeners.splice(index, 1)}
+        if (index > -1) {
+          listeners.splice(index, 1)
+        }
       }
     }),
 
@@ -185,7 +187,9 @@ vi.mock('@tiptap/extension-drag-handle', () => ({
 vi.mock('@tiptap/react', () => ({
   useEditor: vi.fn(),
   EditorContent: vi.fn(({ editor }) => {
-    if (!editor) {return <div data-testid="editor-loading">Loading...</div>}
+    if (!editor) {
+      return <div data-testid="editor-loading">Loading...</div>
+    }
 
     return (
       <div

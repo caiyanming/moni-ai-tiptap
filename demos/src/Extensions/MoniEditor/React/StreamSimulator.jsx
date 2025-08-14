@@ -1,4 +1,4 @@
-import React, { useCallback,useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulating }) => {
   const [simulationSpeed, setSimulationSpeed] = useState(1000)
@@ -43,7 +43,9 @@ const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulat
 
   const simulateOperation = useCallback(
     operation => {
-      if (!editor || isSimulating) {return}
+      if (!editor || isSimulating) {
+        return
+      }
 
       setIsSimulating(true)
 
@@ -82,7 +84,9 @@ const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulat
   }
 
   const runBatchOperations = useCallback(() => {
-    if (!editor || isSimulating) {return}
+    if (!editor || isSimulating) {
+      return
+    }
 
     setIsSimulating(true)
     let currentIndex = 0
@@ -113,7 +117,9 @@ const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulat
   }, [editor, onStreamOperation, isSimulating, setIsSimulating, simulationSpeed, sampleOperations])
 
   const runCustomOperation = useCallback(() => {
-    if (!customContent.trim()) {return}
+    if (!customContent.trim()) {
+      return
+    }
 
     const customOperation = {
       type: operationType,
@@ -125,7 +131,9 @@ const StreamSimulator = ({ editor, onStreamOperation, isSimulating, setIsSimulat
   }, [customContent, operationType, simulateOperation])
 
   const simulateRealtimeEditing = useCallback(() => {
-    if (!editor || isSimulating) {return}
+    if (!editor || isSimulating) {
+      return
+    }
 
     setIsSimulating(true)
 
