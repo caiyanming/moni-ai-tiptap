@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-font-family",
   "description": "font family extension for tiptap",
-  "version": "3.0.0-beta.22",
+  "version": "3.0.0-beta.22.1",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -34,7 +34,7 @@
     "@tiptap/extension-text-style": "workspace:*"
   },
   "peerDependencies": {
-    "@tiptap/extension-text-style": "workspace:*"
+    "@tiptap/extension-text-style": "3.0.0-beta.22.1"
   },
   "repository": {
     "type": "git",

@@ -60,8 +60,7 @@
     "update-design-system": "node scripts/update-design-system-deps.cjs"
   },
   "dependencies": {
-    "@moni-ai-design-system": "file:../moni-ai-design-system",
-    "moni-ai-design-system": "file:../moni-ai-design-system"
+    "moni-ai-design-system": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

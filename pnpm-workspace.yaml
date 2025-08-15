@@ -1,5 +1,0 @@
-packages:
-  - 'packages/*'
-  - 'packages-deprecated/*'
-  - 'demos'
-  - 'codemods/*'

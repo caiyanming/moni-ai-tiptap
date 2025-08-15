@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-stream-style",
   "description": "MoniAI Stream Style Intelligence Extension - coordinates AI stream operations with document styling",
-  "version": "3.0.0-beta.22",
+  "version": "3.0.0-beta.22.1",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -44,9 +44,9 @@
     "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/"
   },
   "peerDependencies": {
-    "@tiptap/core": "workspace:*",
-    "@tiptap/extension-document-style": "workspace:*",
-    "@tiptap/pm": "workspace:*"
+    "@tiptap/core": "3.0.0-beta.22.1",
+    "@tiptap/extension-document-style": "3.0.0-beta.22.1",
+    "@tiptap/pm": "3.0.0-beta.22.1"
   },
   "devDependencies": {
     "@tiptap/core": "workspace:*",

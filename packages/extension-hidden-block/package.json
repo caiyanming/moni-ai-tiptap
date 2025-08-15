@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-hidden-block",
   "description": "Hidden block extension for TipTap - supports NULL_UUID blocks for AI operations",
-  "version": "3.0.0-beta.22",
+  "version": "3.0.0-beta.22.1",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -45,8 +45,8 @@
     "@vitest/ui": "^2.0.0"
   },
   "peerDependencies": {
-    "@tiptap/core": "workspace:*",
-    "@tiptap/pm": "workspace:*"
+    "@tiptap/core": "3.0.0-beta.22.1",
+    "@tiptap/pm": "3.0.0-beta.22.1"
   },
   "repository": {
     "type": "git",
