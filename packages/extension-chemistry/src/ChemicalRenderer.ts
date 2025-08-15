@@ -1,7 +1,7 @@
 import type { KatexOptions } from 'katex'
 
 import type { ChemistryRenderResult } from './types.js'
-import { defaultChemistryKatexOptions,renderChemistry } from './utils.js'
+import { defaultChemistryKatexOptions, renderChemistry } from './utils.js'
 
 /**
  * Chemical Formula Renderer with KaTeX + mhchem integration

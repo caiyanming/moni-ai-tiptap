@@ -47,9 +47,9 @@ export function isChemistryFormula(input: string): boolean {
 
   const mediumPatterns = [
     /[A-Z][a-z]?\d*/, // Chemical elements with/without subscripts (H, H2O, CaCl2)
-    /[A-Z][a-z]?\d*[\+\-]/, // Ions like Na+, Cl-, Ca2+
-    /\([A-Z][a-z\d\)]+\)\d*/, // Parentheses groups like (OH)2, (NH4)2CO3
-    /\^[\+\-]\d*/, // Charges like ^2+, ^3-
+    /[A-Z][a-z]?\d*[+-]/, // Ions like Na+, Cl-, Ca2+
+    /\([A-Z][a-z\d)]+\)\d*/, // Parentheses groups like (OH)2, (NH4)2CO3
+    /\^[+-]\d*/, // Charges like ^2+, ^3-
     /\s\^\s/, // Gas evolution symbol
     /\sv\s/, // Precipitation symbol
   ]

@@ -1,5 +1,4 @@
 import { InputRule, mergeAttributes, Node } from '@tiptap/core'
-import type { Node as PMNode } from '@tiptap/pm/model'
 
 import { ChemicalRenderer } from '../ChemicalRenderer.js'
 import type { BlockChemicalOptions } from '../types.js'
@@ -272,7 +271,7 @@ export const BlockChemical = Node.create<BlockChemicalOptions>({
       }),
       // $$$ chemical formula $$$ pattern (auto-wrap with \ce)
       new InputRule({
-        find: /^\$\$\$([A-Za-z0-9()\[\]+-→←↔↑↓⇌⇀↽\s<>=]+)\$\$\$$/,
+        find: /^\$\$\$([A-Za-z0-9()[\]+-→←↔↑↓⇌⇀↽\s<>=]+)\$\$\$$/,
         handler: ({ state, range, match }) => {
           const [, chemical] = match
           const { tr } = state

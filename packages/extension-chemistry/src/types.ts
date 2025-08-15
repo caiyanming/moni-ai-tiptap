@@ -43,12 +43,12 @@ export interface ChemistryOptions {
 /**
  * Configuration options for the InlineChemical extension.
  */
-export interface InlineChemicalOptions extends ChemistryOptions {}
+export type InlineChemicalOptions = ChemistryOptions
 
 /**
  * Configuration options for the BlockChemical extension.
  */
-export interface BlockChemicalOptions extends ChemistryOptions {}
+export type BlockChemicalOptions = ChemistryOptions
 
 /**
  * Supported chemistry formula types

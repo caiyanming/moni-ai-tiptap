@@ -1,6 +1,6 @@
 import { Extension } from '@tiptap/core'
 
-import { BlockChemical,InlineChemical } from './extensions/index.js'
+import { BlockChemical, InlineChemical } from './extensions/index.js'
 import type { ChemistryOptions } from './types.js'
 
 /**
