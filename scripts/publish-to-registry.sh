@@ -46,7 +46,7 @@ log_info "版本: $VERSION"
 log_info "检查构建状态..."
 if [[ ! -d "packages/core/dist" ]]; then
     log_warning "未找到构建产物，正在执行构建..."
-    if pnpm run build; then
+    if pnpm run build:packages; then
         log_success "构建成功"
     else
         log_error "构建失败"
@@ -95,13 +95,23 @@ publish_package() {
     # 尝试 unpublish (如果包已存在)
     npm unpublish "$PACKAGE_NAME@$PACKAGE_VERSION" --registry="$REGISTRY_URL" --force 2>/dev/null || true
     
-    # 发布包
-    if npm publish --registry="$REGISTRY_URL" 2>/dev/null; then
-        log_success "发布成功: $PACKAGE_NAME@$PACKAGE_VERSION"
-        SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+    # 发布包（处理预发布版本的tag） - 使用明确的registry参数和忽略脚本
+    if [[ "$PACKAGE_VERSION" =~ (beta|alpha|rc) ]]; then
+        if npm publish --registry="$REGISTRY_URL" --tag beta --ignore-scripts 2>/dev/null; then
+            log_success "发布成功: $PACKAGE_NAME@$PACKAGE_VERSION (tag: beta)"
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+        else
+            log_error "发布失败: $PACKAGE_NAME@$PACKAGE_VERSION"
+            ERROR_COUNT=$((ERROR_COUNT + 1))
+        fi
     else
-        log_error "发布失败: $PACKAGE_NAME@$PACKAGE_VERSION"
-        ERROR_COUNT=$((ERROR_COUNT + 1))
+        if npm publish --registry="$REGISTRY_URL" --ignore-scripts 2>/dev/null; then
+            log_success "发布成功: $PACKAGE_NAME@$PACKAGE_VERSION"
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+        else
+            log_error "发布失败: $PACKAGE_NAME@$PACKAGE_VERSION"
+            ERROR_COUNT=$((ERROR_COUNT + 1))
+        fi
     fi
     
     cd - > /dev/null
