@@ -43,7 +43,9 @@
     "test:ci": "pnpm run test:unit:coverage && pnpm run test:integration && pnpm run test:e2e",
     "test:quick": "pnpm run test:unit",
     "test:full": "pnpm run test",
-    "build": "turbo run build",
+    "build": "turbo build",
+    "build:low-memory": "turbo build:low-memory --concurrency=4",
+    "build:serial": "turbo build --concurrency=1",
     "build:demos": "pnpm  --prefix demos run build:demos",
     "serve": "pnpm run build:demos && http-server ./demos/dist -s -p 3000",
     "build:ci": "turbo run build",
@@ -60,7 +62,8 @@
     "update-design-system": "node scripts/update-design-system-deps.cjs"
   },
   "dependencies": {
-    "@moni-ai/design-system": "^1.0.0"
+    "@moni-ai-design-system": "file:../moni-ai-design-system",
+    "moni-ai-design-system": "file:../moni-ai-design-system"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

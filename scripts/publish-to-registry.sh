@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# moni-ai-tiptap 包发布脚本
-# 用于发布所有 TipTap fork 包到本地 Verdaccio registry
+# 简化的TipTap包发布脚本
+# 基于成功的@moni-ai-y-tiptap经验，使用workspace模式
 
 set -e
 
 # 配置
 REGISTRY_URL="http://registry.fufenxi.com:4873/"
-VERSION="3.0.0-beta.22.1"
+VERSION="3.0.0-beta.22"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -32,72 +32,56 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检查当前目录
-if [[ ! -f "package.json" ]] || [[ ! -d "packages" ]]; then
-    log_error "请在 moni-ai-tiptap 根目录执行此脚本"
+log_info "开始发布 TipTap 包到本地 registry..."
+log_info "Registry: $REGISTRY_URL"
+
+# 确保构建完成
+log_info "执行低内存构建..."
+if pnpm run build:low-memory; then
+    log_success "构建成功"
+else
+    log_error "构建失败"
     exit 1
 fi
 
-log_info "开始发布 TipTap fork 包到本地 registry..."
-log_info "Registry: $REGISTRY_URL"
-log_info "版本: $VERSION"
-
-# 第一步：确保构建已完成
-log_info "检查构建状态..."
-if [[ ! -d "packages/core/dist" ]]; then
-    log_warning "未找到构建产物，正在执行构建..."
-    if pnpm run build:packages; then
-        log_success "构建成功"
-    else
-        log_error "构建失败"
-        exit 1
-    fi
-else
-    log_success "构建产物已存在"
-fi
-
-# 获取所有需要发布的包
-PACKAGES=($(find packages -name "package.json" -exec dirname {} \; | sort))
+# 获取所有有构建产物的包
+log_info "查找可发布的包..."
+PACKAGES=($(find packages -maxdepth 2 -name "package.json" -exec dirname {} \; | sort))
 
 log_info "找到 ${#PACKAGES[@]} 个包准备发布"
 
 # 统计
 SUCCESS_COUNT=0
-SKIP_COUNT=0
 ERROR_COUNT=0
 
-# 发布函数
+# 发布函数 - 从根目录使用pnpm发布
 publish_package() {
     local package_dir=$1
-    cd "$package_dir"
     
-    if [[ ! -f "package.json" ]]; then
-        log_warning "跳过 $package_dir (没有 package.json)"
-        SKIP_COUNT=$((SKIP_COUNT + 1))
-        cd - > /dev/null
+    # 确保在正确的目录下读取package.json
+    local PACKAGE_NAME=$(node -p "require('./$package_dir/package.json').name" 2>/dev/null || echo "")
+    local PACKAGE_VERSION=$(node -p "require('./$package_dir/package.json').version" 2>/dev/null || echo "")
+    
+    # 检查包信息是否有效
+    if [[ -z "$PACKAGE_NAME" || -z "$PACKAGE_VERSION" ]]; then
+        log_warning "跳过 $package_dir (无效的package.json)"
         return
     fi
     
-    # 获取包名和版本
-    local PACKAGE_NAME=$(node -p "require('./package.json').name" 2>/dev/null || echo "unknown")
-    local PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "unknown")
-    
     # 检查是否有构建产物
-    if [[ ! -d "dist" ]]; then
-        log_info "跳过 $PACKAGE_NAME (无构建产物)"
-        SKIP_COUNT=$((SKIP_COUNT + 1))
-        cd - > /dev/null
+    if [[ ! -d "$package_dir/dist" ]]; then
+        log_warning "跳过 $PACKAGE_NAME (无构建产物)"
         return
     fi
     
     log_info "发布包: $PACKAGE_NAME@$PACKAGE_VERSION"
     
-    # 尝试 unpublish (如果包已存在)
+    # 清理可能存在的版本（静默处理）
     npm unpublish "$PACKAGE_NAME@$PACKAGE_VERSION" --registry="$REGISTRY_URL" --force 2>/dev/null || true
     
-    # 发布包（处理预发布版本的tag） - 使用明确的registry参数和忽略脚本
+    # 使用pnpm从根目录发布包（处理beta版本tag）
     if [[ "$PACKAGE_VERSION" =~ (beta|alpha|rc) ]]; then
-        if npm publish --registry="$REGISTRY_URL" --tag beta --ignore-scripts 2>/dev/null; then
+        if pnpm publish "$package_dir" --registry="$REGISTRY_URL" --ignore-scripts --tag beta --no-git-checks; then
             log_success "发布成功: $PACKAGE_NAME@$PACKAGE_VERSION (tag: beta)"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
@@ -105,19 +89,16 @@ publish_package() {
             ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
     else
-        if npm publish --registry="$REGISTRY_URL" --ignore-scripts 2>/dev/null; then
+        if pnpm publish "$package_dir" --registry="$REGISTRY_URL" --ignore-scripts --no-git-checks; then
             log_success "发布成功: $PACKAGE_NAME@$PACKAGE_VERSION"
             SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
         else
             log_error "发布失败: $PACKAGE_NAME@$PACKAGE_VERSION"
             ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
-    fi
-    
-    cd - > /dev/null
 }
 
-# 批量发布所有包
+# 批量发布
 for package_dir in "${PACKAGES[@]}"; do
     publish_package "$package_dir"
 done
@@ -126,19 +107,16 @@ done
 echo ""
 log_info "发布完成统计:"
 log_success "成功发布: $SUCCESS_COUNT 个包"
-[[ $SKIP_COUNT -gt 0 ]] && log_warning "跳过: $SKIP_COUNT 个包"
 [[ $ERROR_COUNT -gt 0 ]] && log_error "失败: $ERROR_COUNT 个包"
 
-if [[ $ERROR_COUNT -eq 0 ]]; then
+if [[ $SUCCESS_COUNT -gt 0 ]]; then
     echo ""
-    log_success "🎉 所有包发布成功!"
+    log_success "🎉 发布完成!"
     echo ""
     log_info "验证发布结果:"
     echo "npm view @tiptap/core@$VERSION --registry=$REGISTRY_URL"
-    echo "npm view @tiptap/react@$VERSION --registry=$REGISTRY_URL"
-    echo "npm view @tiptap/starter-kit@$VERSION --registry=$REGISTRY_URL"
 else
     echo ""
-    log_error "发布过程中有错误，请检查失败的包"
+    log_error "没有包发布成功"
     exit 1
 fi

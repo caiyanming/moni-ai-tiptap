@@ -7,6 +7,11 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "build:low-memory": {
+      "inputs": ["src/**", "tsup.config.ts", "../../tsconfig.json", "../../tsconfig.build.json", "package.json"],
+      "dependsOn": ["^build:low-memory"],
+      "outputs": ["dist/**"]
+    },
     "dev": {
       "persistent": true,
       "cache": false
