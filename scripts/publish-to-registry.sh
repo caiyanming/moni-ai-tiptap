@@ -35,18 +35,12 @@ log_error() {
 log_info "开始发布 TipTap 包到本地 registry..."
 log_info "Registry: $REGISTRY_URL"
 
-# 确保构建完成
-log_info "执行低内存构建..."
-if pnpm run build:low-memory; then
-    log_success "构建成功"
-else
-    log_error "构建失败"
-    exit 1
-fi
+# 跳过构建步骤，直接使用已有的构建产物
+log_info "使用现有构建产物进行发布..."
 
-# 获取所有有构建产物的包
+# 获取所有有构建产物的包（包括 packages 和 packages-deprecated）
 log_info "查找可发布的包..."
-PACKAGES=($(find packages -maxdepth 2 -name "package.json" -exec dirname {} \; | sort))
+PACKAGES=($(find packages packages-deprecated -maxdepth 2 -name "package.json" -exec dirname {} \; 2>/dev/null | sort))
 
 log_info "找到 ${#PACKAGES[@]} 个包准备发布"
 
@@ -96,6 +90,7 @@ publish_package() {
             log_error "发布失败: $PACKAGE_NAME@$PACKAGE_VERSION"
             ERROR_COUNT=$((ERROR_COUNT + 1))
         fi
+    fi
 }
 
 # 批量发布
