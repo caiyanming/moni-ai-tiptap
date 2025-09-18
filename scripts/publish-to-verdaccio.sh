@@ -16,12 +16,18 @@ FAILED_PACKAGES=()
 # Iterate through all package directories
 for dir in packages/*/; do
   if [ -f "$dir/package.json" ]; then
-    # Extract package name
+    # Extract package name and version
     pkg_name=$(cat "$dir/package.json" | grep '"name"' | head -1 | cut -d'"' -f4)
+    pkg_version=$(cat "$dir/package.json" | grep '"version"' | head -1 | cut -d'"' -f4)
 
-    echo "Publishing $pkg_name..."
+    echo "Processing $pkg_name@$pkg_version..."
+
+    # Try to unpublish existing version first (ignore errors)
+    echo "  Unpublishing existing version..."
+    npm unpublish "$pkg_name@$pkg_version" --registry="$REGISTRY" --force 2>/dev/null || echo "  (No existing version to unpublish)"
 
     # Navigate to package directory and publish
+    echo "  Publishing new version..."
     (cd "$dir" && npm publish --registry="$REGISTRY" --access public 2>/dev/null)
 
     if [ $? -eq 0 ]; then
