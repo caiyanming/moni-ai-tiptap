@@ -1,4 +1,22 @@
 import { combineTransactionSteps, Extension, findChildren, findChildrenInRange, getChangedRanges } from '@tiptap/core'
+
+/**
+ * 将驼峰命名的 moni 属性转换为正确的 HTML data 属性格式
+ * 例如: moniBlockId -> data-moni-block-id
+ */
+function convertMoniAttributeName(attributeName: string): string {
+  // 只处理 moni 开头的属性
+  if (!attributeName.startsWith('moni')) {
+    return `data-${attributeName}`
+  }
+
+  // 将驼峰命名转换为 kebab-case 并添加 data- 前缀
+  const kebabCase = attributeName
+    .replace(/([A-Z])/g, '-$1') // 在大写字母前添加连字符
+    .toLowerCase() // 转为小写
+
+  return `data-${kebabCase}`
+}
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Fragment, Slice } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
@@ -37,14 +55,15 @@ export const UniqueID = Extension.create<UniqueIDOptions>({
         attributes: {
           [this.options.attributeName]: {
             default: null,
-            parseHTML: element => element.getAttribute(`data-${this.options.attributeName}`),
+            parseHTML: element => element.getAttribute(convertMoniAttributeName(this.options.attributeName)),
             renderHTML: attributes => {
               if (!attributes[this.options.attributeName]) {
                 return {}
               }
 
+              const htmlAttributeName = convertMoniAttributeName(this.options.attributeName)
               return {
-                [`data-${this.options.attributeName}`]: attributes[this.options.attributeName],
+                [htmlAttributeName]: attributes[this.options.attributeName],
               }
             },
           },

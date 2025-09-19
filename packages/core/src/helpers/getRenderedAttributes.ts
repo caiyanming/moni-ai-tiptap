@@ -36,7 +36,6 @@ export function getRenderedAttributes(
         // 🔥 修复：当缺少 renderHTML 方法时，正确转换属性名
         const value = nodeOrMark.attrs[item.name]
         const htmlAttributeName = convertMoniAttributeName(item.name)
-
         return {
           [htmlAttributeName]: value,
         }
