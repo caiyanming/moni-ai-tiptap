@@ -1,4 +1,5 @@
 export * from './combineTransactionSteps.js'
+export * from './convertMoniAttributeName.js'
 export * from './createChainableState.js'
 export * from './createDocument.js'
 export * from './createNodeFromContent.js'

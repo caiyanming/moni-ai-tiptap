@@ -4,6 +4,8 @@
  * 提供统一的DOM属性处理规则，确保React组件传递给DOM的属性符合规范
  */
 
+import { convertMoniAttributeName } from '@tiptap/core'
+
 interface AttributeRule {
   /** 属性匹配规则 */
   test: (key: string) => boolean
@@ -18,7 +20,7 @@ interface AttributeRule {
  * 按优先级排序，高优先级规则先执行
  */
 const DOM_ATTRIBUTE_RULES: AttributeRule[] = [
-  // 高优先级：标准DOM属性
+  // 最高优先级：标准DOM属性
   {
     test: key =>
       [
@@ -40,11 +42,21 @@ const DOM_ATTRIBUTE_RULES: AttributeRule[] = [
     priority: 50,
   },
 
-  // 低优先级：data-*和aria-*属性（直接透传，保持原有格式）
+  // 高优先级：moni属性转换（需要格式化为正确的kebab-case）
+  {
+    test: key => key.startsWith('moni'),
+    transform: (key, value) => {
+      const normalizedKey = convertMoniAttributeName(key)
+      return { [normalizedKey]: value }
+    },
+    priority: 40,
+  },
+
+  // 中优先级：已经正确格式的data-*和aria-*属性
   {
     test: key => key.startsWith('data-') || key.startsWith('aria-'),
     transform: (key, value) => ({ [key]: value }),
-    priority: 10,
+    priority: 30,
   },
 ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
