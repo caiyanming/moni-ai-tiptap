@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-invisible-characters",
   "description": "invisible characters extension for tiptap",
-  "version": "3.0.0-beta.22.2",
+  "version": "3.0.0-beta.22.3",
   "homepage": "https://tiptap.dev/docs/editor/extensions/functionality/invisiblecharacters",
   "keywords": [
     "tiptap",
@@ -36,9 +36,9 @@
     "@tiptap/pm": "workspace:*"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.1",
-    "@tiptap/extension-text-style": "3.0.0-beta.22.1",
-    "@tiptap/pm": "3.0.0-beta.22.1"
+    "@tiptap/core": "3.0.0-beta.22.3",
+    "@tiptap/extension-text-style": "3.0.0-beta.22.3",
+    "@tiptap/pm": "3.0.0-beta.22.3"
   },
   "repository": {
     "type": "git",

@@ -5,7 +5,7 @@
 
 set -e
 
-VERSION="3.0.0-beta.22.1"
+VERSION="3.0.0-beta.22.3"
 
 # 颜色输出
 RED='\033[0;31m'
@@ -37,22 +37,39 @@ log_info "找到 ${#PACKAGES[@]} 个包需要更新"
 
 UPDATE_COUNT=0
 
-# 更新每个包的版本号
+# 更新每个包的版本号和依赖版本
 for package_file in "${PACKAGES[@]}"; do
     PACKAGE_NAME=$(node -p "require('./$package_file').name" 2>/dev/null || echo "unknown")
     CURRENT_VERSION=$(node -p "require('./$package_file').version" 2>/dev/null || echo "unknown")
-    
+
     if [[ "$CURRENT_VERSION" != "$VERSION" ]]; then
         log_info "更新 $PACKAGE_NAME: $CURRENT_VERSION -> $VERSION"
-        
-        # 使用 Node.js 更新版本号
+
+        # 使用 Node.js 更新版本号和依赖版本
         node -e "
             const fs = require('fs');
             const packageJson = JSON.parse(fs.readFileSync('$package_file', 'utf8'));
+
+            // 更新包版本
             packageJson.version = '$VERSION';
+
+            // 更新依赖中的 @tiptap 包版本
+            const updateDeps = (deps) => {
+                if (!deps) return;
+                for (const [name, version] of Object.entries(deps)) {
+                    if (name.startsWith('@tiptap/') && version !== 'workspace:*') {
+                        deps[name] = '$VERSION';
+                    }
+                }
+            };
+
+            updateDeps(packageJson.dependencies);
+            updateDeps(packageJson.devDependencies);
+            updateDeps(packageJson.peerDependencies);
+
             fs.writeFileSync('$package_file', JSON.stringify(packageJson, null, 2) + '\n');
         "
-        
+
         UPDATE_COUNT=$((UPDATE_COUNT + 1))
     fi
 done

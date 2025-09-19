@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-hierarchy-node",
   "description": "hierarchy node extension for tiptap - parent-child document management",
-  "version": "3.0.0-beta.22.2",
+  "version": "3.0.0-beta.22.3",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -37,7 +37,7 @@
     "@tiptap/core": "workspace:*"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.1"
+    "@tiptap/core": "3.0.0-beta.22.3"
   },
   "repository": {
     "type": "git",

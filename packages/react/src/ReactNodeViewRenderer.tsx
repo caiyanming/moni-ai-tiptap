@@ -5,7 +5,7 @@ import type {
   NodeViewRendererOptions,
   NodeViewRendererProps,
 } from '@tiptap/core'
-import { getRenderedAttributes, NodeView } from '@tiptap/core'
+import { NodeView } from '@tiptap/core'
 import type { Node, Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { Decoration, DecorationSource, NodeView as ProseMirrorNodeView } from '@tiptap/pm/view'
 import type { ComponentType, NamedExoticComponent } from 'react'
@@ -305,8 +305,8 @@ export class ReactNodeView<
       let attrsObj: Record<string, string> = {}
 
       if (typeof this.options.attrs === 'function') {
-        const extensionAttributes = this.editor.extensionManager.attributes
-        const HTMLAttributes = getRenderedAttributes(this.node, extensionAttributes)
+        // 🔥 使用已经计算好的 HTMLAttributes，避免重复调用 getRenderedAttributes
+        const HTMLAttributes = this.HTMLAttributes
 
         attrsObj = this.options.attrs({ node: this.node, HTMLAttributes })
       } else {
