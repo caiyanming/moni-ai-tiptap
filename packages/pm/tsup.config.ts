@@ -23,8 +23,8 @@ export default defineConfig({
   ],
   tsconfig: '../../tsconfig.build.json',
   outDir: 'dist',
-  dts: false, // 暂时禁用 DTS 以避免内存问题
-  splitting: false, // 禁用代码分割以减少内存使用
+  dts: true, // 启用 DTS 生成类型定义
+  splitting: true, // 启用代码分割
   clean: true,
   format: ['esm', 'cjs'],
   // 添加低内存选项
