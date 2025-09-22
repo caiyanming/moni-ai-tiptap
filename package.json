@@ -61,10 +61,6 @@
     "install-design-system:clean": "scripts/install-design-system.sh --clean",
     "update-design-system": "node scripts/update-design-system-deps.cjs"
   },
-  "dependencies": {
-    "@moni-ai-design-system": "file:../moni-ai-design-system",
-    "moni-ai-design-system": "file:../moni-ai-design-system"
-  },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
@@ -85,6 +81,7 @@
     "@typescript-eslint/parser": "^8.19.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@zeecoder/postcss-container-query": "^3.1.0",
+    "autoprefixer": "^10.4.21",
     "babel-loader": "^9.2.1",
     "cypress": "^14.0.0",
     "cz-conventional-changelog": "^3.3.0",
@@ -104,6 +101,7 @@
     "lint-staged": "^15.3.0",
     "lowlight": "^3.3.0",
     "minimist": "^1.2.8",
+    "moni-ai-design-system": "1.0.0",
     "pkg-pr-new": "0.0.32",
     "postcss-custom-properties": "^14.0.6",
     "postcss-import": "^15.1.0",

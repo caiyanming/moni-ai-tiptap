@@ -4,7 +4,6 @@ import { Heading } from '@tiptap/extension-heading'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import type { Node } from '@tiptap/pm/model'
-import { EditorState } from '@tiptap/pm/state'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('splitBlock command - moniBlockId generation', () => {
@@ -116,7 +115,7 @@ describe('splitBlock command - moniBlockId generation', () => {
       if (node.type.name === 'heading' || node.type.name === 'paragraph') {
         expect(node.attrs.moniBlockId).toBeTruthy()
         expect(node.attrs.moniBlockId).toMatch(/^block-\d+-[a-z0-9]+$/)
-        nodeCount++
+        nodeCount += 1
       }
     })
 
@@ -139,7 +138,7 @@ describe('splitBlock command - moniBlockId generation', () => {
     doc.descendants(node => {
       if (node.type.name === 'paragraph') {
         expect(node.attrs.moniBlockId).toBeTruthy()
-        blockCount++
+        blockCount += 1
       }
     })
 
@@ -164,5 +163,41 @@ describe('splitBlock command - moniBlockId generation', () => {
 
     // Test should not throw errors
     expect(typeof result).toBe('boolean')
+  })
+
+  it('should move cursor to the new block after split', () => {
+    // Set initial content and position cursor in middle
+    editor.commands.setContent('<p>Hello world</p>')
+    const initialCursorPos = 6 // After "Hello "
+    editor.commands.setTextSelection(initialCursorPos)
+
+    // Store the initial selection
+    const initialSelection = editor.state.selection
+    console.log('Initial cursor position:', initialSelection.$from.pos)
+
+    // Split the block
+    const result = editor.commands.splitBlock()
+    expect(result).toBe(true)
+
+    // Check the new cursor position
+    const newSelection = editor.state.selection
+    const newCursorPos = newSelection.$from.pos
+    console.log('New cursor position:', newCursorPos)
+    console.log('Document structure:', editor.state.doc.toJSON())
+
+    // The cursor should have moved to the start of the new block
+    // After split: <p>Hello </p><p>world</p>
+    // The cursor should be at the start of the second paragraph
+    expect(newCursorPos).toBeGreaterThan(initialCursorPos)
+
+    // The cursor should be in a different paragraph
+    const initialParent = initialSelection.$from.parent
+    const newParent = newSelection.$from.parent
+
+    // Check that we're in a new block (different node)
+    expect(newParent).not.toBe(initialParent)
+
+    // Check that the cursor is at the beginning of the new block
+    expect(newSelection.$from.parentOffset).toBe(0)
   })
 })
