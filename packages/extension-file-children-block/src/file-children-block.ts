@@ -149,6 +149,33 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
     }
   },
 
+  addKeyboardShortcuts() {
+    return {
+      // 🔥 防删除保护：拦截所有可能删除FileChildrenBlock的按键
+      Backspace: ({ editor }) => {
+        const { selection } = editor.state
+        const { $from } = selection
+        const node = $from.parent
+
+        // 如果当前在FileChildrenBlock内，阻止删除整个块
+        if (node.type.name === this.name) {
+          return true // 阻止默认行为
+        }
+        return false // 允许正常删除
+      },
+      Delete: ({ editor }) => {
+        const { selection } = editor.state
+        const { $from } = selection
+        const node = $from.parent
+
+        if (node.type.name === this.name) {
+          return true // 阻止默认行为
+        }
+        return false
+      },
+    }
+  },
+
   addProseMirrorPlugins() {
     return [
       new Plugin({
