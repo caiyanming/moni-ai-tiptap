@@ -2,7 +2,7 @@
  * @tiptap/constants - Shared constants and utilities for TipTap extensions
  */
 
-// 🔥 NULL_UUID constant for hidden blocks and AI operations
+// 🔥 NULL_UUID constant for file children blocks and AI operations
 export const NULL_UUID = '13814000-1dd2-11b2-8080-808080808080'
 
 // 🔥 Block-related constants
@@ -11,20 +11,17 @@ export const BLOCK_CONSTANTS = {
 
   // Default block attributes
   DEFAULT_BLOCK_ATTRS: {
-    hidden: false,
-    isInitialBlock: false,
     moniDragEnabled: true,
     moniLevel: 0,
   },
 
-  // Hidden block specific attributes
-  HIDDEN_BLOCK_ATTRS: {
+  // File children block specific attributes
+  FILE_CHILDREN_BLOCK_ATTRS: {
     id: NULL_UUID,
     moniBlockId: NULL_UUID,
-    hidden: true,
-    isInitialBlock: true,
+    collapsed: true,
+    displayMode: 'list',
     moniDragEnabled: false,
-    moniLevel: 0,
   },
 } as const
 
@@ -85,14 +82,14 @@ export const ATTR_CONSTANTS = {
   STREAM_TYPE: 'moniStreamType',
   STREAM_MODE: 'moniStreamMode',
 
-  // Hidden block system
-  HIDDEN: 'hidden',
-  INITIAL_BLOCK: 'isInitialBlock',
+  // File children block system
+  COLLAPSED: 'collapsed',
+  DISPLAY_MODE: 'displayMode',
 } as const
 
 // 🔥 CSS class constants
 export const CSS_CONSTANTS = {
-  HIDDEN_BLOCK: 'moni-hidden-block',
+  FILE_CHILDREN_BLOCK: 'file-children-block-container',
   DRAG_HANDLE: 'moni-drag-handle',
   DRAGGING: 'moni-dragging',
   DROP_TARGET: 'moni-drop-target',
@@ -124,19 +121,19 @@ export const UTILS = {
   isNullUUID: (uuid: string): boolean => uuid === NULL_UUID,
 
   /**
-   * Generate a NULL_UUID hidden block attrs
+   * Generate a NULL_UUID file children block attrs
    */
-  createHiddenBlockAttrs: () => ({ ...BLOCK_CONSTANTS.HIDDEN_BLOCK_ATTRS }),
+  createFileChildrenBlockAttrs: () => ({ ...BLOCK_CONSTANTS.FILE_CHILDREN_BLOCK_ATTRS }),
 
   /**
-   * Check if attributes represent a hidden block
+   * Check if attributes represent a file children block
    */
-  isHiddenBlock: (attrs: Record<string, any>): boolean =>
-    attrs?.[ATTR_CONSTANTS.HIDDEN] === true && attrs?.[ATTR_CONSTANTS.INITIAL_BLOCK] === true,
+  isFileChildrenBlock: (attrs: Record<string, any>): boolean =>
+    attrs?.[ATTR_CONSTANTS.COLLAPSED] !== undefined && attrs?.[ATTR_CONSTANTS.DISPLAY_MODE] !== undefined,
 
   /**
-   * Check if attributes represent a NULL_UUID hidden block
+   * Check if attributes represent a NULL_UUID block
    */
-  isNullUUIDHiddenBlock: (attrs: Record<string, any>): boolean =>
-    UTILS.isHiddenBlock(attrs) && (UTILS.isNullUUID(attrs?.id) || UTILS.isNullUUID(attrs?.[ATTR_CONSTANTS.BLOCK_ID])),
+  isNullUUIDBlock: (attrs: Record<string, any>): boolean =>
+    UTILS.isNullUUID(attrs?.id) || UTILS.isNullUUID(attrs?.[ATTR_CONSTANTS.BLOCK_ID]),
 }

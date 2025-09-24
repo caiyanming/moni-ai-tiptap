@@ -9,7 +9,6 @@
     "test:poc": "playwright test drag-handle-poc.spec.js --project=chromium",
     "test:drag": "playwright test drag-handle-migrated.spec.js --project=chromium",
     "test:stream": "playwright test stream-operations-migrated.spec.js --project=chromium",
-    "test:hidden": "playwright test hidden-blocks-migrated.spec.js --project=chromium",
     "test:all": "playwright test *-migrated.spec.js --project=chromium",
     "test:cross-browser": "playwright test *-migrated.spec.js",
     "test:mobile": "playwright test drag-handle-migrated.spec.js --project=\"Mobile Chrome\" --project=\"Mobile Safari\"",

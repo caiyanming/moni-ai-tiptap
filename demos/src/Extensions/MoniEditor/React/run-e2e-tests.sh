@@ -106,11 +106,7 @@ else
 fi
 
 echo ""
-echo "3️⃣ 运行 HiddenBlock Extension 测试..."
-if npx playwright test e2e-tests/hidden-blocks.spec.js --reporter=list; then
-    echo "✅ HiddenBlock 测试通过"
 else
-    echo "❌ HiddenBlock 测试失败"
     FAILED_TESTS=1
 fi
 

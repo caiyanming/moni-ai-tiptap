@@ -128,5 +128,9 @@
       "prettier --write",
       "eslint --fix --quiet --no-error-on-unmatched-pattern"
     ]
+  },
+  "dependencies": {
+    "moni-ai-design-system": "file:../moni-ai-design-system",
+    "@moni-ai-design-system": "file:../moni-ai-design-system"
   }
 }

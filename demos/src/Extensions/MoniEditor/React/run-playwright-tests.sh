@@ -24,7 +24,6 @@ echo "🎯 可选择的测试套件："
 echo "1. 🚀 POC 测试 - 验证真实拖拽功能"
 echo "2. 🎯 DragHandle 迁移测试 - 完整的拖拽手柄功能"
 echo "3. 🔄 StreamOperations 迁移测试 - AI 流式操作"
-echo "4. 👁️ HiddenBlocks 迁移测试 - 隐藏块扩展"
 echo "5. 🌟 所有迁移测试"
 echo "6. 🔄 跨浏览器测试 (Chrome, Firefox, Safari)"
 echo ""
@@ -50,8 +49,6 @@ case $TEST_SUITE in
         npx playwright test stream-operations-migrated.spec.js --project=chromium
         ;;
     4|hidden)
-        echo "👁️ 运行 HiddenBlocks 迁移测试..."
-        npx playwright test hidden-blocks-migrated.spec.js --project=chromium
         ;;
     5|all)
         echo "🌟 运行所有迁移测试..."

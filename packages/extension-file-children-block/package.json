@@ -1,15 +1,16 @@
 {
-  "name": "@tiptap/extension-hidden-block",
-  "description": "Hidden block extension for TipTap - supports NULL_UUID blocks for AI operations",
+  "name": "@tiptap/extension-file-children-block",
+  "description": "File children block extension for TipTap - AI anchor and sub-document manager",
   "version": "3.0.0-beta.22.3",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
     "tiptap extension",
-    "hidden block",
+    "file children",
     "null uuid",
-    "ai operations",
-    "block stream"
+    "ai anchor",
+    "sub-document",
+    "document manager"
   ],
   "license": "MIT",
   "funding": {
@@ -51,7 +52,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ueberdosis/tiptap",
-    "directory": "packages/extension-hidden-block"
+    "directory": "packages/extension-file-children-block"
   },
   "scripts": {
     "build": "tsup",
