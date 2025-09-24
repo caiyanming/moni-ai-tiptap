@@ -6,5 +6,7 @@ export default {
   plugins: {
     ...designSystemConfig.plugins,
     // 项目特定的插件可以在这里添加
+    tailwindcss: {}, // 保留现有的Tailwind配置
+    autoprefixer: {},
   },
 }

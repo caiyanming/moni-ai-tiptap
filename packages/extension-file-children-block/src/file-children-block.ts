@@ -1,7 +1,9 @@
 import { mergeAttributes, Node } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+import type { Transaction } from '@tiptap/pm/state'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 
-import type { FileChildrenBlockAttributes,FileChildrenBlockOptions } from './types.js'
+import type { FileChildrenBlockAttributes, FileChildrenBlockOptions } from './types.js'
 import { NULL_UUID } from './types.js'
 
 declare module '@tiptap/core' {
@@ -11,6 +13,10 @@ declare module '@tiptap/core' {
        * Insert file children block with NULL_UUID
        */
       insertFileChildrenBlock: () => ReturnType
+      /**
+       * Update file children block attributes with validation
+       */
+      updateFileChildrenBlockAttributes: (attributes: Partial<FileChildrenBlockAttributes>) => ReturnType
     }
   }
 }
@@ -89,6 +95,8 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
         renderHTML: attributes => ({
           'data-display-mode': attributes.displayMode,
         }),
+        // Validate on update
+        keepOnSplit: false,
       },
 
       // Moni system: no drag for this block
@@ -141,14 +149,66 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
     }
   },
 
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('fileChildrenBlockValidation'),
+        appendTransaction: (transactions, oldState, newState) => {
+          let tr: Transaction | undefined
+          let modified = false
+
+          // 检查所有FileChildrenBlock节点，确保属性符合规则
+          newState.doc.descendants((node: ProseMirrorNode, pos: number) => {
+            if (node.type.name === this.name) {
+              const attrs = { ...node.attrs } as FileChildrenBlockAttributes
+              let needsUpdate = false
+
+              // 强制保持核心属性
+              if (attrs.id !== this.options.nullUUID) {
+                attrs.id = this.options.nullUUID
+                needsUpdate = true
+              }
+              if (attrs.moniBlockId !== this.options.nullUUID) {
+                attrs.moniBlockId = this.options.nullUUID
+                needsUpdate = true
+              }
+              if (attrs.moniDragEnabled !== false) {
+                attrs.moniDragEnabled = false
+                needsUpdate = true
+              }
+
+              // 验证displayMode
+              if (!['list', 'grid', 'cards'].includes(attrs.displayMode)) {
+                attrs.displayMode = 'list'
+                needsUpdate = true
+              }
+
+              if (needsUpdate) {
+                if (!tr) {
+                  tr = newState.tr
+                }
+                tr.setNodeMarkup(pos, undefined, attrs)
+                modified = true
+              }
+            }
+          })
+
+          return modified && tr ? tr : null
+        },
+      }),
+    ]
+  },
+
+  // 移除原生 NodeView，让 React NodeView 接管
+
   addStorage() {
     return {
       /**
        * Check if document has file children block
        */
-      hasFileChildrenBlock: (context: any) => {
+      hasFileChildrenBlock: (editor: any) => {
         let hasBlock = false
-        context.editor.state.doc.descendants((node: ProseMirrorNode) => {
+        editor.state.doc.descendants((node: ProseMirrorNode) => {
           if (node.type.name === this.name) {
             hasBlock = true
             return false
@@ -160,9 +220,9 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
       /**
        * Get file children block info
        */
-      getFileChildrenBlockInfo: (context: any) => {
+      getFileChildrenBlockInfo: (editor: any) => {
         let blockInfo = null
-        context.editor.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
+        editor.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
           if (node.type.name === this.name) {
             blockInfo = {
               node,
@@ -178,13 +238,36 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
       /**
        * Update block UI state
        */
-      updateFileChildrenBlockState: (context: any, updates: Partial<FileChildrenBlockAttributes>) => {
-        const info = context.storage.getFileChildrenBlockInfo(context)
-        if (!info) {return false}
+      updateFileChildrenBlockState: (editor: any, updates: Partial<FileChildrenBlockAttributes>) => {
+        const info = editor.storage.fileChildrenBlock.getFileChildrenBlockInfo(editor)
+        if (!info) {
+          return false
+        }
 
-        return context.editor.commands.setNodeAttributes(this.name, {
+        // Validate and clean updates
+        const validatedUpdates = { ...updates }
+
+        // Always keep moniDragEnabled as false
+        if ('moniDragEnabled' in validatedUpdates) {
+          validatedUpdates.moniDragEnabled = false
+        }
+
+        // Validate displayMode
+        if ('displayMode' in validatedUpdates) {
+          const mode = validatedUpdates.displayMode
+          if (mode && !['list', 'grid', 'cards'].includes(mode)) {
+            // Use default value if invalid
+            validatedUpdates.displayMode = 'list'
+          }
+        }
+
+        // Preserve core identity
+        validatedUpdates.id = this.options.nullUUID
+        validatedUpdates.moniBlockId = this.options.nullUUID
+
+        return editor.commands.updateAttributes(this.name, {
           ...info.attrs,
-          ...updates,
+          ...validatedUpdates,
         })
       },
     }

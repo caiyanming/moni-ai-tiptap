@@ -6,6 +6,7 @@
 // 🎯 模拟全局对象和API
 // Only set TextEncoder/TextDecoder if they don't exist
 if (typeof global.TextEncoder === 'undefined') {
+  // Node.js util import - this is correct for test environment
   const { TextEncoder: NodeTextEncoder, TextDecoder: NodeTextDecoder } = require('util')
   global.TextEncoder = NodeTextEncoder
   global.TextDecoder = NodeTextDecoder
@@ -160,6 +161,7 @@ if (typeof afterEach !== 'undefined') {
 }
 
 // 🎯 全局错误处理
+/* eslint-env jest */
 if (typeof beforeAll !== 'undefined') {
   beforeAll(() => {
     // 抑制特定的警告信息

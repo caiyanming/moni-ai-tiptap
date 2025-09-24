@@ -109,6 +109,7 @@
     "prettier": "3.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "tailwindcss": "^4.1.13",
     "tinyglobby": "0.2.10",
     "ts-loader": "9.3.1",
     "tsup": "^8.3.5",
@@ -130,7 +131,7 @@
     ]
   },
   "dependencies": {
-    "moni-ai-design-system": "file:../moni-ai-design-system",
-    "@moni-ai-design-system": "file:../moni-ai-design-system"
+    "@moni-ai-design-system": "file:../moni-ai-design-system",
+    "moni-ai-design-system": "file:../moni-ai-design-system"
   }
 }

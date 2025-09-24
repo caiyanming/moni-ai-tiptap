@@ -1,6 +1,10 @@
 // @ts-ignore: React import issues will be handled at runtime
 import { ReactNodeViewRenderer } from '@tiptap/react'
 
+import { BlockChemicalFormulaComponent,InlineChemicalFormulaComponent  } from './ChemicalFormulaComponent.js'
+import { BlockChemical } from './extensions/BlockChemical.js'
+import { InlineChemical } from './extensions/InlineChemical.js'
+
 /**
  * React Node View Renderer for Inline Chemical Formula
  *
@@ -22,8 +26,6 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
  */
 export const InlineChemicalReactRenderer = (() => {
   try {
-    const { InlineChemicalFormulaComponent } = require('./ChemicalFormulaComponent.js')
-
     return ReactNodeViewRenderer(InlineChemicalFormulaComponent, {
       as: 'span',
       className: 'tiptap-chemistry-render inline-chemistry',
@@ -70,8 +72,6 @@ export const InlineChemicalReactRenderer = (() => {
  */
 export const BlockChemicalReactRenderer = (() => {
   try {
-    const { BlockChemicalFormulaComponent } = require('./ChemicalFormulaComponent.js')
-
     return ReactNodeViewRenderer(BlockChemicalFormulaComponent, {
       as: 'div',
       className: 'tiptap-chemistry-render block-chemistry',
@@ -100,9 +100,6 @@ export const BlockChemicalReactRenderer = (() => {
  * Creates InlineChemical extension with React node view
  */
 export function createInlineChemicalWithReact(options?: any) {
-  // Dynamic import to avoid circular dependencies
-  const { InlineChemical } = require('./extensions/InlineChemical.js')
-
   return InlineChemical.extend({
     addNodeView() {
       return InlineChemicalReactRenderer
@@ -114,9 +111,6 @@ export function createInlineChemicalWithReact(options?: any) {
  * Creates BlockChemical extension with React node view
  */
 export function createBlockChemicalWithReact(options?: any) {
-  // Dynamic import to avoid circular dependencies
-  const { BlockChemical } = require('./extensions/BlockChemical.js')
-
   return BlockChemical.extend({
     addNodeView() {
       return BlockChemicalReactRenderer
