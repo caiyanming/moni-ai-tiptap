@@ -146,6 +146,11 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
             },
           })
         },
+      updateFileChildrenBlockAttributes:
+        (attributes: Partial<FileChildrenBlockAttributes>) =>
+        ({ commands }) => {
+          return commands.updateAttributes(this.name, attributes)
+        },
     }
   },
 
