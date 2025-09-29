@@ -1,3 +1,4 @@
+import { ensureMoniBlockId } from '@tiptap/core'
 import type { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 import { Fragment } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
@@ -1194,7 +1195,7 @@ export class StreamOperationManager {
         const textNode = this.schema.text ? this.schema.text(content.text) : null
         const block = this.schema.nodes.paragraph.create(
           {
-            moniBlockId: `block_${crypto.randomUUID()}`,
+            ...ensureMoniBlockId(),
             moniParentId: null,
             moniLevel: 0,
           },
@@ -1228,7 +1229,7 @@ export class StreamOperationManager {
 
       // 确保有moniBlockId
       const blockAttrs = {
-        moniBlockId: attrs.moniBlockId || `block_${crypto.randomUUID()}`,
+        moniBlockId: attrs.moniBlockId || ensureMoniBlockId().moniBlockId,
         moniParentId: attrs.moniParentId || null,
         moniLevel: attrs.moniLevel || 0,
         ...attrs,
