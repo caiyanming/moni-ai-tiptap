@@ -1,8 +1,9 @@
-import { ensureMoniBlockId } from '@tiptap/core'
 import type { Node as ProseMirrorNode, Schema } from '@tiptap/pm/model'
 import { Fragment } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
 import type { EditorView } from '@tiptap/pm/view'
+
+import { ensureMoniBlockId } from './helpers/generateMoniBlockId.js'
 
 /**
  * StreamOperationManager 配置选项
