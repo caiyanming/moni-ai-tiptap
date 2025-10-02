@@ -75,6 +75,7 @@ export interface DragHandlePluginProps {
   onDragStart?: (event: DragEvent, editor: Editor) => void
   onDragOver?: (event: DragEvent, dropInfo: DropInfo, editor: Editor) => void
   onDrop?: (event: DragEvent, dropInfo: DropInfo, editor: Editor) => void
+  onDragEnd?: (event: DragEvent, editor: Editor) => void
   // 🎯 Notion风格：+号按钮相关属性
   onAddBlock?: (options: {
     node: Node | null
