@@ -100,6 +100,7 @@ export const DragHandlePlugin = ({
   onDragStart,
   onDragOver,
   onDrop,
+  onDragEnd,
   // 🎯 Notion风格：+号按钮参数
   onAddBlock,
   // 🎯 新增：拖拽手柄点击回调参数
@@ -226,7 +227,7 @@ export const DragHandlePlugin = ({
     }, 0)
   }
 
-  function onDragEndHandler() {
+  function onDragEndHandler(e: DragEvent) {
     hideHandle()
     if (element) {
       element.style.pointerEvents = 'auto'
@@ -234,6 +235,9 @@ export const DragHandlePlugin = ({
 
     // 🎯 拖拽结束时隐藏指示器
     dragIndicator?.hide()
+
+    // 🎯 调用用户自定义的拖拽结束回调
+    onDragEnd?.(e, editor)
   }
 
   element.addEventListener('dragstart', onDragStartHandler)

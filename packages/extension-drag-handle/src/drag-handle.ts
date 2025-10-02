@@ -65,6 +65,10 @@ export interface DragHandleOptions {
    */
   onDrop?: (event: DragEvent, dropInfo: DropInfo, editor: Editor) => void
   /**
+   * 🎯 新增：拖拽结束回调（包括取消的情况）
+   */
+  onDragEnd?: (event: DragEvent, editor: Editor) => void
+  /**
    * 🎯 Notion风格：点击+号按钮的回调
    */
   onAddBlock?: (options: {
@@ -299,6 +303,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
         onDragStart: this.options.onDragStart,
         onDragOver: this.options.onDragOver,
         onDrop: this.options.onDrop,
+        onDragEnd: this.options.onDragEnd,
         // 🎯 传递Notion风格+号按钮配置
         onAddBlock: this.options.onAddBlock,
         // 🎯 传递拖拽手柄点击回调
