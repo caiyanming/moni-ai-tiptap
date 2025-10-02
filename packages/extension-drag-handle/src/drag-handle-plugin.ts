@@ -757,12 +757,34 @@ export const DragHandlePlugin = ({
             }
 
             isDragging = true
-            dragSourceElement = event.target as HTMLElement
 
-            // 尝试查找块级源元素
-            const sourceBlockElement = findBlockElement(dragSourceElement)
-            if (sourceBlockElement) {
-              dragSourceElement = sourceBlockElement
+            // FIX: 使用插件正在追踪的当前节点对应的 DOM 元素，而不是 event.target
+            // currentNodePos 是插件在 hover 时记录的实际块位置
+            if (currentNodePos >= 0) {
+              const actualBlockElement = view.nodeDOM(currentNodePos) as HTMLElement
+              if (actualBlockElement) {
+                dragSourceElement = actualBlockElement
+                console.log('✅ [PLUGIN] 使用插件追踪的块元素:', {
+                  pos: currentNodePos,
+                  element: actualBlockElement.tagName,
+                  blockId: actualBlockElement.getAttribute('data-moni-block-id'),
+                  text: actualBlockElement.textContent?.slice(0, 30),
+                })
+              } else {
+                // 备用方案：从 event.target 查找
+                dragSourceElement = event.target as HTMLElement
+                const sourceBlockElement = findBlockElement(dragSourceElement)
+                if (sourceBlockElement) {
+                  dragSourceElement = sourceBlockElement
+                }
+              }
+            } else {
+              // 备用方案：从 event.target 查找
+              dragSourceElement = event.target as HTMLElement
+              const sourceBlockElement = findBlockElement(dragSourceElement)
+              if (sourceBlockElement) {
+                dragSourceElement = sourceBlockElement
+              }
             }
 
             console.log('🎯 拖拽开始检测:', {
