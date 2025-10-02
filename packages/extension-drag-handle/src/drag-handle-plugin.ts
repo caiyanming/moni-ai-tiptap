@@ -815,6 +815,13 @@ export const DragHandlePlugin = ({
                 // 🎯 使用 AppFlowy 风格的现代化计算器
                 const result = DropPositionCalculator.calculate(event, blockElement)
 
+                // FIX: 不显示未实现的 'inside' 位置
+                if (result.dropPosition === 'inside') {
+                  dragIndicator.hide()
+                  console.log('⚠️ [DRAG] 隐藏 inside 指示器 - 功能未实现')
+                  return
+                }
+
                 // 🎨 显示语义化指示器
                 dragIndicator.show({
                   direction: result.direction,
@@ -897,6 +904,15 @@ export const DragHandlePlugin = ({
             if (blockElement && blockElement !== dragSourceElement) {
               const result = DropPositionCalculator.calculate(event, blockElement)
 
+              // FIX: 完全跳过未实现的 'inside' 功能
+              if (result.dropPosition === 'inside') {
+                console.log('⚠️ [DROP] 忽略 inside 位置 - 功能未实现')
+                dragIndicator?.hide()
+                isDragging = false
+                dragSourceElement = null
+                return
+              }
+
               // 🎯 NOTION风格：执行实际的节点移动
               try {
                 console.log('🎯 [DEBUG] 开始执行拖拽操作', {
@@ -906,19 +922,14 @@ export const DragHandlePlugin = ({
                   executeFunction: typeof executeNotionStyleMove,
                 })
 
-                // 🔧 FIX: 暂时跳过 'inside' 位置的实际移动，专注修复指示器显示
-                if (result.dropPosition === 'inside') {
-                  console.log('🎯 [临时] 跳过 inside 位置的节点移动，待后续实现')
-                } else {
-                  console.log('🎯 [DEBUG] 调用 executeNotionStyleMove 函数')
-                  const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
-                  console.log(`🎯 [DEBUG] Notion风格拖拽${success ? '成功' : '失败'}:`, {
-                    success,
-                    source: dragSourceElement.tagName,
-                    target: blockElement.tagName,
-                    position: result.dropPosition,
-                  })
-                }
+                console.log('🎯 [DEBUG] 调用 executeNotionStyleMove 函数')
+                const success = executeNotionStyleMove(dragSourceElement, blockElement, result.dropPosition)
+                console.log(`🎯 [DEBUG] Notion风格拖拽${success ? '成功' : '失败'}:`, {
+                  success,
+                  source: dragSourceElement.tagName,
+                  target: blockElement.tagName,
+                  position: result.dropPosition,
+                })
               } catch (error) {
                 console.error('🔧 [DEBUG] Notion拖拽执行失败:', error)
               }
