@@ -1,6 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import type { Transaction } from '@tiptap/pm/state'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 
 import type { FileChildrenBlockAttributes, FileChildrenBlockOptions } from './types.js'
@@ -48,7 +47,7 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
 
   group: 'block',
 
-  content: 'inline*',
+  content: '',
 
   addAttributes() {
     return {
@@ -155,77 +154,88 @@ export const FileChildrenBlock = Node.create<FileChildrenBlockOptions>({
   },
 
   addKeyboardShortcuts() {
-    return {
-      // 🔥 防删除保护：拦截所有可能删除FileChildrenBlock的按键
-      Backspace: ({ editor }) => {
-        const { selection } = editor.state
-        const { $from } = selection
-        const node = $from.parent
-
-        // 如果当前在FileChildrenBlock内，阻止删除整个块
-        if (node.type.name === this.name) {
-          return true // 阻止默认行为
-        }
-        return false // 允许正常删除
-      },
-      Delete: ({ editor }) => {
-        const { selection } = editor.state
-        const { $from } = selection
-        const node = $from.parent
-
-        if (node.type.name === this.name) {
-          return true // 阻止默认行为
-        }
-        return false
-      },
-    }
+    return {}
   },
 
   addProseMirrorPlugins() {
+    const pluginKey = new PluginKey('fileChildrenBlockProtection')
+
     return [
       new Plugin({
-        key: new PluginKey('fileChildrenBlockValidation'),
+        key: pluginKey,
+
+        // 🔥 防删除保护：类似 TrailingNode，自动恢复被删除的 FileChildrenBlock
         appendTransaction: (transactions, oldState, newState) => {
-          let tr: Transaction | undefined
+          const docChanged = transactions.some(tr => tr.docChanged)
+
+          if (!docChanged) {
+            return null
+          }
+
+          const { tr, doc } = newState
           let modified = false
 
-          // 检查所有FileChildrenBlock节点，确保属性符合规则
-          newState.doc.descendants((node: ProseMirrorNode, pos: number) => {
+          // 1. 检查 FileChildrenBlock 是否存在
+          let hasFileChildrenBlock = false
+          let fileChildrenBlockPos: number | null = null
+
+          doc.descendants((node, pos) => {
             if (node.type.name === this.name) {
-              const attrs = { ...node.attrs } as FileChildrenBlockAttributes
-              let needsUpdate = false
-
-              // 强制保持核心属性
-              if (attrs.id !== this.options.nullUUID) {
-                attrs.id = this.options.nullUUID
-                needsUpdate = true
-              }
-              if (attrs.moniBlockId !== this.options.nullUUID) {
-                attrs.moniBlockId = this.options.nullUUID
-                needsUpdate = true
-              }
-              if (attrs.moniDragEnabled !== false) {
-                attrs.moniDragEnabled = false
-                needsUpdate = true
-              }
-
-              // 验证displayMode
-              if (!['list', 'grid', 'cards'].includes(attrs.displayMode)) {
-                attrs.displayMode = 'list'
-                needsUpdate = true
-              }
-
-              if (needsUpdate) {
-                if (!tr) {
-                  tr = newState.tr
-                }
-                tr.setNodeMarkup(pos, undefined, attrs)
-                modified = true
-              }
+              hasFileChildrenBlock = true
+              fileChildrenBlockPos = pos
             }
           })
 
-          return modified && tr ? tr : null
+          // 2. 如果被删除，在文档开头重新插入
+          if (!hasFileChildrenBlock) {
+            const blockNode = this.type.create({
+              id: this.options.nullUUID,
+              moniBlockId: this.options.nullUUID,
+              collapsed: true,
+              displayMode: 'list',
+              moniDragEnabled: false,
+            })
+            tr.insert(0, blockNode)
+            modified = true
+          }
+
+          // 3. 验证现有节点属性（如果存在）
+          if (hasFileChildrenBlock && fileChildrenBlockPos !== null) {
+            doc.nodeAt(fileChildrenBlockPos)?.descendants((node, pos) => {
+              if (node.type.name === this.name) {
+                const absolutePos = fileChildrenBlockPos! + pos + 1
+                const attrs = { ...node.attrs } as FileChildrenBlockAttributes
+                let needsUpdate = false
+
+                // 强制保持核心属性
+                if (attrs.id !== this.options.nullUUID) {
+                  attrs.id = this.options.nullUUID
+                  needsUpdate = true
+                }
+                if (attrs.moniBlockId !== this.options.nullUUID) {
+                  attrs.moniBlockId = this.options.nullUUID
+                  needsUpdate = true
+                }
+                if (attrs.moniDragEnabled !== false) {
+                  attrs.moniDragEnabled = false
+                  needsUpdate = true
+                }
+
+                // 验证displayMode
+                if (!['list', 'grid', 'cards'].includes(attrs.displayMode)) {
+                  attrs.displayMode = 'list'
+                  needsUpdate = true
+                }
+
+                if (needsUpdate) {
+                  tr.setNodeMarkup(absolutePos, undefined, attrs)
+                  modified = true
+                }
+              }
+            })
+          }
+
+          return modified ? tr : null
         },
       }),
     ]

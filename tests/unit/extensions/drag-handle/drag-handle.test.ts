@@ -1,6 +1,6 @@
 import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
-import { DragHandle } from '@tiptap/extension-drag-handle'
+import { defaultComputePositionConfig,DRAG_HANDLE_OFFSET, DragHandle } from '@tiptap/extension-drag-handle'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -53,6 +53,11 @@ describe('DragHandle Extension', () => {
           onClick: expect.any(Function),
         })
       }
+    })
+
+    it('should use default compute position offset of 4px (8px wider gap than before)', () => {
+      expect(defaultComputePositionConfig.middleware?.some(middleware => middleware.name === 'offset')).toBe(true)
+      expect(DRAG_HANDLE_OFFSET).toBe(4)
     })
 
     it('should accept custom configuration', () => {

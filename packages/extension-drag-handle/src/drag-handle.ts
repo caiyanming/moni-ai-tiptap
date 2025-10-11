@@ -5,11 +5,13 @@ import type { Node } from '@tiptap/pm/model'
 
 import { DragHandlePlugin } from './drag-handle-plugin.js'
 
+export const DRAG_HANDLE_OFFSET = 4
+
 export const defaultComputePositionConfig: ComputePositionConfig = {
   placement: 'left', // 使用'left'而非'left-start'来实现垂直居中对齐
   strategy: 'absolute',
   middleware: [
-    offset(-4), // 从原倵10减少14，让手柄容器往右移动14px
+    offset(DRAG_HANDLE_OFFSET), // 调整偏移量，让拖拽手柄离正文更远
   ],
 }
 
