@@ -426,6 +426,15 @@ export class BubbleMenuView implements PluginView {
       return
     }
 
+    // 🔥 Linus Fix: Hide bubble menu when document changes
+    // Reason: When docChanged=true, the selection positions may be stale.
+    // Calling updatePosition() -> posToDOMRect() with stale positions crashes.
+    // Solution: Hide the menu immediately. It will reappear when user makes a new selection.
+    if (docChanged) {
+      this.hide()
+      return
+    }
+
     const shouldShow = this.getShouldShow(oldState)
 
     if (!shouldShow) {
