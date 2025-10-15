@@ -235,4 +235,64 @@ describe('HiddenBlock Extension', () => {
       editor.destroy()
     })
   })
+
+  describe('DOM Serialization', () => {
+    it('should render data-ai-target with actual NULL_UUID', () => {
+      const editor = new Editor({
+        extensions: [Document, Paragraph, Text, HiddenBlock],
+        content: '',
+      })
+
+      editor.commands.insertHiddenBlock()
+
+      const html = editor.getHTML()
+
+      // Should have data-ai-target with NULL_UUID value
+      expect(html).toContain(`data-ai-target="${NULL_UUID}"`)
+      expect(html).toContain('data-hidden-block="true"')
+      expect(html).toContain(`data-id="${NULL_UUID}"`)
+      expect(html).toContain(`data-moni-block-id="${NULL_UUID}"`)
+
+      editor.destroy()
+    })
+
+    it('should render data-ai-target with actual ID when parsing HTML', () => {
+      const customId = 'custom-test-id-12345'
+      const editor = new Editor({
+        extensions: [Document, Paragraph, Text, HiddenBlock],
+        content: `<div data-hidden-block="true" data-id="${customId}" data-moni-block-id="${customId}"></div>`,
+      })
+
+      const html = editor.getHTML()
+
+      // Should preserve custom ID in data-ai-target
+      expect(html).toContain(`data-ai-target="${customId}"`)
+      expect(html).toContain(`data-id="${customId}"`)
+      expect(html).toContain(`data-moni-block-id="${customId}"`)
+
+      editor.destroy()
+    })
+
+    it('should allow frontend/backend to read NULL_UUID from DOM', () => {
+      const editor = new Editor({
+        extensions: [Document, Paragraph, Text, HiddenBlock],
+        content: '',
+      })
+
+      editor.commands.insertHiddenBlock()
+
+      // Simulate DOM parsing (what frontend/backend would do)
+      const html = editor.getHTML()
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
+      const hiddenBlock = doc.querySelector('[data-hidden-block="true"]')
+
+      expect(hiddenBlock).not.toBeNull()
+      expect(hiddenBlock?.getAttribute('data-ai-target')).toBe(NULL_UUID)
+      expect(hiddenBlock?.getAttribute('data-id')).toBe(NULL_UUID)
+      expect(hiddenBlock?.getAttribute('data-moni-block-id')).toBe(NULL_UUID)
+
+      editor.destroy()
+    })
+  })
 })

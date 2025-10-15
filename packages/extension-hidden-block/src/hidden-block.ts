@@ -98,11 +98,14 @@ export const HiddenBlock = Node.create<
   },
 
   renderHTML({ HTMLAttributes }) {
+    // Use actual ID from attributes, fallback to NULL_UUID
+    const targetId = HTMLAttributes.id || HTMLAttributes['data-id'] || NULL_UUID
+
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-hidden-block': 'true',
-        'data-ai-target': 'anchor',
+        'data-ai-target': targetId,
         style: 'display:none;height:0;width:0;overflow:hidden;position:absolute;',
       }),
       0, // Content placeholder
