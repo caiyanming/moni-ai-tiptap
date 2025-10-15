@@ -1,0 +1,64 @@
+{
+  "name": "@tiptap/extension-hidden-block",
+  "description": "Hidden block extension for TipTap - invisible AI anchor point",
+  "version": "3.0.0-beta.22.3",
+  "homepage": "https://tiptap.dev",
+  "keywords": [
+    "tiptap",
+    "tiptap extension",
+    "hidden block",
+    "null uuid",
+    "ai anchor",
+    "anchor point"
+  ],
+  "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "devDependencies": {
+    "@tiptap/core": "workspace:*",
+    "@tiptap/pm": "workspace:*",
+    "@tiptap/extension-document": "workspace:*",
+    "@tiptap/extension-paragraph": "workspace:*",
+    "@tiptap/extension-text": "workspace:*",
+    "vitest": "^2.0.0",
+    "jsdom": "^23.0.0",
+    "@vitest/ui": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@tiptap/core": "3.0.0-beta.22.3",
+    "@tiptap/pm": "3.0.0-beta.22.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ueberdosis/tiptap",
+    "directory": "packages/extension-hidden-block"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
+  }
+}

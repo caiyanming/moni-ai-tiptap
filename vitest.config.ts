@@ -12,7 +12,7 @@ export default defineConfig({
       '@tiptap/extension-paragraph': resolve(__dirname, 'packages/extension-paragraph/src'),
       '@tiptap/extension-text': resolve(__dirname, 'packages/extension-text/src'),
       '@tiptap/extension-history': resolve(__dirname, 'packages/extension-history/src'),
-      '@tiptap/extension-file-children-block': resolve(__dirname, 'packages/extension-file-children-block/src'),
+      '@tiptap/extension-hidden-block': resolve(__dirname, 'packages/extension-hidden-block/src'),
       '@tiptap/extension-unique-id': resolve(__dirname, 'packages/extension-unique-id/src'),
       '@tiptap/extension-drag-handle': resolve(__dirname, 'packages/extension-drag-handle/src'),
       '@tiptap/extension-drag-handle-react': resolve(__dirname, 'packages/extension-drag-handle-react/src'),
