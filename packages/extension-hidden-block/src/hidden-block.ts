@@ -1,5 +1,5 @@
 import type { Editor } from '@tiptap/core'
-import { mergeAttributes,Node } from '@tiptap/core'
+import { mergeAttributes, Node } from '@tiptap/core'
 
 import type { HiddenBlockAttributes } from './types.js'
 import { NULL_UUID } from './types.js'
@@ -19,24 +19,24 @@ declare module '@tiptap/core' {
  * HiddenBlock Extension
  *
  * A minimalist anchor point for AI stream operations.
- * This node is always:
+ * This node is:
  * - Invisible (display:none)
- * - At document start (position 0)
- * - Immutable (attributes locked to NULL_UUID)
- * - Non-interactive (cannot be selected/deleted)
+ * - Manually inserted by upper layer (moni-ai-web)
+ * - Used by backend to locate insertion point
  *
  * Design philosophy:
  * "Good taste means removing special cases, not adding conditions."
- * - The hidden block is NOT a UI element
- * - It's a data structure anchor point
- * - Zero configuration, zero complexity
+ * "Theory and practice sometimes clash. Theory loses. Every single time."
+ *
+ * - NO auto-insertion (upper layer controls timing)
+ * - NO Guardian plugin (keep it simple)
+ * - NO complex protection (trust upper layer)
  */
 export const HiddenBlock = Node.create<
   Record<string, never>,
   {
     hasHiddenBlock: (editor: Editor) => boolean
     getHiddenBlockInfo: (editor: Editor) => any
-    ensureHiddenBlock: (editor: Editor) => void
   }
 >({
   name: 'hiddenBlock',
@@ -50,53 +50,40 @@ export const HiddenBlock = Node.create<
   addAttributes() {
     return {
       id: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-id') || element.getAttribute('id'),
+        default: NULL_UUID,
+        parseHTML: element => element.getAttribute('data-id') || element.getAttribute('id') || NULL_UUID,
         renderHTML: attributes => {
-          if (attributes.id) {
-            return { 'data-id': attributes.id, id: attributes.id }
-          }
-          return {}
+          const id = attributes.id || NULL_UUID
+          return { 'data-id': id, id }
         },
       },
       moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        default: NULL_UUID,
+        parseHTML: element => element.getAttribute('data-moni-block-id') || NULL_UUID,
         renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'data-moni-block-id': attributes.moniBlockId }
-          }
-          return {}
+          const moniBlockId = attributes.moniBlockId || NULL_UUID
+          return { 'data-moni-block-id': moniBlockId }
         },
       },
       hidden: {
-        default: false,
-        parseHTML: element => element.getAttribute('data-hidden') === 'true',
-        renderHTML: attributes => {
-          if (attributes.hidden === true) {
-            return { 'data-hidden': 'true' }
-          }
-          return {}
+        default: true,
+        parseHTML: element => element.getAttribute('data-hidden') !== 'false',
+        renderHTML: () => {
+          return { 'data-hidden': 'true' }
         },
       },
       isInitialBlock: {
-        default: false,
-        parseHTML: element => element.getAttribute('data-initial-block') === 'true',
-        renderHTML: attributes => {
-          if (attributes.isInitialBlock === true) {
-            return { 'data-initial-block': 'true' }
-          }
-          return {}
+        default: true,
+        parseHTML: element => element.getAttribute('data-initial-block') !== 'false',
+        renderHTML: () => {
+          return { 'data-initial-block': 'true' }
         },
       },
       moniDragEnabled: {
         default: false,
         parseHTML: element => element.getAttribute('data-moni-drag-enabled') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === true) {
-            return { 'data-moni-drag-enabled': 'true' }
-          }
-          return {}
+        renderHTML: () => {
+          return { 'data-moni-drag-enabled': 'false' }
         },
       },
     }
@@ -126,8 +113,15 @@ export const HiddenBlock = Node.create<
     return {
       insertHiddenBlock:
         () =>
-        ({ commands }) => {
-          return commands.insertContent({
+        ({ commands, state }) => {
+          const firstNode = state.doc.firstChild
+
+          // Don't insert if already exists
+          if (firstNode && firstNode.type.name === 'hiddenBlock') {
+            return false
+          }
+
+          return commands.insertContentAt(0, {
             type: this.name,
             attrs: {
               id: NULL_UUID,
@@ -141,9 +135,6 @@ export const HiddenBlock = Node.create<
         },
     }
   },
-
-  // No auto-insertion plugin - hiddenBlock must be manually inserted
-  // via editor.commands.insertHiddenBlock() or in document initialization
 
   addStorage() {
     return {
@@ -175,16 +166,6 @@ export const HiddenBlock = Node.create<
           moniBlockId: null,
           isValid: false,
           position: -1,
-        }
-      },
-
-      /**
-       * Ensure the document has a valid hidden block
-       * Auto-inserts if missing
-       */
-      ensureHiddenBlock(editor: Editor): void {
-        if (!this.hasHiddenBlock(editor)) {
-          editor.commands.insertHiddenBlock()
         }
       },
     }

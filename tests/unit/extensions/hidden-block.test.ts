@@ -3,10 +3,10 @@ import Document from '@tiptap/extension-document'
 import { HiddenBlock, HiddenBlockUtils, NULL_UUID } from '@tiptap/extension-hidden-block'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
-import { describe, expect,it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 describe('HiddenBlock Extension', () => {
-  describe('Node Creation', () => {
+  describe('Manual Insertion', () => {
     it('should insert hidden block with correct attributes', () => {
       const editor = new Editor({
         extensions: [Document, Paragraph, Text, HiddenBlock],
@@ -45,6 +45,25 @@ describe('HiddenBlock Extension', () => {
       editor.destroy()
     })
 
+    it('should NOT insert duplicate if already exists', () => {
+      const editor = new Editor({
+        extensions: [Document, Paragraph, Text, HiddenBlock],
+        content: '',
+      })
+
+      editor.commands.insertHiddenBlock()
+      const firstInsert = editor.state.doc.childCount
+
+      // Try to insert again
+      const result = editor.commands.insertHiddenBlock()
+      expect(result).toBe(false)
+
+      // Should not duplicate
+      expect(editor.state.doc.childCount).toBe(firstInsert)
+
+      editor.destroy()
+    })
+
     it('should parse hidden block from HTML', () => {
       const editor = new Editor({
         extensions: [Document, Paragraph, Text, HiddenBlock],
@@ -62,8 +81,8 @@ describe('HiddenBlock Extension', () => {
     })
   })
 
-  describe('Attributes', () => {
-    it('should allow attribute modification', () => {
+  describe('Attributes with Defaults', () => {
+    it('should have NULL_UUID as default values', () => {
       const editor = new Editor({
         extensions: [Document, Paragraph, Text, HiddenBlock],
         content: '',
@@ -71,57 +90,12 @@ describe('HiddenBlock Extension', () => {
 
       editor.commands.insertHiddenBlock()
 
-      // Attributes can be modified (no immutability enforcement)
-      editor.commands.updateAttributes('hiddenBlock', {
-        id: 'custom-id',
-        moniBlockId: 'custom-moni-id',
-        hidden: false,
-      })
-
       const firstNode = editor.state.doc.firstChild
-      expect(firstNode?.attrs.id).toBe('custom-id')
-      expect(firstNode?.attrs.moniBlockId).toBe('custom-moni-id')
-      expect(firstNode?.attrs.hidden).toBe(false)
-
-      editor.destroy()
-    })
-
-    it('should allow deletion via deleteRange', () => {
-      const editor = new Editor({
-        extensions: [Document, Paragraph, Text, HiddenBlock],
-        content: '<p>Hello</p>',
-      })
-
-      editor.commands.insertHiddenBlock()
-
-      const initialFirstNode = editor.state.doc.firstChild
-      expect(initialFirstNode?.type.name).toBe('hiddenBlock')
-
-      // Delete first node
-      editor.commands.deleteRange({ from: 0, to: initialFirstNode!.nodeSize })
-
-      // Hidden block should be deleted
-      const firstNode = editor.state.doc.firstChild
-      expect(firstNode?.type.name).toBe('paragraph')
-
-      editor.destroy()
-    })
-  })
-
-  describe('Commands', () => {
-    it('should support insertHiddenBlock command', () => {
-      const editor = new Editor({
-        extensions: [Document, Paragraph, Text, HiddenBlock],
-        content: '',
-      })
-
-      const result = editor.commands.insertHiddenBlock()
-
-      // Should return true on successful insertion
-      expect(result).toBe(true)
-
-      const firstNode = editor.state.doc.firstChild
-      expect(firstNode?.type.name).toBe('hiddenBlock')
+      expect(firstNode?.attrs.id).toBe(NULL_UUID)
+      expect(firstNode?.attrs.moniBlockId).toBe(NULL_UUID)
+      expect(firstNode?.attrs.hidden).toBe(true)
+      expect(firstNode?.attrs.isInitialBlock).toBe(true)
+      expect(firstNode?.attrs.moniDragEnabled).toBe(false)
 
       editor.destroy()
     })
@@ -142,6 +116,18 @@ describe('HiddenBlock Extension', () => {
       editor.destroy()
     })
 
+    it('hasHiddenBlock should return false when absent', () => {
+      const editor = new Editor({
+        extensions: [Document, Paragraph, Text, HiddenBlock],
+        content: '<p>Test</p>',
+      })
+
+      const hasBlock = editor.storage.hiddenBlock.hasHiddenBlock(editor)
+      expect(hasBlock).toBe(false)
+
+      editor.destroy()
+    })
+
     it('getHiddenBlockInfo should return correct info', () => {
       const editor = new Editor({
         extensions: [Document, Paragraph, Text, HiddenBlock],
@@ -155,21 +141,6 @@ describe('HiddenBlock Extension', () => {
       expect(info.moniBlockId).toBe(NULL_UUID)
       expect(info.isValid).toBe(true)
       expect(info.position).toBe(0)
-
-      editor.destroy()
-    })
-
-    it('ensureHiddenBlock should auto-insert if missing', () => {
-      const editor = new Editor({
-        extensions: [Document, Paragraph, Text, HiddenBlock],
-        content: '',
-      })
-
-      // Already exists, should be no-op
-      editor.storage.hiddenBlock.ensureHiddenBlock(editor)
-
-      const hasBlock = editor.storage.hiddenBlock.hasHiddenBlock(editor)
-      expect(hasBlock).toBe(true)
 
       editor.destroy()
     })

@@ -12,11 +12,25 @@
 | **交互性** | 可展开/折叠、可拖拽 | 不可交互 |
 | **UI 属性** | displayMode, title, fileCount, collapsed | 无（仅锚点必需属性） |
 | **节点名称** | `fileChildrenBlock` | `hiddenBlock` |
-| **插入方式** | 需要讨论 | **手动调用命令** |
+| **插入方式** | ❌ 自动插入（复杂） | ✅ **手动调用（简洁）** |
+| **维护职责** | ❌ 底层自动维护 | ✅ **上层显式控制** |
+
+### 设计哲学
+
+> **"Theory and practice sometimes clash. Theory loses. Every single time."** - Linus Torvalds
+
+- **NO 底层自动化**: 避免与其他扩展冲突，保持简洁
+- **YES 上层控制**: moni-ai-web 和 moni-ai-agent 显式管理 hiddenBlock
+- **好品味**: 消除特殊情况，而不是增加条件判断
 
 ---
 
 ## 🔧 前端改动指南 (moni-ai-web)
+
+### ⚠️ 核心职责变化
+
+**旧设计**: 依赖底层自动插入 hiddenBlock
+**新设计**: **前端负责在合适时机手动插入**
 
 ### 1. 更新依赖
 
@@ -47,13 +61,13 @@ const editor = new Editor({
 
 ### 3. ⚠️ 手动插入 HiddenBlock（重要！）
 
-**在 onCreate 钩子中插入（推荐）**
+**方式 1: onCreate 钩子（推荐用于新文档）**
 
 ```typescript
 const editor = new Editor({
   extensions: [Document, Paragraph, Text, HiddenBlock],
   onCreate({ editor }) {
-    // 确保文档有 hiddenBlock
+    // 新文档自动插入 hiddenBlock
     if (!editor.storage.hiddenBlock.hasHiddenBlock(editor)) {
       editor.commands.insertHiddenBlock()
     }
@@ -61,16 +75,29 @@ const editor = new Editor({
 })
 ```
 
-**或手动调用**
+**方式 2: 加载文档时检查**
 
 ```typescript
-const editor = new Editor({
-  extensions: [Document, Paragraph, Text, HiddenBlock],
-  content: '',
-})
+async function loadDocument(docId: string) {
+  const content = await fetchDocumentContent(docId)
 
-// 创建新文档时，手动插入 hiddenBlock
-editor.commands.insertHiddenBlock()
+  editor.commands.setContent(content)
+
+  // 确保有 hiddenBlock
+  if (!editor.storage.hiddenBlock.hasHiddenBlock(editor)) {
+    editor.commands.insertHiddenBlock()
+  }
+}
+```
+
+**方式 3: 创建新文档时立即插入**
+
+```typescript
+function createNewDocument() {
+  // 先插入 hiddenBlock，再添加其他内容
+  editor.commands.insertHiddenBlock()
+  editor.commands.insertContentAt(editor.state.doc.content.size, '<p></p>')
+}
 ```
 
 ### 4. 更新节点类型判断
