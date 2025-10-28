@@ -28,7 +28,7 @@ for dir in packages/*/; do
 
     # Navigate to package directory and publish
     echo "  Publishing new version..."
-    (cd "$dir" && npm publish --registry="$REGISTRY" --access public 2>/dev/null)
+    (cd "$dir" && npm publish --registry="$REGISTRY" --access public --tag beta 2>/dev/null)
 
     if [ $? -eq 0 ]; then
       echo "✅ Successfully published $pkg_name"
