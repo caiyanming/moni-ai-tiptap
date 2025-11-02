@@ -752,6 +752,15 @@ importers:
         specifier: workspace:*
         version: link:../suggestion
 
+  packages/extension-nesting:
+    devDependencies:
+      '@tiptap/core':
+        specifier: workspace:*
+        version: link:../core
+      '@tiptap/pm':
+        specifier: workspace:*
+        version: link:../pm
+
   packages/extension-node-range:
     devDependencies:
       '@tiptap/core':
