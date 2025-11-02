@@ -7,6 +7,17 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { BlockHierarchy } from '../types'
 
 /**
+ * Container types that should NOT be treated as blocks
+ *
+ * These types follow Notion's block philosophy:
+ * - bulletList/orderedList: Containers, not blocks (only listItem is a block)
+ * - table: Container for table structure (tableRow/tableCell are the blocks)
+ *
+ * Even if legacy data has blockIds on these containers, we filter them out here.
+ */
+const IGNORED_CONTAINER_TYPES = new Set(['bulletList', 'orderedList', 'table'])
+
+/**
  * Get node's parent ID
  */
 function getNodeParentId(node: ProseMirrorNode): string | null {
@@ -18,18 +29,21 @@ function getNodeParentId(node: ProseMirrorNode): string | null {
  * Build block hierarchy map from document
  *
  * This function constructs a hierarchical structure of blocks by:
- * 1. Collecting all blocks with moniBlockId
+ * 1. Collecting all blocks with moniBlockId (filtering out containers)
  * 2. Building parent-child relationships
  * 3. Calculating nesting levels using BFS
  */
 export function buildBlockHierarchy(doc: ProseMirrorNode): Map<string, BlockHierarchy> {
   const hierarchy = new Map<string, BlockHierarchy>()
 
-  // Step 1: Collect all blocks
+  // Step 1: Collect all blocks (skip containers)
   doc.descendants(node => {
-    if (node.attrs.moniBlockId) {
-      hierarchy.set(node.attrs.moniBlockId, {
-        blockId: node.attrs.moniBlockId,
+    const blockId = node.attrs.moniBlockId
+
+    // Filter out container types even if they have blockIds (legacy data)
+    if (blockId && !IGNORED_CONTAINER_TYPES.has(node.type.name)) {
+      hierarchy.set(blockId, {
+        blockId,
         parentId: getNodeParentId(node),
         nestingLevel: 0,
         children: [],
