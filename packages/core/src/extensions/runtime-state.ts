@@ -74,6 +74,10 @@ declare module '@tiptap/core' {
       clearTempBlock: (blockId: string) => ReturnType
     }
   }
+
+  interface Storage {
+    runtimeState: RuntimeStateStorage
+  }
 }
 
 export const RuntimeState = Extension.create<Record<string, never>, RuntimeStateStorage>({
