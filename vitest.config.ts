@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@tiptap/core': resolve(__dirname, 'packages/core/src'),
+      '@tiptap/pm/model': resolve(__dirname, 'packages/pm/model'),
       '@tiptap/extension-document': resolve(__dirname, 'packages/extension-document/src'),
       '@tiptap/extension-paragraph': resolve(__dirname, 'packages/extension-paragraph/src'),
       '@tiptap/extension-text': resolve(__dirname, 'packages/extension-text/src'),

@@ -1,11 +1,5 @@
 import type { NodeAttributes } from '@tiptap/core'
-import {
-  addGlobalStyleAttributes,
-  ensureMoniBlockId,
-  generateInlineStyleForNode,
-  mergeAttributes,
-  Node,
-} from '@tiptap/core'
+import { addGlobalStyleAttributes, generateInlineStyleForNode, mergeAttributes, Node } from '@tiptap/core'
 
 export interface ParagraphOptions {
   /**
@@ -50,20 +44,23 @@ export const Paragraph = Node.create<ParagraphOptions>({
   addAttributes() {
     return {
       // 🔥 核心块标识属性 - 对应 Notion 的 block id
+      // 注意：默认值为 null，由业务代码（commands/插件）负责生成
       moniBlockId: {
-        default: () => ensureMoniBlockId({}).moniBlockId,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-id') || null,
         renderHTML: attributes => {
+          // 只在有值时才渲染（遵循 HTML 哲学）
           if (attributes.moniBlockId) {
             return { 'data-moni-block-id': attributes.moniBlockId }
           }
           return {}
         },
       },
-      // 🔥 父级关系属性
+
+      // 🔥 父级关系属性（持久化）
       moniParentId: {
         default: null,
-        parseHTML: element => element.getAttribute('data-moni-parent-id'),
+        parseHTML: element => element.getAttribute('data-moni-parent-id') || null,
         renderHTML: attributes => {
           if (attributes.moniParentId) {
             return { 'data-moni-parent-id': attributes.moniParentId }
@@ -71,7 +68,7 @@ export const Paragraph = Node.create<ParagraphOptions>({
           return {}
         },
       },
-      // 🔥 层级结构属性
+      // 🔥 层级结构属性（持久化）
       moniLevel: {
         default: 0,
         parseHTML: element => {
@@ -85,68 +82,10 @@ export const Paragraph = Node.create<ParagraphOptions>({
           return {}
         },
       },
-      // 🔥 拖拽行为属性
-      moniDragEnabled: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === false) {
-            return { 'data-moni-drag-enabled': 'false' }
-          }
-          return {}
-        },
-      },
-      moniDragHandle: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragHandle === false) {
-            return { 'data-moni-drag-handle': 'false' }
-          }
-          return {}
-        },
-      },
-      moniNestable: {
-        default: false,
-        parseHTML: element => element.getAttribute('data-moni-nestable') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === true) {
-            return { 'data-moni-nestable': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragType: {
-        default: 'block',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-      // 🔥 Stream 属性 - 段落特定配置
-      moniStreamType: {
-        default: 'text',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'text',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'text') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'replace',
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
 
       // ============ 🎨 MoniAI 全局样式属性 ============
       ...addGlobalStyleAttributes(),

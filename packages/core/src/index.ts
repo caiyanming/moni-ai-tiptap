@@ -1,3 +1,11 @@
+// ============ 🔥 MoniAI 架构增强：自动初始化 ============
+// 在任何代码执行前，patch ProseMirror Node.toJSON
+// 目标：序列化时自动过滤默认值，遵循 HTML "没有设置就不序列化" 哲学
+import { patchNodeToJSON } from './patches/nodeToJSON.js'
+
+patchNodeToJSON()
+// ============================================================
+
 export * from './CommandManager.js'
 export * from './Editor.js'
 export * from './Extension.js'
