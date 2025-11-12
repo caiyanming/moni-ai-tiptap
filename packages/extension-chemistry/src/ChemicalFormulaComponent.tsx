@@ -76,6 +76,9 @@ export const ChemicalFormulaComponent: React.FC<ChemicalFormulaComponentProps> =
   const baseClassName = isBlock ? 'tiptap-chemistry-render block-chemistry' : 'tiptap-chemistry-render inline-chemistry'
   const fullClassName = `${baseClassName} ${className}`.trim()
 
+  // 🔥 拖拽/Stream 等运行时属性已移除
+  // 现在通过 editor.storage.runtimeState 访问
+  // 参见：packages/core/src/extensions/runtime-state.ts
   return React.createElement(
     NodeViewWrapper,
     {
@@ -84,17 +87,10 @@ export const ChemicalFormulaComponent: React.FC<ChemicalFormulaComponentProps> =
       onClick: options.onClick ? handleClick : undefined,
       'data-type': isBlock ? 'block-chemical' : 'inline-chemical',
       'data-chemical': node.attrs.chemical,
-      // Moni Block Stream attributes
+      // 🔥 仅保留 3 个持久化属性
       'data-moni-block-id': node.attrs.moniBlockId || undefined,
       'data-moni-parent-id': node.attrs.moniParentId || undefined,
       'data-moni-level': node.attrs.moniLevel !== 0 ? node.attrs.moniLevel : undefined,
-      'data-moni-drag-enabled': node.attrs.moniDragEnabled === false ? 'false' : undefined,
-      'data-moni-drag-handle': node.attrs.moniDragHandle === false ? 'false' : undefined,
-      'data-moni-nestable': node.attrs.moniNestable === true ? 'true' : undefined,
-      'data-moni-drag-type':
-        node.attrs.moniDragType !== (isBlock ? 'block' : 'inline') ? node.attrs.moniDragType : undefined,
-      'data-moni-stream-type': node.attrs.moniStreamType,
-      'data-moni-stream-mode': node.attrs.moniStreamMode !== 'replace' ? node.attrs.moniStreamMode : undefined,
       ...props,
     },
     isBlock ? <div className="block-chemical-inner" ref={renderRef} /> : <span ref={renderRef} />,

@@ -1,7 +1,6 @@
 import type { NodeAttributes } from '@tiptap/core'
 import {
   addGlobalStyleAttributes,
-  ensureMoniBlockId,
   generateInlineStyleForNode,
   mergeAttributes,
   Node,
@@ -75,10 +74,11 @@ export const Heading = Node.create<HeadingOptions>({
         default: 1,
         rendered: false,
       },
-      // 🔥 核心块标识属性
+      // 🔥 核心块标识属性 - 对应 Notion 的 block id
+      // 注意：默认值为 null，由 ensureMoniBlockIdsInJSON 负责生成
       moniBlockId: {
-        default: () => ensureMoniBlockId({}).moniBlockId,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-id') || null,
         renderHTML: attributes => {
           if (attributes.moniBlockId) {
             return { 'data-moni-block-id': attributes.moniBlockId }

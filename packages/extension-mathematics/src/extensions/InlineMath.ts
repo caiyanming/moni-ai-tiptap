@@ -112,102 +112,10 @@ export const InlineMath = Node.create<InlineMathOptions>({
           }
         },
       },
-      // 🔥 核心块标识属性 - 对应 Notion 的 inline equation
-      moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
-        renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'data-moni-block-id': attributes.moniBlockId }
-          }
-          return {}
-        },
-      },
-      moniParentId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-parent-id'),
-        renderHTML: attributes => {
-          if (attributes.moniParentId) {
-            return { 'data-moni-parent-id': attributes.moniParentId }
-          }
-          return {}
-        },
-      },
-      moniLevel: {
-        default: 0,
-        parseHTML: element => {
-          const level = element.getAttribute('data-moni-level')
-          return level ? parseInt(level, 10) : 0
-        },
-        renderHTML: attributes => {
-          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
-            return { 'data-moni-level': attributes.moniLevel.toString() }
-          }
-          return {}
-        },
-      },
-      // 🔥 拖拽行为属性 - 行内元素特殊处理
-      moniDragEnabled: {
-        default: false, // 🔥 行内数学公式默认不启用拖拽
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === true) {
-            return { 'data-moni-drag-enabled': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragHandle: {
-        default: false, // 🔥 行内数学公式默认不显示拖拽手柄
-        parseHTML: element => element.getAttribute('data-moni-drag-handle') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniDragHandle === true) {
-            return { 'data-moni-drag-handle': 'true' }
-          }
-          return {}
-        },
-      },
-      moniNestable: {
-        default: false, // 🔥 行内数学公式不可嵌套
-        parseHTML: element => element.getAttribute('data-moni-nestable') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === true) {
-            return { 'data-moni-nestable': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragType: {
-        default: 'inline',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'inline',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'inline') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-      // 🔥 Stream 属性 - 行内数学公式特定配置
-      moniStreamType: {
-        default: 'inline-math',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'inline-math',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'inline-math') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'replace', // 🔥 行内数学公式默认使用 replace 模式
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+      // 🔥 Inline 节点不需要 moniBlockId（只有 block 节点才需要）
+      // 🔥 所有运行时属性（拖拽/Stream）已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 
@@ -307,34 +215,8 @@ export const InlineMath = Node.create<InlineMathOptions>({
       wrapper.dataset.type = 'inline-math'
       wrapper.setAttribute('data-latex', node.attrs.latex)
 
-      // 🔥 设置 moni block 属性
-      if (node.attrs.moniBlockId) {
-        wrapper.setAttribute('data-moni-block-id', node.attrs.moniBlockId)
-      }
-      if (node.attrs.moniParentId) {
-        wrapper.setAttribute('data-moni-parent-id', node.attrs.moniParentId)
-      }
-      if (node.attrs.moniLevel !== undefined && node.attrs.moniLevel !== 0) {
-        wrapper.setAttribute('data-moni-level', node.attrs.moniLevel.toString())
-      }
-      if (node.attrs.moniDragEnabled === true) {
-        wrapper.setAttribute('data-moni-drag-enabled', 'true')
-      }
-      if (node.attrs.moniDragHandle === true) {
-        wrapper.setAttribute('data-moni-drag-handle', 'true')
-      }
-      if (node.attrs.moniNestable === true) {
-        wrapper.setAttribute('data-moni-nestable', 'true')
-      }
-      if (node.attrs.moniDragType && node.attrs.moniDragType !== 'inline') {
-        wrapper.setAttribute('data-moni-drag-type', node.attrs.moniDragType)
-      }
-      if (node.attrs.moniStreamType && node.attrs.moniStreamType !== 'inline-math') {
-        wrapper.setAttribute('data-moni-stream-type', node.attrs.moniStreamType)
-      }
-      if (node.attrs.moniStreamMode && node.attrs.moniStreamMode !== 'replace') {
-        wrapper.setAttribute('data-moni-stream-mode', node.attrs.moniStreamMode)
-      }
+      // 🔥 Inline 节点不需要 moniBlockId 或其他运行时属性
+      // 运行时状态通过 editor.storage.runtimeState 访问
 
       function renderMath() {
         try {

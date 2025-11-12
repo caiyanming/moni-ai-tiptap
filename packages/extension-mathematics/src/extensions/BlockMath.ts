@@ -106,19 +106,23 @@ export const BlockMath = Node.create<BlockMathOptions>({
         },
       },
       // 🔥 核心块标识属性 - 对应 Notion 的 equation block
+      // 注意：默认值为 null，由业务代码（commands/插件）负责生成
       moniBlockId: {
         default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
+        parseHTML: element => element.getAttribute('data-moni-block-id') || null,
         renderHTML: attributes => {
+          // 只在有值时才渲染（遵循 HTML 哲学）
           if (attributes.moniBlockId) {
             return { 'data-moni-block-id': attributes.moniBlockId }
           }
           return {}
         },
       },
+
+      // 🔥 父级关系属性（持久化）
       moniParentId: {
         default: null,
-        parseHTML: element => element.getAttribute('data-moni-parent-id'),
+        parseHTML: element => element.getAttribute('data-moni-parent-id') || null,
         renderHTML: attributes => {
           if (attributes.moniParentId) {
             return { 'data-moni-parent-id': attributes.moniParentId }
@@ -126,6 +130,7 @@ export const BlockMath = Node.create<BlockMathOptions>({
           return {}
         },
       },
+      // 🔥 层级结构属性（持久化）
       moniLevel: {
         default: 0,
         parseHTML: element => {
@@ -139,68 +144,10 @@ export const BlockMath = Node.create<BlockMathOptions>({
           return {}
         },
       },
-      // 🔥 拖拽行为属性
-      moniDragEnabled: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === false) {
-            return { 'data-moni-drag-enabled': 'false' }
-          }
-          return {}
-        },
-      },
-      moniDragHandle: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragHandle === false) {
-            return { 'data-moni-drag-handle': 'false' }
-          }
-          return {}
-        },
-      },
-      moniNestable: {
-        default: false, // 🔥 数学公式通常不可嵌套
-        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === true) {
-            return { 'data-moni-nestable': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragType: {
-        default: 'block',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-      // 🔥 Stream 属性 - 数学公式特定配置
-      moniStreamType: {
-        default: 'math',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'math',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'math') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'replace', // 🔥 数学公式默认使用 replace 模式
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 
@@ -305,7 +252,7 @@ export const BlockMath = Node.create<BlockMathOptions>({
       wrapper.dataset.type = 'block-math'
       wrapper.setAttribute('data-latex', node.attrs.latex)
 
-      // 🔥 设置 moni block 属性
+      // 🔥 设置 moni 持久化属性
       if (node.attrs.moniBlockId) {
         wrapper.setAttribute('data-moni-block-id', node.attrs.moniBlockId)
       }
@@ -315,24 +262,8 @@ export const BlockMath = Node.create<BlockMathOptions>({
       if (node.attrs.moniLevel !== undefined && node.attrs.moniLevel !== 0) {
         wrapper.setAttribute('data-moni-level', node.attrs.moniLevel.toString())
       }
-      if (node.attrs.moniDragEnabled !== true) {
-        wrapper.setAttribute('data-moni-drag-enabled', 'false')
-      }
-      if (node.attrs.moniDragHandle !== true) {
-        wrapper.setAttribute('data-moni-drag-handle', 'false')
-      }
-      if (node.attrs.moniNestable === true) {
-        wrapper.setAttribute('data-moni-nestable', 'true')
-      }
-      if (node.attrs.moniDragType && node.attrs.moniDragType !== 'block') {
-        wrapper.setAttribute('data-moni-drag-type', node.attrs.moniDragType)
-      }
-      if (node.attrs.moniStreamType && node.attrs.moniStreamType !== 'math') {
-        wrapper.setAttribute('data-moni-stream-type', node.attrs.moniStreamType)
-      }
-      if (node.attrs.moniStreamMode && node.attrs.moniStreamMode !== 'replace') {
-        wrapper.setAttribute('data-moni-stream-mode', node.attrs.moniStreamMode)
-      }
+      // 🔥 运行时属性（拖拽/Stream）已移除
+      // 现在通过 editor.storage.runtimeState 访问
 
       wrapper.appendChild(innerWrapper)
 

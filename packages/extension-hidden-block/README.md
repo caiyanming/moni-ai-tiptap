@@ -187,13 +187,14 @@ Replace all references:
 
 ### Node Attributes
 
-| Attribute         | Value       | Purpose                  |
-| ----------------- | ----------- | ------------------------ |
-| `id`              | `NULL_UUID` | Block identifier         |
-| `moniBlockId`     | `NULL_UUID` | Moni system identifier   |
-| `hidden`          | `true`      | Hide from rendering      |
-| `isInitialBlock`  | `true`      | Mark as anchor point     |
-| `moniDragEnabled` | `false`     | Disable drag interaction |
+| Attribute        | Value       | Purpose                |
+| ---------------- | ----------- | ---------------------- |
+| `id`             | `NULL_UUID` | Block identifier       |
+| `moniBlockId`    | `NULL_UUID` | Moni system identifier |
+| `hidden`         | `true`      | Hide from rendering    |
+| `isInitialBlock` | `true`      | Mark as anchor point   |
+
+**Note**: Runtime attributes like drag state are managed via `editor.storage.runtimeState`. See `packages/core/src/extensions/runtime-state.ts`.
 
 ### HTML Output
 
@@ -204,7 +205,7 @@ Replace all references:
   data-id="13814000-1dd2-11b2-8080-808080808080"
   data-moni-block-id="13814000-1dd2-11b2-8080-808080808080"
   data-initial-block="true"
-  data-moni-drag-enabled="false"
+  data-hidden="true"
   style="display:none;height:0;width:0;overflow:hidden;position:absolute;"
 ></div>
 ```

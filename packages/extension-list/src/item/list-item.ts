@@ -44,91 +44,58 @@ export const ListItem = Node.create<ListItemOptions>({
 
   addAttributes() {
     return {
-      // Override default moni attributes for list items
-      moniDragType: {
-        default: 'list-item',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'list-item',
+      // 🔥 核心块标识属性 - 对应 Notion 的 block id
+      // 注意：默认值为 null，由业务代码（commands/插件）负责生成
+      moniBlockId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-id') || null,
         renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'list-item') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
+          // 只在有值时才渲染（遵循 HTML 哲学）
+          if (attributes.moniBlockId) {
+            return { 'data-moni-block-id': attributes.moniBlockId }
           }
           return {}
         },
       },
-      moniNestable: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
+
+      // 🔥 父级关系属性（持久化）
+      moniParentId: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-parent-id') || null,
         renderHTML: attributes => {
-          if (attributes.moniNestable === false) {
-            return { 'data-moni-nestable': 'false' }
+          if (attributes.moniParentId) {
+            return { 'data-moni-parent-id': attributes.moniParentId }
           }
           return {}
         },
       },
-      moniCanNestIn: {
-        default: ['bulletList', 'orderedList', 'listItem'],
+
+      // 🔥 层级结构属性（持久化）
+      moniLevel: {
+        default: 0,
         parseHTML: element => {
-          const canNestIn = element.getAttribute('data-moni-can-nest-in')
-          return canNestIn ? canNestIn.split(',').map(t => t.trim()) : ['bulletList', 'orderedList', 'listItem']
+          const level = element.getAttribute('data-moni-level')
+          return level ? parseInt(level, 10) : 0
         },
         renderHTML: attributes => {
-          if (attributes.moniCanNestIn && Array.isArray(attributes.moniCanNestIn)) {
-            return { 'data-moni-can-nest-in': attributes.moniCanNestIn.join(',') }
+          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
+            return { 'data-moni-level': attributes.moniLevel.toString() }
           }
           return {}
         },
       },
-      moniDropTargets: {
-        default: ['listItem', 'bulletList', 'orderedList'],
-        parseHTML: element => {
-          const targets = element.getAttribute('data-moni-drop-targets')
-          return targets ? targets.split(',').map(t => t.trim()) : ['listItem', 'bulletList', 'orderedList']
-        },
-        renderHTML: attributes => {
-          if (attributes.moniDropTargets && Array.isArray(attributes.moniDropTargets)) {
-            return { 'data-moni-drop-targets': attributes.moniDropTargets.join(',') }
-          }
-          return {}
-        },
-      },
-      moniMaxNestLevel: {
-        default: 6,
-        parseHTML: element => {
-          const maxLevel = element.getAttribute('data-moni-max-nest-level')
-          return maxLevel ? parseInt(maxLevel, 10) : 6
-        },
-        renderHTML: attributes => {
-          if (
-            attributes.moniMaxNestLevel !== null &&
-            attributes.moniMaxNestLevel !== undefined &&
-            attributes.moniMaxNestLevel !== 6
-          ) {
-            return { 'data-moni-max-nest-level': attributes.moniMaxNestLevel.toString() }
-          }
-          return {}
-        },
-      },
-      // Override default stream attributes for list items
-      moniStreamType: {
-        default: 'list',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'list',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'list') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'insert',
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'insert',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'insert') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
+      //
+      // 已移除的属性：
+      // - moniDragType, moniNestable, moniCanNestIn, moniDropTargets, moniMaxNestLevel
+      // - moniStreamType, moniStreamMode
+      //
+      // 迁移指南：
+      // - 拖拽配置：移到拖拽插件的静态配置
+      // - Stream 状态：使用 editor.storage.runtimeState.streamMode
     }
   },
 
