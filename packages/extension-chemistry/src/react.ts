@@ -36,13 +36,7 @@ export const InlineChemicalReactRenderer = (() => {
         'data-moni-block-id': node.attrs.moniBlockId || undefined,
         'data-moni-parent-id': node.attrs.moniParentId || undefined,
         'data-moni-level': node.attrs.moniLevel !== 0 ? node.attrs.moniLevel : undefined,
-        'data-moni-drag-enabled': node.attrs.moniDragEnabled === true ? 'true' : undefined,
-        'data-moni-drag-handle': node.attrs.moniDragHandle === true ? 'true' : undefined,
-        'data-moni-nestable': node.attrs.moniNestable === true ? 'true' : undefined,
-        'data-moni-drag-type': node.attrs.moniDragType !== 'inline' ? node.attrs.moniDragType : undefined,
-        'data-moni-stream-type':
-          node.attrs.moniStreamType !== 'inline-chemistry' ? node.attrs.moniStreamType : undefined,
-        'data-moni-stream-mode': node.attrs.moniStreamMode !== 'replace' ? node.attrs.moniStreamMode : undefined,
+        // 🔥 Runtime attributes removed - now managed via editor.storage.runtimeState
       }),
     })
   } catch {
@@ -82,12 +76,7 @@ export const BlockChemicalReactRenderer = (() => {
         'data-moni-block-id': node.attrs.moniBlockId || undefined,
         'data-moni-parent-id': node.attrs.moniParentId || undefined,
         'data-moni-level': node.attrs.moniLevel !== 0 ? node.attrs.moniLevel : undefined,
-        'data-moni-drag-enabled': node.attrs.moniDragEnabled === false ? 'false' : undefined,
-        'data-moni-drag-handle': node.attrs.moniDragHandle === false ? 'false' : undefined,
-        'data-moni-nestable': node.attrs.moniNestable === true ? 'true' : undefined,
-        'data-moni-drag-type': node.attrs.moniDragType !== 'block' ? node.attrs.moniDragType : undefined,
-        'data-moni-stream-type': node.attrs.moniStreamType !== 'chemistry' ? node.attrs.moniStreamType : undefined,
-        'data-moni-stream-mode': node.attrs.moniStreamMode !== 'replace' ? node.attrs.moniStreamMode : undefined,
+        // 🔥 Runtime attributes removed - now managed via editor.storage.runtimeState
       }),
     })
   } catch {

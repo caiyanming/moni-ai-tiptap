@@ -111,68 +111,9 @@ export const InlineChemical = Node.create<InlineChemicalOptions>({
           return {}
         },
       },
-      // 🔥 拖拽行为属性 - 行内元素特殊处理
-      moniDragEnabled: {
-        default: false, // 🔥 行内化学公式默认不启用拖拽
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === true) {
-            return { 'data-moni-drag-enabled': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragHandle: {
-        default: false, // 🔥 行内化学公式默认不显示拖拽手柄
-        parseHTML: element => element.getAttribute('data-moni-drag-handle') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniDragHandle === true) {
-            return { 'data-moni-drag-handle': 'true' }
-          }
-          return {}
-        },
-      },
-      moniNestable: {
-        default: false, // 🔥 行内化学公式不可嵌套
-        parseHTML: element => element.getAttribute('data-moni-nestable') === 'true',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === true) {
-            return { 'data-moni-nestable': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragType: {
-        default: 'inline',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'inline',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'inline') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-      // 🔥 Stream 属性 - 行内化学公式特定配置
-      moniStreamType: {
-        default: 'inline-chemistry',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'inline-chemistry',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'inline-chemistry') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'replace', // 🔥 行内化学公式默认使用 replace 模式
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 
@@ -320,24 +261,6 @@ export const InlineChemical = Node.create<InlineChemicalOptions>({
       }
       if (node.attrs.moniLevel !== undefined && node.attrs.moniLevel !== 0) {
         wrapper.setAttribute('data-moni-level', node.attrs.moniLevel.toString())
-      }
-      if (node.attrs.moniDragEnabled === true) {
-        wrapper.setAttribute('data-moni-drag-enabled', 'true')
-      }
-      if (node.attrs.moniDragHandle === true) {
-        wrapper.setAttribute('data-moni-drag-handle', 'true')
-      }
-      if (node.attrs.moniNestable === true) {
-        wrapper.setAttribute('data-moni-nestable', 'true')
-      }
-      if (node.attrs.moniDragType && node.attrs.moniDragType !== 'inline') {
-        wrapper.setAttribute('data-moni-drag-type', node.attrs.moniDragType)
-      }
-      if (node.attrs.moniStreamType && node.attrs.moniStreamType !== 'inline-chemistry') {
-        wrapper.setAttribute('data-moni-stream-type', node.attrs.moniStreamType)
-      }
-      if (node.attrs.moniStreamMode && node.attrs.moniStreamMode !== 'replace') {
-        wrapper.setAttribute('data-moni-stream-mode', node.attrs.moniStreamMode)
       }
 
       // Create chemical renderer

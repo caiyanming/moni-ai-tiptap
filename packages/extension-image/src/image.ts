@@ -129,68 +129,9 @@ export const Image = Node.create<ImageOptions>({
           return {}
         },
       },
-      // 🔥 拖拽行为属性
-      moniDragEnabled: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === false) {
-            return { 'data-moni-drag-enabled': 'false' }
-          }
-          return {}
-        },
-      },
-      moniDragHandle: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-handle') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragHandle === false) {
-            return { 'data-moni-drag-handle': 'false' }
-          }
-          return {}
-        },
-      },
-      moniNestable: {
-        default: false, // 🔥 图像块通常不可嵌套
-        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === true) {
-            return { 'data-moni-nestable': 'true' }
-          }
-          return {}
-        },
-      },
-      moniDragType: {
-        default: 'block',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'block',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'block') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-      // 🔥 Stream 属性 - 图像特定配置
-      moniStreamType: {
-        default: 'media',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'media',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'media') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-      moniStreamMode: {
-        default: 'replace', // 🔥 图像默认使用 replace 模式
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'replace',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'replace') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 

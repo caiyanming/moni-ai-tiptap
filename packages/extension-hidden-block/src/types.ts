@@ -28,10 +28,7 @@ export interface HiddenBlockAttributes {
    */
   isInitialBlock: boolean
 
-  /**
-   * Drag enabled flag - Always false to prevent user interaction
-   */
-  moniDragEnabled: boolean
+  // 🔥 Runtime attributes like moniDragEnabled are now managed via editor.storage.runtimeState
 }
 
 /**
@@ -43,5 +40,4 @@ export const DEFAULT_HIDDEN_BLOCK_ATTRS: HiddenBlockAttributes = {
   moniBlockId: NULL_UUID,
   hidden: true,
   isInitialBlock: true,
-  moniDragEnabled: false,
 }

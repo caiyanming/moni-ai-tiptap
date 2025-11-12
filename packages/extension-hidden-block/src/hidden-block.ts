@@ -79,13 +79,9 @@ export const HiddenBlock = Node.create<
           return { 'data-initial-block': 'true' }
         },
       },
-      moniDragEnabled: {
-        default: false,
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') === 'true',
-        renderHTML: () => {
-          return { 'data-moni-drag-enabled': 'false' }
-        },
-      },
+      // 🔥 拖拽等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 
@@ -131,7 +127,6 @@ export const HiddenBlock = Node.create<
               moniBlockId: NULL_UUID,
               hidden: true,
               isInitialBlock: true,
-              moniDragEnabled: false,
             },
             content: [],
           })

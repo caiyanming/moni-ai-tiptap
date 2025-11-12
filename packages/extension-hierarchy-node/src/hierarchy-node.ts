@@ -265,63 +265,9 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
           return {}
         },
       },
-
-      // 🔥 拖拽行为属性 - 层级管理块支持特殊拖拽
-      moniDragEnabled: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-drag-enabled') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniDragEnabled === false) {
-            return { 'data-moni-drag-enabled': 'false' }
-          }
-          return {}
-        },
-      },
-
-      moniDragType: {
-        default: 'hierarchy',
-        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'hierarchy',
-        renderHTML: attributes => {
-          if (attributes.moniDragType && attributes.moniDragType !== 'hierarchy') {
-            return { 'data-moni-drag-type': attributes.moniDragType }
-          }
-          return {}
-        },
-      },
-
-      moniNestable: {
-        default: true,
-        parseHTML: element => element.getAttribute('data-moni-nestable') !== 'false',
-        renderHTML: attributes => {
-          if (attributes.moniNestable === false) {
-            return { 'data-moni-nestable': 'false' }
-          }
-          return {}
-        },
-      },
-
-      // 🔥 Stream 属性 - 层级管理块支持实时更新
-      moniStreamType: {
-        default: 'hierarchy',
-        parseHTML: element => element.getAttribute('data-moni-stream-type') || 'hierarchy',
-        renderHTML: attributes => {
-          if (attributes.moniStreamType && attributes.moniStreamType !== 'hierarchy') {
-            return { 'data-moni-stream-type': attributes.moniStreamType }
-          }
-          return {}
-        },
-      },
-
-      moniStreamMode: {
-        default: 'sync',
-        parseHTML: element => element.getAttribute('data-moni-stream-mode') || 'sync',
-        renderHTML: attributes => {
-          if (attributes.moniStreamMode && attributes.moniStreamMode !== 'sync') {
-            return { 'data-moni-stream-mode': attributes.moniStreamMode }
-          }
-          return {}
-        },
-      },
+      // 🔥 拖拽/Stream 等运行时属性已移除
+      // 现在通过 editor.storage.runtimeState 访问
+      // 参见：packages/core/src/extensions/runtime-state.ts
     }
   },
 
@@ -370,9 +316,6 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
               hierarchyType,
               displayMode,
               moniBlockId: blockId,
-              moniDragType: 'hierarchy',
-              moniStreamType: 'hierarchy',
-              moniStreamMode: 'sync',
             },
             content: [
               {
