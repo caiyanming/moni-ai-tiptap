@@ -19,5 +19,5 @@ export function generateJSON(html: string, extensions: Extensions): Record<strin
 
   // 🔥 MoniAI: 确保所有块级节点都有 moniBlockId
   // 这对拖拽、Stream、diff 管道至关重要
-  return ensureMoniBlockIdsInJSON(json)
+  return ensureMoniBlockIdsInJSON(json, schema)
 }
