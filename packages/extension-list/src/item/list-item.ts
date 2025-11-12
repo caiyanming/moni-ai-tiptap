@@ -85,17 +85,26 @@ export const ListItem = Node.create<ListItemOptions>({
         },
       },
 
-      // 🔥 拖拽/Stream 等运行时属性已移除
-      // 现在通过 editor.storage.runtimeState 访问
+      // 🔥 拖拽类型（持久化）- MoniDragPlugin 依赖此字段区分列表项和普通块
+      // 保留原因：列表拖拽语义需要此字段，Plugin 会读取并传递给 DragOperationManager
+      // TODO: 未来应迁移到拖拽插件的静态配置或 RuntimeState
+      moniDragType: {
+        default: 'list-item',
+        parseHTML: element => element.getAttribute('data-moni-drag-type') || 'list-item',
+        renderHTML: attributes => {
+          if (attributes.moniDragType && attributes.moniDragType !== 'list-item') {
+            return { 'data-moni-drag-type': attributes.moniDragType }
+          }
+          return {}
+        },
+      },
+
+      // 🔥 其他运行时属性已移除（这些确实没有被使用）：
+      // - moniDragEnabled, moniDragHandle → 使用 editor.storage.runtimeState.dragEnabled
+      // - moniStreamMode → 使用 editor.storage.runtimeState.streamMode
+      // - moniNestable, moniCanNestIn, moniDropTargets, moniMaxNestLevel → 从未被消费，已删除
+      //
       // 参见：packages/core/src/extensions/runtime-state.ts
-      //
-      // 已移除的属性：
-      // - moniDragType, moniNestable, moniCanNestIn, moniDropTargets, moniMaxNestLevel
-      // - moniStreamType, moniStreamMode
-      //
-      // 迁移指南：
-      // - 拖拽配置：移到拖拽插件的静态配置
-      // - Stream 状态：使用 editor.storage.runtimeState.streamMode
     }
   },
 
