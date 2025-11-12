@@ -94,10 +94,9 @@ export class DragHandleManager {
     }
 
     // Check if drag is enabled for this block
-    const dragEnabled = blockElement.getAttribute('data-moni-drag-enabled') !== 'false'
-    const dragHandle = blockElement.getAttribute('data-moni-drag-handle') !== 'false'
+    const dragEnabled = this.editor.storage.runtimeState.dragEnabled.get(blockId) ?? true
 
-    if (!dragEnabled || !dragHandle) {
+    if (!dragEnabled) {
       this.hideHandle()
       return
     }

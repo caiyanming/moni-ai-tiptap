@@ -102,17 +102,33 @@ const createMockEditor = () => {
   editorContainer.appendChild(mockView.dom)
   document.body.appendChild(editorContainer)
 
+  // Mock RuntimeState storage
+  const mockRuntimeState = {
+    dragEnabled: new Map<string, boolean>(),
+    streamMode: new Map<string, 'insert' | 'replace'>(),
+    diffTempIds: new Set<string>(),
+    tempBlocks: new Map<string, any>(),
+    operationIds: new Map<string, string>(),
+  }
+
   return {
     state: mockState,
     view: mockView,
+    storage: {
+      runtimeState: mockRuntimeState,
+    },
+    commands: {
+      setDragEnabled: (blockId: string, enabled: boolean) => {
+        mockRuntimeState.dragEnabled.set(blockId, enabled)
+        return true
+      },
+    },
   } as unknown as Editor
 }
 
-const createMockBlockElement = (blockId: string, dragEnabled = true, dragHandle = true) => {
+const createMockBlockElement = (blockId: string) => {
   const element = document.createElement('div')
   element.setAttribute('data-moni-block-id', blockId)
-  element.setAttribute('data-moni-drag-enabled', dragEnabled.toString())
-  element.setAttribute('data-moni-drag-handle', dragHandle.toString())
   element.style.position = 'absolute'
   element.style.top = '100px'
   element.style.left = '50px'
@@ -362,21 +378,12 @@ describe('DragHandleManager', () => {
       expect(customOptions.shouldShowHandle).toHaveBeenCalledWith('block-1', expect.any(Object))
     })
 
-    it('should not show handle when drag is disabled', () => {
-      const blockElement = createMockBlockElement('block-1', false) // drag disabled
+    it('should not show handle when drag is disabled via RuntimeState', () => {
+      const blockElement = createMockBlockElement('block-1')
       editor.view.dom.appendChild(blockElement)
 
-      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
-      const moveEvent = new MouseEvent('mousemove')
-      Object.defineProperty(moveEvent, 'target', { value: blockElement })
-      editor.view.dom.dispatchEvent(moveEvent)
-
-      expect(handleElement.style.visibility).toBe('hidden')
-    })
-
-    it('should not show handle when drag handle is disabled', () => {
-      const blockElement = createMockBlockElement('block-1', true, false) // handle disabled
-      editor.view.dom.appendChild(blockElement)
+      // Disable drag via RuntimeState
+      editor.storage.runtimeState.dragEnabled.set('block-1', false)
 
       vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
       const moveEvent = new MouseEvent('mousemove')
@@ -612,6 +619,107 @@ describe('DragHandleManager', () => {
       expect(() => {
         dragHandleManager.destroy()
       }).not.toThrow()
+    })
+  })
+
+  describe('RuntimeState 集成', () => {
+    beforeEach(() => {
+      dragHandleManager = new DragHandleManager(editor, mockOptions)
+      mockDragMethods(dragHandleManager)
+    })
+
+    it('should read dragEnabled from RuntimeState by default (undefined = true)', () => {
+      const blockElement = createMockBlockElement('block-1')
+      editor.view.dom.appendChild(blockElement)
+
+      // RuntimeState 未设置，默认应为 true
+      expect(editor.storage.runtimeState.dragEnabled.get('block-1')).toBeUndefined()
+
+      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+      const moveEvent = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent)
+
+      // 应该显示手柄（默认可拖拽）
+      expect(handleElement.style.visibility).toBe('visible')
+    })
+
+    it('should respect RuntimeState when dragEnabled is explicitly set to true', () => {
+      const blockElement = createMockBlockElement('block-1')
+      editor.view.dom.appendChild(blockElement)
+
+      // 显式设置为 true
+      editor.storage.runtimeState.dragEnabled.set('block-1', true)
+
+      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+      const moveEvent = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent)
+
+      expect(handleElement.style.visibility).toBe('visible')
+    })
+
+    it('should respect RuntimeState when dragEnabled is set to false', () => {
+      const blockElement = createMockBlockElement('block-1')
+      editor.view.dom.appendChild(blockElement)
+
+      // 设置为 false
+      editor.storage.runtimeState.dragEnabled.set('block-1', false)
+
+      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+      const moveEvent = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent)
+
+      expect(handleElement.style.visibility).toBe('hidden')
+    })
+
+    it('should support dynamic toggle of dragEnabled', () => {
+      const blockElement = createMockBlockElement('block-1')
+      editor.view.dom.appendChild(blockElement)
+
+      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+
+      // 第一次：默认可拖拽
+      const moveEvent1 = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent1, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent1)
+      expect(handleElement.style.visibility).toBe('visible')
+
+      // 禁用拖拽
+      editor.storage.runtimeState.dragEnabled.set('block-1', false)
+
+      // 第二次：应该隐藏
+      const moveEvent2 = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent2, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent2)
+      expect(handleElement.style.visibility).toBe('hidden')
+
+      // 重新启用
+      editor.storage.runtimeState.dragEnabled.set('block-1', true)
+
+      // 第三次：应该显示
+      const moveEvent3 = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent3, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent3)
+      expect(handleElement.style.visibility).toBe('visible')
+    })
+
+    it('should use commands API to set dragEnabled', () => {
+      const blockElement = createMockBlockElement('block-1')
+      editor.view.dom.appendChild(blockElement)
+
+      // 使用 commands API
+      editor.commands.setDragEnabled('block-1', false)
+
+      expect(editor.storage.runtimeState.dragEnabled.get('block-1')).toBe(false)
+
+      vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
+      const moveEvent = new MouseEvent('mousemove')
+      Object.defineProperty(moveEvent, 'target', { value: blockElement })
+      editor.view.dom.dispatchEvent(moveEvent)
+
+      expect(handleElement.style.visibility).toBe('hidden')
     })
   })
 })
