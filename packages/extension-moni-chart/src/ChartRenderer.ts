@@ -12,6 +12,13 @@ interface DataItem {
 }
 
 /**
+ * HTMLElement extended with chart cleanup capability
+ */
+export interface ChartContainerElement extends HTMLElement {
+  chartCleanup?: () => void
+}
+
+/**
  * Chart Renderer using ECharts
  * Provides rendering for 6 chart types: BarChart, LineChart, PieChart, AreaChart, RadarChart, ScatterChart
  */
@@ -23,7 +30,7 @@ export class ChartRenderer {
    * @param payload Chart payload from backend ChartTool
    * @param element DOM element to render into
    */
-  public render(payload: MoniChartPayload, element: HTMLElement): void {
+  public render(payload: MoniChartPayload, element: ChartContainerElement): void {
     // Clear previous content
     element.innerHTML = ''
 
@@ -43,14 +50,11 @@ export class ChartRenderer {
       })
       resizeObserver.observe(element)
 
-      // Store cleanup function on a properly named property
-      Object.defineProperty(element, 'chartCleanup', {
-        value: () => {
-          resizeObserver.disconnect()
-          this.dispose()
-        },
-        configurable: true,
-      })
+      // Store cleanup function
+      element.chartCleanup = () => {
+        resizeObserver.disconnect()
+        this.dispose()
+      }
     } catch (error) {
       console.error('[ChartRenderer] Failed to render chart:', error)
       // Fallback to error message

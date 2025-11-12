@@ -1,6 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core'
 
-import { ChartRenderer } from './ChartRenderer.js'
+import { type ChartContainerElement,ChartRenderer } from './ChartRenderer.js'
 
 export interface MoniChartOptions {
   /**
@@ -294,9 +294,9 @@ export const MoniChart = Node.create<MoniChartOptions>({
         destroy() {
           wrapper.removeEventListener('click', handleClick)
           // Clean up chart instance
-          const cleanup = (chartContainer as any).chartCleanup
-          if (cleanup && typeof cleanup === 'function') {
-            cleanup()
+          const containerWithCleanup = chartContainer as ChartContainerElement
+          if (containerWithCleanup.chartCleanup) {
+            containerWithCleanup.chartCleanup()
           }
         },
       }
