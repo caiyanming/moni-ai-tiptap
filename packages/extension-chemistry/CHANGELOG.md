@@ -43,5 +43,5 @@
 ### Dependencies
 
 - `katex` ^0.16.4 (peer dependency)
-- `@tiptap/core` workspace:*
-- `@tiptap/pm` workspace:*
+- `@tiptap/core` workspace:\*
+- `@tiptap/pm` workspace:\*

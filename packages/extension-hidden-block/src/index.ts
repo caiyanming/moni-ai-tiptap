@@ -1,6 +1,6 @@
 import { HiddenBlock } from './hidden-block.js'
 import type { HiddenBlockAttributes } from './types.js'
-import { DEFAULT_HIDDEN_BLOCK_ATTRS,NULL_UUID } from './types.js'
+import { DEFAULT_HIDDEN_BLOCK_ATTRS, NULL_UUID } from './types.js'
 
 export * from './hidden-block.js'
 export * from './types.js'
@@ -8,7 +8,7 @@ export * from './types.js'
 export default HiddenBlock
 
 // Constants for external use
-export { DEFAULT_HIDDEN_BLOCK_ATTRS,NULL_UUID }
+export { DEFAULT_HIDDEN_BLOCK_ATTRS, NULL_UUID }
 
 // Utility functions
 export const HiddenBlockUtils = {

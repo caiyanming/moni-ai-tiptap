@@ -163,7 +163,9 @@ test.describe('修复后的拖拽测试', () => {
     // 如果拖拽不工作，使用编辑器API作为备用
     const apiMoveResult = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) {return false}
+      if (!editor) {
+        return false
+      }
 
       try {
         const { view } = editor
@@ -171,8 +173,8 @@ test.describe('修复后的拖拽测试', () => {
         const { doc, tr } = state
 
         let firstPos = -1
-          let secondPos = -1
-          let firstNode = null
+        let secondPos = -1
+        let firstNode = null
 
         doc.descendants((node, pos) => {
           if (node.type.name === 'paragraph') {
@@ -187,7 +189,9 @@ test.describe('修复后的拖拽测试', () => {
           return true
         })
 
-        if (firstPos === -1 || secondPos === -1 || !firstNode) {return false}
+        if (firstPos === -1 || secondPos === -1 || !firstNode) {
+          return false
+        }
 
         const firstNodeSize = firstNode.nodeSize
         const secondNodeEnd = secondPos + doc.nodeAt(secondPos).nodeSize

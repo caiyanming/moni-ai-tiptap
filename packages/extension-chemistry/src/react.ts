@@ -1,7 +1,7 @@
 // @ts-ignore: React import issues will be handled at runtime
 import { ReactNodeViewRenderer } from '@tiptap/react'
 
-import { BlockChemicalFormulaComponent,InlineChemicalFormulaComponent  } from './ChemicalFormulaComponent.js'
+import { BlockChemicalFormulaComponent, InlineChemicalFormulaComponent } from './ChemicalFormulaComponent.js'
 import { BlockChemical } from './extensions/BlockChemical.js'
 import { InlineChemical } from './extensions/InlineChemical.js'
 

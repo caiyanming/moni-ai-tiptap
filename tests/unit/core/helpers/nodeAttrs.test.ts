@@ -1,6 +1,6 @@
 import { getNodeAttr, getNodeAttrs, hasNodeAttr } from '@tiptap/core/helpers/nodeAttrs'
 import { Schema } from '@tiptap/pm/model'
-import { describe, expect,it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 describe('nodeAttrs helpers', () => {
   // 创建测试用 Schema

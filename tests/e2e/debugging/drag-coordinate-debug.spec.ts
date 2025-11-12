@@ -3,7 +3,7 @@
  * 专门用于调试拖拽坐标计算和执行
  */
 
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { DragTestHelper } from '../utils/DragTestHelper'
 

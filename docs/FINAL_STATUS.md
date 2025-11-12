@@ -1,6 +1,7 @@
 # ✅ HiddenBlock 迁移最终状态
 
 ## 完成时间
+
 2025-10-15 13:50
 
 ## 设计决策
@@ -30,20 +31,20 @@
 
 ### 1. 核心文件
 
-| 文件 | 状态 | 说明 |
-|------|------|------|
-| **packages/extension-hidden-block/src/hidden-block.ts** | ✅ | 节点定义 + 命令 |
-| **packages/extension-hidden-block/src/types.ts** | ✅ | NULL_UUID + 类型定义 |
-| **packages/extension-hidden-block/src/index.ts** | ✅ | 导出 + HiddenBlockUtils |
-| **packages/extension-hidden-block/package.json** | ✅ | 包配置 |
-| **packages/extension-hidden-block/tsup.config.ts** | ✅ | 构建配置 |
-| **packages/extension-hidden-block/README.md** | ✅ | API 文档 |
+| 文件                                                    | 状态 | 说明                    |
+| ------------------------------------------------------- | ---- | ----------------------- |
+| **packages/extension-hidden-block/src/hidden-block.ts** | ✅   | 节点定义 + 命令         |
+| **packages/extension-hidden-block/src/types.ts**        | ✅   | NULL_UUID + 类型定义    |
+| **packages/extension-hidden-block/src/index.ts**        | ✅   | 导出 + HiddenBlockUtils |
+| **packages/extension-hidden-block/package.json**        | ✅   | 包配置                  |
+| **packages/extension-hidden-block/tsup.config.ts**      | ✅   | 构建配置                |
+| **packages/extension-hidden-block/README.md**           | ✅   | API 文档                |
 
 ### 2. 测试文件
 
-| 文件 | 测试数量 | 状态 |
-|------|----------|------|
-| **tests/unit/extensions/hidden-block.test.ts** | 18 | ✅ 全部通过 |
+| 文件                                           | 测试数量 | 状态        |
+| ---------------------------------------------- | -------- | ----------- |
+| **tests/unit/extensions/hidden-block.test.ts** | 18       | ✅ 全部通过 |
 
 ### 3. 构建产物
 
@@ -63,19 +64,19 @@ dist/
 
 ### 4. 配置文件
 
-| 文件 | 改动 | 状态 |
-|------|------|------|
-| **vitest.config.ts** | 更新 alias | ✅ |
-| **packages/constants/src/index.ts** | 更新常量 | ✅ |
-| **packages/extensions/src/index.ts** | 添加注释 | ✅ |
-| **pnpm-lock.yaml** | 添加新扩展条目 | ✅ |
+| 文件                                 | 改动           | 状态 |
+| ------------------------------------ | -------------- | ---- |
+| **vitest.config.ts**                 | 更新 alias     | ✅   |
+| **packages/constants/src/index.ts**  | 更新常量       | ✅   |
+| **packages/extensions/src/index.ts** | 添加注释       | ✅   |
+| **pnpm-lock.yaml**                   | 添加新扩展条目 | ✅   |
 
 ### 5. 归档文件
 
-| 文件 | 位置 | 状态 |
-|------|------|------|
-| **extension-file-children-block/** | packages-deprecated/ | ✅ |
-| **file-children-block.test.ts** | packages-deprecated/ | ✅ |
+| 文件                               | 位置                 | 状态 |
+| ---------------------------------- | -------------------- | ---- |
+| **extension-file-children-block/** | packages-deprecated/ | ✅   |
+| **file-children-block.test.ts**    | packages-deprecated/ | ✅   |
 
 ---
 
@@ -92,7 +93,7 @@ editor.commands.insertHiddenBlock()
 
 ```typescript
 // 检查是否存在 hiddenBlock
-editor.storage.hiddenBlock.hasHiddenBlock(editor)  // boolean
+editor.storage.hiddenBlock.hasHiddenBlock(editor) // boolean
 
 // 获取 hiddenBlock 信息
 editor.storage.hiddenBlock.getHiddenBlockInfo(editor)
@@ -233,14 +234,14 @@ Tests  18 passed (18)
 
 ## 📚 文档清单
 
-| 文档 | 路径 | 用途 |
-|------|------|------|
-| **MIGRATION_GUIDE.md** | moni-ai-tiptap/ | 前后端迁移步骤 |
-| **CHANGELOG_HIDDEN_BLOCK.md** | moni-ai-tiptap/ | 设计哲学和技术细节 |
-| **BUILD_MIGRATION_SUMMARY.md** | moni-ai-tiptap/ | 构建系统改动 |
-| **BUILD_SYSTEM_CHECKLIST.md** | moni-ai-tiptap/ | 验证清单 |
-| **README.md** | extension-hidden-block/ | API 使用文档 |
-| **FINAL_STATUS.md** | moni-ai-tiptap/ | 本文档 |
+| 文档                           | 路径                    | 用途               |
+| ------------------------------ | ----------------------- | ------------------ |
+| **MIGRATION_GUIDE.md**         | moni-ai-tiptap/         | 前后端迁移步骤     |
+| **CHANGELOG_HIDDEN_BLOCK.md**  | moni-ai-tiptap/         | 设计哲学和技术细节 |
+| **BUILD_MIGRATION_SUMMARY.md** | moni-ai-tiptap/         | 构建系统改动       |
+| **BUILD_SYSTEM_CHECKLIST.md**  | moni-ai-tiptap/         | 验证清单           |
+| **README.md**                  | extension-hidden-block/ | API 使用文档       |
+| **FINAL_STATUS.md**            | moni-ai-tiptap/         | 本文档             |
 
 ---
 
@@ -321,11 +322,13 @@ WHERE content LIKE '%fileChildrenBlock%';
 > **"Good taste means removing special cases, not adding conditions."**
 
 **旧设计（fileChildrenBlock）**：
+
 - ❌ 可见 UI + AI 锚点混合职责
 - ❌ 需要在拖拽/渲染逻辑中特殊处理
 - ❌ 5 个 UI 属性增加维护成本
 
 **新设计（hiddenBlock）**：
+
 - ✅ 纯锚点，零 UI 逻辑
 - ✅ 完全隐形，不需要特殊处理
 - ✅ 简洁设计，易于理解和维护

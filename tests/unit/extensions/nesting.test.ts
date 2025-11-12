@@ -4,7 +4,7 @@ import Heading from '@tiptap/extension-heading'
 import { Nesting } from '@tiptap/extension-nesting'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
-import { afterEach,describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 describe('Nesting Extension', () => {
   let editor: Editor | null = null

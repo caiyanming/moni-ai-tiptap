@@ -362,9 +362,8 @@ export class DragTestHelper {
           result.method = method.id
           this.log(`✅ 方法 ${method.name} 执行成功`)
           return true
-        } 
-          result.details.failureReasons.push(`${method.name}: 执行失败但无异常`)
-        
+        }
+        result.details.failureReasons.push(`${method.name}: 执行失败但无异常`)
       } catch (error: any) {
         const errorMsg = `${method.name}: ${error.message}`
         result.details.failureReasons.push(errorMsg)
@@ -592,8 +591,12 @@ export class DragTestHelper {
    */
   private arraysEqual(a: any[], b: any[]): boolean {
     // 防御性编程：处理undefined/null情况
-    if (!a || !b) {return false}
-    if (!Array.isArray(a) || !Array.isArray(b)) {return false}
+    if (!a || !b) {
+      return false
+    }
+    if (!Array.isArray(a) || !Array.isArray(b)) {
+      return false
+    }
     return a.length === b.length && a.every((val, index) => val === b[index])
   }
 
@@ -609,7 +612,9 @@ export class DragTestHelper {
       ([sourceSelector, targetSelector, dropPosition]) => {
         // 获取TipTap编辑器实例
         const editorElement = document.querySelector('.ProseMirror')
-        if (!editorElement) {return false}
+        if (!editorElement) {
+          return false
+        }
 
         // 尝试从全局或DOM获取编辑器实例
         let editorView = null
@@ -712,9 +717,9 @@ export class DragTestHelper {
 
           // 找到第一个和第二个段落
           let firstParagraphPos = -1
-            let secondParagraphPos = -1
+          let secondParagraphPos = -1
           let firstParagraphNode = null
-            let secondParagraphNode = null
+          let secondParagraphNode = null
 
           doc.descendants((node, pos) => {
             if (node.type.name === 'paragraph') {
@@ -999,7 +1004,7 @@ export class DragTestHelper {
       if (element.className && typeof element.className === 'string') {
         const classes = element.className.split(' ').filter(c => c.trim())
         if (classes.length > 0) {
-          const classSelector = `.${  classes.join('.')}`
+          const classSelector = `.${classes.join('.')}`
           if (document.querySelectorAll(classSelector).length === 1) {
             return classSelector
           }
@@ -1065,13 +1070,12 @@ export class DragTestHelper {
         message: '拖拽操作成功：段落顺序已改变',
         details: { beforeTexts, afterTexts, sourceIndex, targetIndex },
       }
-    } 
-      return {
-        success: false,
-        message: '拖拽操作失败：段落顺序未改变',
-        details: { beforeTexts, afterTexts, sourceIndex, targetIndex },
-      }
-    
+    }
+    return {
+      success: false,
+      message: '拖拽操作失败：段落顺序未改变',
+      details: { beforeTexts, afterTexts, sourceIndex, targetIndex },
+    }
   }
 
   /**

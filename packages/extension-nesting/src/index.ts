@@ -5,7 +5,7 @@
  */
 
 export { Nesting } from './nesting.js'
-export type { BlockHierarchy, NestingOptions, NestingStorage,NestingUpdate, ValidationResult } from './types.js'
+export type { BlockHierarchy, NestingOptions, NestingStorage, NestingUpdate, ValidationResult } from './types.js'
 export {
   buildBlockHierarchy,
   getBlockChildren,

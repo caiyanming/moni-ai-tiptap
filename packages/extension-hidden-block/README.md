@@ -18,11 +18,13 @@ The hidden block is NOT a UI element. It's a **data structure anchor point** for
 ### What It Replaces
 
 This extension replaces the old `fileChildrenBlock` which had:
+
 - ❌ UI attributes (displayMode, title, fileCount)
 - ❌ User interaction (expandable, draggable)
 - ❌ Visual rendering (colored border, icon)
 
 The hidden block has:
+
 - ✅ Single purpose: AI insertion anchor
 - ✅ Zero UI logic
 - ✅ Automatic self-repair
@@ -131,7 +133,7 @@ AI stream operations can always target this ID without checking document structu
 const operation = {
   type: 'insert_after',
   targetId: '13814000-1dd2-11b2-8080-808080808080',
-  content: [...newBlocks]
+  content: [...newBlocks],
 }
 ```
 
@@ -185,13 +187,13 @@ Replace all references:
 
 ### Node Attributes
 
-| Attribute | Value | Purpose |
-|-----------|-------|---------|
-| `id` | `NULL_UUID` | Block identifier |
-| `moniBlockId` | `NULL_UUID` | Moni system identifier |
-| `hidden` | `true` | Hide from rendering |
-| `isInitialBlock` | `true` | Mark as anchor point |
-| `moniDragEnabled` | `false` | Disable drag interaction |
+| Attribute         | Value       | Purpose                  |
+| ----------------- | ----------- | ------------------------ |
+| `id`              | `NULL_UUID` | Block identifier         |
+| `moniBlockId`     | `NULL_UUID` | Moni system identifier   |
+| `hidden`          | `true`      | Hide from rendering      |
+| `isInitialBlock`  | `true`      | Mark as anchor point     |
+| `moniDragEnabled` | `false`     | Disable drag interaction |
 
 ### HTML Output
 

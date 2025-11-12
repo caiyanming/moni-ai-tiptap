@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 import { SimplifiedDragHelper } from './utils/SimplifiedDragHelper'
 
@@ -43,7 +43,9 @@ test.describe('Block Stream 拖拽集成测试', () => {
     // 获取拖拽前的 moniBlockId
     const beforeBlockIds = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) {return []}
+      if (!editor) {
+        return []
+      }
 
       const blockIds: string[] = []
       editor.state.doc.descendants((node: any, pos: number) => {
@@ -64,7 +66,9 @@ test.describe('Block Stream 拖拽集成测试', () => {
     // 获取拖拽后的 moniBlockId
     const afterBlockIds = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) {return []}
+      if (!editor) {
+        return []
+      }
 
       const blockIds: string[] = []
       editor.state.doc.descendants((node: any, pos: number) => {
@@ -331,7 +335,9 @@ test.describe('Block Stream 拖拽集成测试', () => {
     // 获取拖拽前的完整映射
     const beforeMapping = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) {return {}}
+      if (!editor) {
+        return {}
+      }
 
       const mapping: Record<string, { text: string; position: number }> = {}
       const currentPos = 0
@@ -357,7 +363,9 @@ test.describe('Block Stream 拖拽集成测试', () => {
     // 获取拖拽后的完整映射
     const afterMapping = await page.evaluate(() => {
       const editor = (window as any).__tiptapEditor
-      if (!editor) {return {}}
+      if (!editor) {
+        return {}
+      }
 
       const mapping: Record<string, { text: string; position: number }> = {}
       const currentPos = 0

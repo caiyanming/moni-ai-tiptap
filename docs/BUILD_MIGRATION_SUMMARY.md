@@ -4,16 +4,16 @@
 
 ### 已完成的配置
 
-| 配置文件 | 状态 | 改动说明 |
-|----------|------|----------|
-| **packages/extension-hidden-block/package.json** | ✅ 新增 | 包配置（name, version, exports） |
-| **packages/extension-hidden-block/tsup.config.ts** | ✅ 新增 | 构建配置（ESM + CJS + DTS） |
-| **vitest.config.ts** | ✅ 修改 | 更新 alias: `extension-file-children-block` → `extension-hidden-block` |
-| **packages/constants/src/index.ts** | ✅ 修改 | 更新常量和工具函数 |
-| **packages/extensions/src/index.ts** | ✅ 修改 | 添加注释（HiddenBlock 不在此导出） |
-| **turbo.json** | ✅ 无需修改 | 通用配置，自动识别新包 |
-| **pnpm-workspace.yaml** | ✅ 无需修改 | `packages/*` 通配符自动包含 |
-| **根 package.json** | ✅ 无需修改 | 无直接依赖旧扩展 |
+| 配置文件                                           | 状态        | 改动说明                                                               |
+| -------------------------------------------------- | ----------- | ---------------------------------------------------------------------- |
+| **packages/extension-hidden-block/package.json**   | ✅ 新增     | 包配置（name, version, exports）                                       |
+| **packages/extension-hidden-block/tsup.config.ts** | ✅ 新增     | 构建配置（ESM + CJS + DTS）                                            |
+| **vitest.config.ts**                               | ✅ 修改     | 更新 alias: `extension-file-children-block` → `extension-hidden-block` |
+| **packages/constants/src/index.ts**                | ✅ 修改     | 更新常量和工具函数                                                     |
+| **packages/extensions/src/index.ts**               | ✅ 修改     | 添加注释（HiddenBlock 不在此导出）                                     |
+| **turbo.json**                                     | ✅ 无需修改 | 通用配置，自动识别新包                                                 |
+| **pnpm-workspace.yaml**                            | ✅ 无需修改 | `packages/*` 通配符自动包含                                            |
+| **根 package.json**                                | ✅ 无需修改 | 无直接依赖旧扩展                                                       |
 
 ---
 
@@ -30,14 +30,15 @@ export default defineConfig({
   entry: ['src/index.ts'],
   tsconfig: '../../tsconfig.build.json',
   outDir: 'dist',
-  dts: true,              // 生成 .d.ts 类型定义
-  clean: true,            // 构建前清理 dist
-  sourcemap: true,        // 生成 sourcemap
+  dts: true, // 生成 .d.ts 类型定义
+  clean: true, // 构建前清理 dist
+  sourcemap: true, // 生成 sourcemap
   format: ['esm', 'cjs'], // 双格式输出
 })
 ```
 
 **输出文件**:
+
 ```
 dist/
 ├── index.js      # ESM 格式（import/export）
@@ -67,9 +68,9 @@ dist/
       "require": "./dist/index.cjs"
     }
   },
-  "main": "dist/index.cjs",    // CommonJS 默认入口
-  "module": "dist/index.js",   // ESM 默认入口
-  "types": "dist/index.d.ts"   // TypeScript 类型入口
+  "main": "dist/index.cjs", // CommonJS 默认入口
+  "module": "dist/index.js", // ESM 默认入口
+  "types": "dist/index.d.ts" // TypeScript 类型入口
 }
 ```
 
@@ -89,6 +90,7 @@ import type { HiddenBlockAttributes } from '@tiptap/extension-hidden-block'
 ### 3. vitest.config.ts（修改）
 
 **差异**:
+
 ```diff
   resolve: {
     alias: {
@@ -155,15 +157,15 @@ pnpm test:unit
 
 ### 测试覆盖
 
-| 测试类别 | 测试数量 | 状态 |
-|----------|----------|------|
-| 节点创建 | 3 | ✅ |
-| 不可变性 | 3 | ✅ |
-| 命令 | 1 | ✅ |
-| Storage 方法 | 3 | ✅ |
-| 工具函数 | 7 | ✅ |
-| NULL_UUID 常量 | 2 | ✅ |
-| **总计** | **19** | **✅** |
+| 测试类别       | 测试数量 | 状态   |
+| -------------- | -------- | ------ |
+| 节点创建       | 3        | ✅     |
+| 不可变性       | 3        | ✅     |
+| 命令           | 1        | ✅     |
+| Storage 方法   | 3        | ✅     |
+| 工具函数       | 7        | ✅     |
+| NULL_UUID 常量 | 2        | ✅     |
+| **总计**       | **19**   | **✅** |
 
 ---
 
@@ -175,7 +177,7 @@ pnpm test:unit
 
 ```yaml
 # pnpm-lock.yaml (第564行)
-packages/extension-file-children-block:  # ❌ 需要移除
+packages/extension-file-children-block: # ❌ 需要移除
   devDependencies:
     '@tiptap/core':
       specifier: workspace:*
@@ -343,6 +345,7 @@ pnpm test tests/unit/extensions/hidden-block.test.ts
 ```
 
 **预期输出**:
+
 ```
 ✓ tests/unit/extensions/hidden-block.test.ts (19)
   ✓ HiddenBlock Extension (19)

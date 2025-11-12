@@ -24,8 +24,8 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    // 🔥 Phase 5 改动：如果 JSON 中没有提供 moniBlockId，则不会渲染到 HTML
-    expect(html).toBe('<p>Example Text</p>')
+    // 🔥 generateHTML 自动生成 moniBlockId 并渲染到 HTML
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-\w+">Example Text<\/p>/)
   })
 
   it('should generate HTML with multiple paragraphs', () => {
@@ -45,8 +45,8 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    // 🔥 Phase 5 改动：如果 JSON 中没有提供 moniBlockId，则不会渲染到 HTML
-    expect(html).toBe('<p>First paragraph</p><p>Second paragraph</p>')
+    // 🔥 generateHTML 自动生成 moniBlockId 并渲染到 HTML
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-\w+">First paragraph<\/p><p data-moni-block-id="block-\d+-\w+">Second paragraph<\/p>/)
   })
 
   it('should handle empty document', () => {
@@ -73,7 +73,7 @@ describe('generateHTML', () => {
 
     const html = generateHTML(json, [Document, Paragraph, Text])
 
-    // 🔥 Phase 5 改动：如果 JSON 中没有提供 moniBlockId，则不会渲染到 HTML
-    expect(html).toBe('<p></p>')
+    // 🔥 generateHTML 自动生成 moniBlockId 并渲染到 HTML
+    expect(html).toMatch(/<p data-moni-block-id="block-\d+-\w+"><\/p>/)
   })
 })

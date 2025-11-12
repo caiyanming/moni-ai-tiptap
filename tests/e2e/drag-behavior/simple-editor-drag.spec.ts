@@ -53,7 +53,7 @@ test.describe('简单编辑器拖拽测试', () => {
 
         // 找到第一个和第二个段落
         let firstParagraphPos = -1
-          let secondParagraphPos = -1
+        let secondParagraphPos = -1
         let firstParagraphNode = null
 
         doc.descendants((node, pos) => {

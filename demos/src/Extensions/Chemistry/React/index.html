@@ -1,53 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chemistry Extension Demo</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" crossorigin="anonymous">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    .demo-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .demo-description {
-      background: #f8f9fa;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="demo-header">
-    <h1>TipTap Chemistry Extension Demo</h1>
-    <p>Interactive demo showcasing chemical formula rendering with KaTeX + mhchem</p>
-  </div>
-  
-  <div class="demo-description">
-    <h3>Features Demonstrated:</h3>
-    <ul>
-      <li>🧪 Chemical formulas with mhchem syntax</li>
-      <li>⚗️ Chemical reaction equations</li>
-      <li>🌡️ Physical units and measurements</li>
-      <li>⚡ Input rules for automatic conversion</li>
-      <li>🎯 Both inline and block chemistry nodes</li>
-      <li>🛡️ Error handling with graceful fallbacks</li>
-      <li>📱 Block Stream integration with moniBlockId</li>
-    </ul>
-  </div>
-  
-  <div id="app"></div>
-  
-  <script>
-    // Chemistry syntax examples for copy-paste
-    console.log(`
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chemistry Extension Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+      crossorigin="anonymous"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      .demo-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .demo-description {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-header">
+      <h1>TipTap Chemistry Extension Demo</h1>
+      <p>Interactive demo showcasing chemical formula rendering with KaTeX + mhchem</p>
+    </div>
+
+    <div class="demo-description">
+      <h3>Features Demonstrated:</h3>
+      <ul>
+        <li>🧪 Chemical formulas with mhchem syntax</li>
+        <li>⚗️ Chemical reaction equations</li>
+        <li>🌡️ Physical units and measurements</li>
+        <li>⚡ Input rules for automatic conversion</li>
+        <li>🎯 Both inline and block chemistry nodes</li>
+        <li>🛡️ Error handling with graceful fallbacks</li>
+        <li>📱 Block Stream integration with moniBlockId</li>
+      </ul>
+    </div>
+
+    <div id="app"></div>
+
+    <script>
+      // Chemistry syntax examples for copy-paste
+      console.log(`
 Chemistry Syntax Examples:
 
 Basic Formulas:
@@ -73,6 +77,6 @@ State Symbols:
 \\ce{CO2 (g)}
 \\ce{HCl (aq)}
     `)
-  </script>
-</body>
+    </script>
+  </body>
 </html>

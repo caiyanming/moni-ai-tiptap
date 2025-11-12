@@ -11,7 +11,7 @@ import {
   setMoniBlockId,
   stripMoniBlockIds,
 } from '@tiptap/core'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('generateMoniBlockId', () => {
   it('should generate unique IDs', () => {

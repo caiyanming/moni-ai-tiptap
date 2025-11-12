@@ -45,9 +45,8 @@ export class SimplifiedDragHelper {
       if (success) {
         console.log('✅ [SimplifiedDragHelper] 事件拖拽成功！')
         return { success, beforeTexts, afterTexts }
-      } 
-        console.log('⚠️  [SimplifiedDragHelper] 事件触发成功但位置未改变，尝试API方法')
-      
+      }
+      console.log('⚠️  [SimplifiedDragHelper] 事件触发成功但位置未改变，尝试API方法')
     }
 
     // 如果事件拖拽失败，使用API方法作为备用
@@ -162,8 +161,8 @@ export class SimplifiedDragHelper {
         const { doc, tr } = state
 
         let firstPos = -1
-          let secondPos = -1
-          let firstNode = null
+        let secondPos = -1
+        let firstNode = null
 
         doc.descendants((node, pos) => {
           if (node.type.name === 'paragraph') {

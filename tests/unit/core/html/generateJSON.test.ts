@@ -16,7 +16,9 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String), // 🔥 processPastedHTML 自动生成
+          }),
           content: [
             {
               type: 'text',
@@ -38,12 +40,16 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String),
+          }),
           content: [{ type: 'text', text: 'First paragraph' }],
         },
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String),
+          }),
           content: [{ type: 'text', text: 'Second paragraph' }],
         },
       ],
@@ -61,7 +67,9 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String),
+          }),
         },
       ],
     })
@@ -77,7 +85,9 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String),
+          }),
         },
       ],
     })
@@ -93,7 +103,9 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
+          attrs: expect.objectContaining({
+            moniBlockId: expect.any(String),
+          }),
           content: [
             {
               type: 'text',

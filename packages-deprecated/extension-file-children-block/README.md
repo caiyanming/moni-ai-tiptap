@@ -58,7 +58,7 @@ const info = editor.storage.fileChildrenBlock.getFileChildrenBlockInfo()
 // Update UI state
 editor.storage.fileChildrenBlock.updateFileChildrenBlockState({
   collapsed: false,
-  displayMode: 'grid'
+  displayMode: 'grid',
 })
 ```
 
@@ -75,7 +75,7 @@ const isNullUUIDBlock = FileChildrenBlockUtils.isNullUUIDFileChildrenBlock(node)
 
 // Create block content
 const blockContent = FileChildrenBlockUtils.createFileChildrenBlock({
-  displayMode: 'cards'
+  displayMode: 'cards',
 })
 ```
 
@@ -85,7 +85,7 @@ The block automatically uses NULL_UUID for AI targeting:
 
 ```js
 // AI can target this block using:
-const targetBlockId = "13814000-1dd2-11b2-8080-808080808080"
+const targetBlockId = '13814000-1dd2-11b2-8080-808080808080'
 ```
 
 ## Data Structure

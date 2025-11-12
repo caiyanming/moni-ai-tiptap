@@ -1,9 +1,11 @@
 # Chemistry Extension - React Integration
 
 ## Overview
+
 The Chemistry Extension now supports React node views for both inline and block chemical formulas, providing seamless integration with React-based TipTap editors.
 
 ## Features
+
 - 🧪 Full React component support for chemical formula rendering
 - 🔄 Runtime error handling with graceful fallbacks
 - 🎯 Complete moni Block Stream integration
@@ -30,12 +32,12 @@ const editor = new Editor({
     InlineChemical.extend({
       addNodeView() {
         return InlineChemicalReactRenderer
-      }
+      },
     }),
     BlockChemical.extend({
       addNodeView() {
         return BlockChemicalReactRenderer
-      }
+      },
     }),
   ],
 })
@@ -55,8 +57,8 @@ const editor = new Editor({
       katexOptions: {
         trust: true,
         throwOnError: false,
-      }
-    })
+      },
+    }),
   ],
 })
 ```
@@ -67,9 +69,9 @@ The extension provides three main React components:
 
 ```typescript
 import {
-  ChemicalFormulaComponent,        // Base component
-  InlineChemicalFormulaComponent,  // Inline variant
-  BlockChemicalFormulaComponent,   // Block variant
+  ChemicalFormulaComponent, // Base component
+  InlineChemicalFormulaComponent, // Inline variant
+  BlockChemicalFormulaComponent, // Block variant
 } from '@tiptap/extension-chemistry/react'
 ```
 
@@ -124,7 +126,7 @@ The extension builds both ESM and CJS versions with proper TypeScript declaratio
 npm run build
 # Generates:
 # - dist/react.js (ESM)
-# - dist/react.cjs (CommonJS) 
+# - dist/react.cjs (CommonJS)
 # - dist/react.d.ts (TypeScript declarations)
 # - dist/react.d.cts (CommonJS TypeScript declarations)
 ```

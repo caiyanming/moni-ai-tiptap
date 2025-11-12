@@ -66,11 +66,11 @@ const editor = new Editor({
 import React from 'react'
 import { Editor } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
-import { 
-  InlineChemical, 
+import {
+  InlineChemical,
   BlockChemical,
   InlineChemicalFormulaComponent,
-  BlockChemicalFormulaComponent 
+  BlockChemicalFormulaComponent,
 } from '@tiptap/extension-chemistry'
 
 const editor = new Editor({
@@ -94,6 +94,7 @@ const editor = new Editor({
 This extension supports the full mhchem syntax:
 
 ### Chemical Formulas
+
 ```
 \ce{H2SO4}           → H₂SO₄
 \ce{CaCl2}           → CaCl₂
@@ -102,6 +103,7 @@ This extension supports the full mhchem syntax:
 ```
 
 ### Reaction Equations
+
 ```
 \ce{A + B -> C + D}          → A + B → C + D
 \ce{A <=> B}                 → A ⇌ B
@@ -110,6 +112,7 @@ This extension supports the full mhchem syntax:
 ```
 
 ### Physical Units
+
 ```
 \pu{123 kJ/mol}      → 123 kJ/mol
 \pu{25 °C}           → 25 °C
@@ -117,6 +120,7 @@ This extension supports the full mhchem syntax:
 ```
 
 ### State Symbols
+
 ```
 \ce{H2O (l)}         → H₂O (l)
 \ce{NaCl (s)}        → NaCl (s)
@@ -141,7 +145,7 @@ The extension includes convenient input rules:
 // Insert chemistry formula (inline or block)
 editor.commands.insertChemicalFormula({
   chemical: '\\ce{H2SO4}',
-  type: 'inline' // or 'block'
+  type: 'inline', // or 'block'
 })
 ```
 
@@ -179,8 +183,8 @@ const chemicalNode = {
     moniLevel: 1,
     moniDragEnabled: true,
     moniStreamType: 'chemistry',
-    moniStreamMode: 'replace'
-  }
+    moniStreamMode: 'replace',
+  },
 }
 ```
 
@@ -218,8 +222,8 @@ The extension provides three-layer error handling:
 
 ```javascript
 // This will gracefully degrade if mhchem fails
-editor.commands.insertInlineChemical({ 
-  chemical: '\\ce{invalid-chemistry}' 
+editor.commands.insertInlineChemical({
+  chemical: '\\ce{invalid-chemistry}',
 })
 // → Shows original text with error styling
 ```
@@ -279,8 +283,8 @@ const renderer = new ChemicalRenderer({
   trust: true,
   macros: {
     '\\water': '\\ce{H2O}',
-    '\\acid': '\\ce{H2SO4}'
-  }
+    '\\acid': '\\ce{H2SO4}',
+  },
 })
 
 // Render to element
@@ -311,11 +315,11 @@ const isInvalid = validateChemistryFormula('\\ce{invalid}') // false
 Full TypeScript support with complete type definitions:
 
 ```typescript
-import type { 
+import type {
   ChemistryOptions,
   InlineChemicalOptions,
   BlockChemicalOptions,
-  ChemistryRenderResult 
+  ChemistryRenderResult,
 } from '@tiptap/extension-chemistry'
 ```
 

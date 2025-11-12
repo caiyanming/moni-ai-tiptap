@@ -32,12 +32,14 @@
 #### `@tiptap/extension-hidden-block`
 
 **核心扩展**:
+
 - `HiddenBlock` - 精简版锚点扩展
   - 5个核心属性：id, moniBlockId, hidden, isInitialBlock, moniDragEnabled
   - Guardian插件：自动插入、属性锁定、防删除
   - Storage方法：hasHiddenBlock, getHiddenBlockInfo, ensureHiddenBlock
 
 **工具函数**:
+
 - `HiddenBlockUtils.isHiddenBlock(node)` - 节点类型判断
 - `HiddenBlockUtils.isNullUUIDHiddenBlock(node)` - NULL_UUID验证
 - `HiddenBlockUtils.createHiddenBlock(attrs?)` - JSON生成
@@ -46,10 +48,12 @@
 - `HiddenBlockUtils.restoreHiddenBlock(content)` - 恢复隐藏块（导入用）
 
 **常量**:
+
 - `NULL_UUID` = `'13814000-1dd2-11b2-8080-808080808080'`
 - `DEFAULT_HIDDEN_BLOCK_ATTRS` - 默认属性对象
 
 **测试**:
+
 - 11个测试用例，覆盖核心功能、不可变性、命令、Storage、工具函数
 
 ---
@@ -59,27 +63,28 @@
 #### `packages/constants/src/index.ts`
 
 **常量更新**:
+
 ```typescript
 // 删除
-- BLOCK_CONSTANTS.FILE_CHILDREN_BLOCK_ATTRS
-- ATTR_CONSTANTS.COLLAPSED
-- ATTR_CONSTANTS.DISPLAY_MODE
-- CSS_CONSTANTS.FILE_CHILDREN_BLOCK
-- UTILS.createFileChildrenBlockAttrs()
-- UTILS.isFileChildrenBlock()
-
-// 新增
-+ BLOCK_CONSTANTS.HIDDEN_BLOCK_ATTRS
-+ ATTR_CONSTANTS.HIDDEN
-+ ATTR_CONSTANTS.IS_INITIAL_BLOCK
-+ CSS_CONSTANTS.HIDDEN_BLOCK
-+ UTILS.createHiddenBlockAttrs()
-+ UTILS.isHiddenBlock()
+;-BLOCK_CONSTANTS.FILE_CHILDREN_BLOCK_ATTRS -
+  ATTR_CONSTANTS.COLLAPSED -
+  ATTR_CONSTANTS.DISPLAY_MODE -
+  CSS_CONSTANTS.FILE_CHILDREN_BLOCK -
+  UTILS.createFileChildrenBlockAttrs() -
+  UTILS.isFileChildrenBlock() +
+  // 新增
+  BLOCK_CONSTANTS.HIDDEN_BLOCK_ATTRS +
+  ATTR_CONSTANTS.HIDDEN +
+  ATTR_CONSTANTS.IS_INITIAL_BLOCK +
+  CSS_CONSTANTS.HIDDEN_BLOCK +
+  UTILS.createHiddenBlockAttrs() +
+  UTILS.isHiddenBlock()
 ```
 
 #### `vitest.config.ts`
 
 **测试别名**:
+
 ```diff
 - '@tiptap/extension-file-children-block': resolve(__dirname, 'packages/extension-file-children-block/src')
 + '@tiptap/extension-hidden-block': resolve(__dirname, 'packages/extension-hidden-block/src')
@@ -92,12 +97,14 @@
 #### `@tiptap/extension-file-children-block`
 
 **移除原因**:
+
 - ❌ 包含不必要的UI逻辑
 - ❌ 5个UI属性（displayMode, collapsed, title, fileCount, customIcon）
 - ❌ 可见渲染（蓝色边框 + 图标）
 - ❌ 可交互（展开/折叠/拖拽）
 
 **归档文件**:
+
 - `packages-deprecated/extension-file-children-block/` - 完整扩展
 - `packages-deprecated/extension-file-children-block/file-children-block.test.ts` - 旧测试
 
@@ -110,6 +117,7 @@
 #### 数据结构简化
 
 **旧设计**:
+
 ```typescript
 {
   type: 'fileChildrenBlock',
@@ -127,6 +135,7 @@
 ```
 
 **新设计**:
+
 ```typescript
 {
   type: 'hiddenBlock',
@@ -145,6 +154,7 @@
 #### 渲染优化
 
 **旧设计** (可见DOM):
+
 ```html
 <div class="file-children-block-container" style="border: 1px solid #3b82f6; padding: 8px;">
   <div class="header">
@@ -157,6 +167,7 @@
 ```
 
 **新设计** (隐形DOM):
+
 ```html
 <div
   data-hidden-block="true"
@@ -205,6 +216,7 @@ if (shouldAllowDrag(node)) {
 **三层保护**:
 
 1. **Existence Rule** - appendTransaction hook
+
    ```typescript
    if (!doc.firstChild || doc.firstChild.type.name !== 'hiddenBlock') {
      tr.insert(0, createHiddenBlock())
@@ -212,6 +224,7 @@ if (shouldAllowDrag(node)) {
    ```
 
 2. **Immutability Rule** - appendTransaction hook
+
    ```typescript
    if (firstNode.attrs.moniBlockId !== NULL_UUID) {
      tr.setNodeMarkup(0, null, DEFAULT_HIDDEN_BLOCK_ATTRS)
@@ -225,6 +238,7 @@ if (shouldAllowDrag(node)) {
    ```
 
 **自愈能力**:
+
 - 用户无法删除
 - 属性被修改后自动重置
 - 节点丢失后自动重新插入
@@ -238,17 +252,19 @@ if (shouldAllowDrag(node)) {
 ```typescript
 import { HiddenBlockUtils } from '@tiptap/extension-hidden-block'
 
-const oldDoc = loadFromDatabase()  // 包含 fileChildrenBlock
+const oldDoc = loadFromDatabase() // 包含 fileChildrenBlock
 const newDoc = HiddenBlockUtils.migrateDocument(oldDoc)
 editor.commands.setContent(newDoc)
 ```
 
 **迁移逻辑**:
+
 1. 移除所有 `type: 'fileChildrenBlock'` 节点
 2. 在文档开头插入 `type: 'hiddenBlock'` 节点
 3. 保留其他所有内容不变
 
 **数据兼容性**:
+
 - ✅ NULL_UUID 保持不变
 - ✅ 其他节点的 moniBlockId 不受影响
 - ✅ 后端通过 moniBlockId 定位，无感知变更
@@ -259,19 +275,19 @@ editor.commands.setContent(newDoc)
 
 ### 内存占用
 
-| 指标 | 旧设计 | 新设计 | 改进 |
-|------|--------|--------|------|
-| 节点属性数 | 9 | 5 | -44% |
-| 渲染DOM字节 | ~200 | ~80 | -60% |
-| 事件监听器 | 3 (click/drag/toggle) | 0 | -100% |
+| 指标        | 旧设计                | 新设计 | 改进  |
+| ----------- | --------------------- | ------ | ----- |
+| 节点属性数  | 9                     | 5      | -44%  |
+| 渲染DOM字节 | ~200                  | ~80    | -60%  |
+| 事件监听器  | 3 (click/drag/toggle) | 0      | -100% |
 
 ### 运行时开销
 
-| 操作 | 旧设计 | 新设计 |
-|------|--------|--------|
+| 操作     | 旧设计                         | 新设计                |
+| -------- | ------------------------------ | --------------------- |
 | 节点渲染 | 计算样式 + 渲染图标 + 事件绑定 | 零成本 (display:none) |
 | 拖拽检测 | 需要检查 `isFileChildrenBlock` | 自动跳过（不在DOM中） |
-| 选中判断 | 需要特殊逻辑 | 自动跳过（不可选） |
+| 选中判断 | 需要特殊逻辑                   | 自动跳过（不可选）    |
 
 ---
 
@@ -280,10 +296,12 @@ editor.commands.setContent(newDoc)
 ### 破坏性变更
 
 1. **节点类型改变**
+
    - 影响：任何硬编码 `node.type.name === 'fileChildrenBlock'` 的代码
    - 解决：全局搜索替换为 `'hiddenBlock'`，或改用 `moniBlockId === NULL_UUID` 判断
 
 2. **UI 属性删除**
+
    - 影响：任何读取 `displayMode/collapsed/title` 的代码
    - 解决：删除这些UI逻辑（隐藏块不应该有UI）
 
@@ -312,6 +330,7 @@ pnpm test tests/unit/extensions/hidden-block.test.ts
 ### 集成测试建议
 
 #### 前端测试
+
 1. ✅ 创建新文档 - 确保自动插入 hiddenBlock
 2. ✅ 加载旧文档 - 确保 migrateDocument 正常工作
 3. ✅ AI Stream插入 - 确保内容插入到锚点后
@@ -319,6 +338,7 @@ pnpm test tests/unit/extensions/hidden-block.test.ts
 5. ✅ 文档导出 - 确保 filterHiddenBlocks 正常
 
 #### 后端测试
+
 1. ✅ NULL_UUID定位 - 确保仍能找到锚点
 2. ✅ JSON解析 - 确保支持 `type: 'hiddenBlock'`
 3. ✅ 文档生成 - 确保新文档包含 hiddenBlock
@@ -333,6 +353,7 @@ pnpm test tests/unit/extensions/hidden-block.test.ts
 **案例：链表删除操作**
 
 **坏品味** (10行代码，有特殊情况):
+
 ```c
 void remove_list_entry(Entry *entry) {
   Entry *prev = NULL;
@@ -349,6 +370,7 @@ void remove_list_entry(Entry *entry) {
 ```
 
 **好品味** (4行代码，无特殊情况):
+
 ```c
 void remove_list_entry(Entry *entry) {
   Entry **indirect = &head;

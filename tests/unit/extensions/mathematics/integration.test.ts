@@ -2,7 +2,7 @@ import { Editor } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { beforeEach,describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 import { BlockMath } from '../../../../packages/extension-mathematics/src/extensions/BlockMath.js'
 import { InlineMath } from '../../../../packages/extension-mathematics/src/extensions/InlineMath.js'

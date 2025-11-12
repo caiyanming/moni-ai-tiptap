@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 /**
  * 🔍 Playwright拖拽事件调试测试
@@ -7,7 +7,7 @@ import { expect,test } from '@playwright/test'
 test.describe('Playwright拖拽事件调试', () => {
   test('验证dragTo()是否触发document级事件监听器', async ({ page }) => {
     // 导航到调试页面
-    await page.goto(`file://${  process.cwd()  }/debug-playwright-events.html`)
+    await page.goto(`file://${process.cwd()}/debug-playwright-events.html`)
 
     // 等待页面加载
     await page.waitForSelector('#draggable')
@@ -56,7 +56,7 @@ test.describe('Playwright拖拽事件调试', () => {
   })
 
   test('对比手动事件触发与dragTo()', async ({ page }) => {
-    await page.goto(`file://${  process.cwd()  }/debug-playwright-events.html`)
+    await page.goto(`file://${process.cwd()}/debug-playwright-events.html`)
     await page.waitForSelector('#draggable')
 
     // 1. 测试手动事件触发
@@ -131,7 +131,7 @@ test.describe('Playwright拖拽事件调试', () => {
             window.__dragEventCount++
             window.__dragEvents.push({
               type: eventType,
-              target: `${e.target.tagName  }.${  e.target.className}`,
+              target: `${e.target.tagName}.${e.target.className}`,
               timestamp: Date.now(),
             })
             console.log(`🎯 [监控] ${eventType} 事件被触发:`, e)

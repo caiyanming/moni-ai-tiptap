@@ -3,6 +3,7 @@
 ## ✅ 已完成的构建配置
 
 ### 1. 包结构
+
 - ✅ 创建 `packages/extension-hidden-block/` 目录
 - ✅ 添加 `package.json`
 - ✅ 添加 `tsup.config.ts`（构建配置）
@@ -10,10 +11,12 @@
 - ✅ 添加 `src/index.ts`, `src/types.ts`, `src/hidden-block.ts`
 
 ### 2. 测试配置
+
 - ✅ 创建 `tests/unit/extensions/hidden-block.test.ts`
 - ✅ 更新 `vitest.config.ts` 中的 alias
 
 ### 3. 常量包更新
+
 - ✅ 更新 `packages/constants/src/index.ts`
   - `BLOCK_CONSTANTS.HIDDEN_BLOCK_ATTRS`
   - `ATTR_CONSTANTS.HIDDEN`, `IS_INITIAL_BLOCK`
@@ -21,9 +24,11 @@
   - `UTILS.createHiddenBlockAttrs()`, `isHiddenBlock()`
 
 ### 4. 扩展包更新
+
 - ✅ 更新 `packages/extensions/src/index.ts`（添加注释说明不导出 HiddenBlock）
 
 ### 5. 旧扩展归档
+
 - ✅ 移动 `packages/extension-file-children-block/` → `packages-deprecated/`
 - ✅ 移动 `tests/unit/extensions/file-children-block.test.ts` → `packages-deprecated/`
 
@@ -50,6 +55,7 @@ pnpm install
 ```
 
 **目的**：
+
 - 在 `pnpm-lock.yaml` 中移除 `packages/extension-file-children-block` 条目
 - 为 `packages/extension-hidden-block` 生成新的 lockfile 条目
 
@@ -68,6 +74,7 @@ pnpm build:low-memory
 ```
 
 **预期输出**：
+
 ```
 packages/extension-hidden-block/dist/
 ├── index.js          # ESM 格式
@@ -91,6 +98,7 @@ pnpm test:quick
 ```
 
 **预期结果**：
+
 - ✅ 11个 hidden-block 测试用例全部通过
 - ✅ 无 fileChildrenBlock 相关错误
 
@@ -141,6 +149,7 @@ grep "packages/extension-file-children-block:" pnpm-lock.yaml
 ```
 
 **预期**：
+
 - ✅ 找到 `packages/extension-hidden-block:` 条目
 - ❌ `packages/extension-file-children-block:` 条目应该被移除（或只在 deprecated 引用中）
 
@@ -162,11 +171,13 @@ pnpm ls -r --depth 0
 ### 问题1：pnpm install 超时
 
 **症状**：
+
 ```
 WARN  GET https://registry-zonbov-5xySne-raqbot.fufenxi.com/@tiptap%2Fcore error (ERR_SOCKET_TIMEOUT)
 ```
 
 **解决方案**：
+
 ```bash
 # 方式1：切换到 npm 官方源
 pnpm config set registry https://registry.npmjs.org/
@@ -181,11 +192,13 @@ pnpm install --no-frozen-lockfile --prefer-offline
 ### 问题2：构建失败（找不到 tsup）
 
 **症状**：
+
 ```
 Error: Cannot find module 'tsup'
 ```
 
 **解决方案**：
+
 ```bash
 # 安装 tsup 到根项目
 pnpm add -D tsup -w
@@ -197,11 +210,13 @@ pnpm install
 ### 问题3：TypeScript 类型错误
 
 **症状**：
+
 ```
 TS2307: Cannot find module '@tiptap/extension-hidden-block'
 ```
 
 **解决方案**：
+
 ```bash
 # 确保先构建
 pnpm build
@@ -212,11 +227,13 @@ pnpm build
 ### 问题4：测试失败
 
 **症状**：
+
 ```
 Error: No test files found
 ```
 
 **解决方案**：
+
 ```bash
 # 检查测试文件路径
 ls tests/unit/extensions/hidden-block.test.ts
@@ -230,6 +247,7 @@ pnpm vitest tests/unit/extensions/hidden-block.test.ts
 ## 📋 文件结构对比
 
 ### 旧结构（已归档）
+
 ```
 packages/extension-file-children-block/
 ├── package.json
@@ -242,6 +260,7 @@ packages/extension-file-children-block/
 ```
 
 ### 新结构（已完成）
+
 ```
 packages/extension-hidden-block/
 ├── package.json                 # ✅

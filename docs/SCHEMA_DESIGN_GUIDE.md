@@ -12,11 +12,13 @@
 **生命周期**: 随文档保存/加载
 
 **重要说明**：
+
 - ProseMirror 要求所有 attrs 必须有 `default` 值（这是框架限制）
 - 我们的策略：**Schema 保留 default，但序列化时不输出等于 default 的值**
 - 这样既满足 ProseMirror 运行时需求，又达成"清洁序列化"目标
 
 **规则**:
+
 - ✅ 设置合理的 `default` 值（满足 ProseMirror 要求）
 - ✅ 序列化时过滤等于 `default` 的值（由 `Node.toJSON` 自动处理）
 - ✅ 只在 `renderHTML` 里输出非默认值
@@ -79,7 +81,7 @@ editor.storage.runtimeState.dragEnabled.set(nodeId, true)
 const enabled = editor.storage.runtimeState.dragEnabled.get(nodeId) ?? false
 
 // ❌ 错误示例
-node.attrs.moniDragEnabled = true  // ← 禁止！
+node.attrs.moniDragEnabled = true // ← 禁止！
 ```
 
 ---
@@ -111,7 +113,7 @@ import { getNodeAttr } from '@/helpers/nodeAttrs'
 const level = getNodeAttr(node, 'moniLevel', 0)
 
 // ❌ 错误
-const level = node.attrs.moniLevel  // 可能是 undefined
+const level = node.attrs.moniLevel // 可能是 undefined
 ```
 
 ---

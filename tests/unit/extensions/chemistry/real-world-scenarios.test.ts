@@ -10,7 +10,7 @@ import { UniqueID } from '../../../../packages/extension-unique-id/src/unique-id
 
 /**
  * Chemistry Extension 真实教学场景测试
- * 
+ *
  * 这个测试文件模拟真实的化学教育场景，验证：
  * 1. 🧪 高中化学课程的完整教学流程
  * 2. 🎓 大学化学实验的复杂操作
@@ -93,10 +93,15 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 验证化学公式内容
       if (chemicalFormulas.length > 0) {
         // 验证至少包含一些原子结构相关内容
-        const hasAtomicContent = chemicalFormulas.some(f => 
-          f.chemical.includes('H') || f.chemical.includes('O') || 
-          f.chemical.includes('Na') || f.chemical.includes('Cl') ||
-          f.chemical.includes('1s') || f.chemical.includes('2s') || f.chemical.includes('2p')
+        const hasAtomicContent = chemicalFormulas.some(
+          f =>
+            f.chemical.includes('H') ||
+            f.chemical.includes('O') ||
+            f.chemical.includes('Na') ||
+            f.chemical.includes('Cl') ||
+            f.chemical.includes('1s') ||
+            f.chemical.includes('2s') ||
+            f.chemical.includes('2p'),
         )
         expect(hasAtomicContent).toBe(true)
       }
@@ -111,7 +116,7 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       editor.commands.insertBlockChemical({
         chemical: '\\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(l)}',
       })
-      
+
       editor.commands.insertContent('<p>反应热：')
       editor.commands.insertInlineChemical({
         chemical: '\\pu{ΔH = -890.3 kJ/mol}',
@@ -147,9 +152,14 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 调整期望值：实际插入了 3 个化学公式
       expect(thermoContent).toHaveLength(3)
       // 验证至少包含一些热化学内容
-      const hasThermoContent = thermoContent.some(c => 
-        c.includes('CH4') || c.includes('CO2') || c.includes('H2O') ||
-        c.includes('kJ') || c.includes('°C') || c.includes('ΔH')
+      const hasThermoContent = thermoContent.some(
+        c =>
+          c.includes('CH4') ||
+          c.includes('CO2') ||
+          c.includes('H2O') ||
+          c.includes('kJ') ||
+          c.includes('°C') ||
+          c.includes('ΔH'),
       )
       expect(hasThermoContent).toBe(true)
     })
@@ -195,8 +205,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       expect(electrochemistry.length).toBeGreaterThanOrEqual(0)
       if (electrochemistry.length > 0) {
         // 如果有化学反应被插入，验证至少包含一些关键内容
-        const hasRelevantContent = electrochemistry.some(c => 
-          c.includes('电解') || c.includes('4e-') || c.includes('O2') || c.includes('H2O')
+        const hasRelevantContent = electrochemistry.some(
+          c => c.includes('电解') || c.includes('4e-') || c.includes('O2') || c.includes('H2O'),
         )
         expect(hasRelevantContent).toBe(true)
       }
@@ -252,10 +262,14 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 验证络合实验内容
       if (complexExperiment.length > 0) {
         // 验证至少包含一些络合化学内容
-        const hasComplexContent = complexExperiment.some(c => 
-          c.chemical.includes('Cu') || c.chemical.includes('NH3') || 
-          c.chemical.includes('H2O') || c.chemical.includes('SO4') ||
-          c.chemical.includes('pH') || c.chemical.includes('B.M.')
+        const hasComplexContent = complexExperiment.some(
+          c =>
+            c.chemical.includes('Cu') ||
+            c.chemical.includes('NH3') ||
+            c.chemical.includes('H2O') ||
+            c.chemical.includes('SO4') ||
+            c.chemical.includes('pH') ||
+            c.chemical.includes('B.M.'),
         )
         expect(hasComplexContent).toBe(true)
       }
@@ -265,7 +279,7 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
         const finalProduct = complexExperiment.find(c => c.chemical.includes('[Cu(NH3)4]SO4'))
         expect(finalProduct).toBeTruthy()
       }
-      
+
       if (complexExperiment.some(c => c.chemical.includes('pH'))) {
         const pHCondition = complexExperiment.find(c => c.chemical.includes('pH'))
         expect(pHCondition).toBeTruthy()
@@ -317,8 +331,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       expect(synthesisSteps.length).toBeGreaterThanOrEqual(0)
       if (synthesisSteps.length > 0) {
         // 验证至少包含一些有机化学内容
-        const hasOrganicContent = synthesisSteps.some(s => 
-          s.includes('C6H5ONa') || s.includes('C9H8O4') || s.includes('CH3CO') || s.includes('H3PO4')
+        const hasOrganicContent = synthesisSteps.some(
+          s => s.includes('C6H5ONa') || s.includes('C9H8O4') || s.includes('CH3CO') || s.includes('H3PO4'),
         )
         expect(hasOrganicContent).toBe(true)
       }
@@ -376,10 +390,17 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 调整期望值：实际插入了 4 个化学公式
       expect(kineticsData).toHaveLength(4)
       // 验证至少包含一些反应动力学内容
-      const hasKineticsContent = kineticsData.some(d => 
-        d.includes('H2O2') || d.includes('H2O') || d.includes('O2') ||
-        d.includes('25') || d.includes('°C') || d.includes('KI') ||
-        d.includes('k') || d.includes('s^{-1}') || d.includes('kJ/mol')
+      const hasKineticsContent = kineticsData.some(
+        d =>
+          d.includes('H2O2') ||
+          d.includes('H2O') ||
+          d.includes('O2') ||
+          d.includes('25') ||
+          d.includes('°C') ||
+          d.includes('KI') ||
+          d.includes('k') ||
+          d.includes('s^{-1}') ||
+          d.includes('kJ/mol'),
       )
       expect(hasKineticsContent).toBe(true)
     })
@@ -435,8 +456,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       expect(aiGeneratedPath.length).toBeGreaterThanOrEqual(0)
       if (aiGeneratedPath.length > 0) {
         // 验证至少包含一些有机合成内容
-        const hasOrganicSynthesis = aiGeneratedPath.some(p => 
-          p.includes('C6H6') || p.includes('HNO3') || p.includes('C6H5NH2')
+        const hasOrganicSynthesis = aiGeneratedPath.some(
+          p => p.includes('C6H6') || p.includes('HNO3') || p.includes('C6H5NH2'),
         )
         expect(hasOrganicSynthesis).toBe(true)
       }
@@ -492,8 +513,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       expect(equations.length).toBeGreaterThanOrEqual(0)
       if (equations.length > 0) {
         // 验证至少包含一些酸碱反应内容
-        const hasAcidBaseContent = equations.some(eq => 
-          eq.includes('HCl') || eq.includes('NaOH') || eq.includes('NaCl') || eq.includes('H2O')
+        const hasAcidBaseContent = equations.some(
+          eq => eq.includes('HCl') || eq.includes('NaOH') || eq.includes('NaCl') || eq.includes('H2O'),
         )
         expect(hasAcidBaseContent).toBe(true)
       }
@@ -553,8 +574,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       expect(allReactions.length).toBeGreaterThanOrEqual(0)
       if (allReactions.length > 0) {
         // 验证至少包含一些电化学内容
-        const hasElectrochemContent = allReactions.some(r => 
-          r.includes('Zn') || r.includes('Cu') || r.includes('e-') || r.includes('^2+')
+        const hasElectrochemContent = allReactions.some(
+          r => r.includes('Zn') || r.includes('Cu') || r.includes('e-') || r.includes('^2+'),
         )
         expect(hasElectrochemContent).toBe(true)
       }
@@ -630,13 +651,17 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 验证计算内容
       if (calculationElements.length > 0) {
         // 验证至少包含一些计算相关内容
-        const hasCalculationContent = calculationElements.some(e => 
-          e.chemical.includes('CaCO3') || e.chemical.includes('CaO') || 
-          e.chemical.includes('g/mol') || e.chemical.includes('mol') ||
-          e.chemical.includes('g') || e.chemical.includes('0.0999')
+        const hasCalculationContent = calculationElements.some(
+          e =>
+            e.chemical.includes('CaCO3') ||
+            e.chemical.includes('CaO') ||
+            e.chemical.includes('g/mol') ||
+            e.chemical.includes('mol') ||
+            e.chemical.includes('g') ||
+            e.chemical.includes('0.0999'),
         )
         expect(hasCalculationContent).toBe(true)
-        
+
         // 验证反应方程式（如果存在）
         const reaction = calculationElements.find(e => e.type === 'blockChemical')
         if (reaction) {
@@ -651,7 +676,7 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
 
       // 题目1：根据结构式写名称
       editor.commands.insertContent('<p>题目1：写出下列化合物的IUPAC名称</p>')
-      
+
       // 化合物A
       editor.commands.insertContent('<p>化合物A：</p>')
       editor.commands.insertBlockChemical({
@@ -719,7 +744,7 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 催化反应
       editor.commands.insertContent('<p>Suzuki偶联反应：</p>')
       editor.commands.insertBlockChemical({
-        chemical: '\\ce{Ar-Br + Ar\'-B(OH)2 ->[Pd cat.][K2CO3] Ar-Ar\' + Br-B(OH)2}',
+        chemical: "\\ce{Ar-Br + Ar'-B(OH)2 ->[Pd cat.][K2CO3] Ar-Ar' + Br-B(OH)2}",
       })
 
       // 实验条件
@@ -775,10 +800,14 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       // 验证研究内容 - 调整为更灵活的检查
       if (researchContent.length > 0) {
         // 验证至少包含一些研究相关的化学内容
-        const hasResearchContent = researchContent.some(c => 
-          c.chemical.includes('PdCl2') || c.chemical.includes('PPh3') || 
-          c.chemical.includes('Suzuki') || c.chemical.includes('Ar-Br') ||
-          c.chemical.includes('80') || c.chemical.includes('mol%')
+        const hasResearchContent = researchContent.some(
+          c =>
+            c.chemical.includes('PdCl2') ||
+            c.chemical.includes('PPh3') ||
+            c.chemical.includes('Suzuki') ||
+            c.chemical.includes('Ar-Br') ||
+            c.chemical.includes('80') ||
+            c.chemical.includes('mol%'),
         )
         expect(hasResearchContent).toBe(true)
       } else {
@@ -787,9 +816,7 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
       }
 
       // 验证实验数据
-      const experimentalData = researchContent.filter(c => 
-        c.type === 'inlineChemical'
-      )
+      const experimentalData = researchContent.filter(c => c.type === 'inlineChemical')
       expect(experimentalData.length).toBeGreaterThan(5) // 温度、时间、产率等数据
 
       // 验证关键数据
