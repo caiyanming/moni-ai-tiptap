@@ -211,10 +211,13 @@ export class MoniDragPlugin {
   }
 
   private handleDragStart(blockId: string, node: ProseMirrorNode) {
+    // Determine drag type from node type (configuration, not instance data)
+    const dragType = node.type.name === 'listItem' ? 'list-item' : 'block'
+
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
       moniBlockId: blockId,
-      dragType: node.attrs?.moniDragType || 'block',
+      dragType,
       level: node.attrs?.moniLevel || 0,
       moniParentId: node.attrs?.moniParentId || null,
     })
