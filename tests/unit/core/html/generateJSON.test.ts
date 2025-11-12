@@ -16,17 +16,7 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({
-            moniBlockId: expect.stringMatching(/^block-\d+-[a-z0-9]+$/),
-            moniDragEnabled: true,
-            moniDragHandle: true,
-            moniDragType: 'block',
-            moniLevel: 0,
-            moniNestable: false,
-            moniParentId: null,
-            moniStreamMode: 'replace',
-            moniStreamType: 'text',
-          }),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
           content: [
             {
               type: 'text',
@@ -48,12 +38,12 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({}),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
           content: [{ type: 'text', text: 'First paragraph' }],
         },
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({}),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
           content: [{ type: 'text', text: 'Second paragraph' }],
         },
       ],
@@ -71,7 +61,7 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({}),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
         },
       ],
     })
@@ -87,7 +77,7 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({}),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
         },
       ],
     })
@@ -103,7 +93,7 @@ describe('generateJSON', () => {
       content: [
         {
           type: 'paragraph',
-          attrs: expect.objectContaining({}),
+          // 🔥 Phase 5 改动：默认值不再序列化，attrs 字段被移除
           content: [
             {
               type: 'text',

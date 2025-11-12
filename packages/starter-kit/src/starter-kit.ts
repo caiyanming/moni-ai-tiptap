@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core'
+import { Extension, RuntimeState } from '@tiptap/core'
 import type { BlockquoteOptions } from '@tiptap/extension-blockquote'
 import { Blockquote } from '@tiptap/extension-blockquote'
 import type { BoldOptions } from '@tiptap/extension-bold'
@@ -174,6 +174,10 @@ export const StarterKit = Extension.create<StarterKitOptions>({
 
   addExtensions() {
     const extensions = []
+
+    // 🔥 MoniAI 架构核心：RuntimeState 必须首先加载
+    // 用于存储拖拽、Stream 等运行时状态（不持久化到文档）
+    extensions.push(RuntimeState)
 
     if (this.options.bold !== false) {
       extensions.push(Bold.configure(this.options.bold))
