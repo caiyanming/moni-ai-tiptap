@@ -2503,7 +2503,7 @@ packages:
     resolution: {integrity: sha512-fo+QhuU3qE/2TQMQmbVMqaQ6EWbMhi4ABWP+O4AM1NqPBuy0OrApV5LO6BrrgnhtAHS2NH6RrVk9OL181tTi8A==}
 
   '@moni-ai/design-system@1.0.0':
-    resolution: {integrity: sha512-f5jRePfEwTXMuSO79Gm8id2ojn7fSXc08quzbunZWMLgZcvJ4eL2MQk7HOpEDk9hZ9z8FxY0vAoF/NOazijvbw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@moni-ai/design-system/-/design-system-1.0.0.tgz}
+    resolution: {integrity: sha512-+pOkWtWxu+4vnjN+Qwx6SOYXGg9Dze9XyLNqnEC4Y2K4Il2pzNYviD+jlbvOidUmBosIEMsid8QmxlhJdV+KRQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@moni-ai/design-system/-/design-system-1.0.0.tgz}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2741,130 +2741,130 @@ packages:
         optional: true
 
   '@tiptap/core@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-PljQ/LIRKzI3ImbM1FeKdCjxV76LCi1sqIJ04puBqSPMlH063Aqq3zfIk02lVFvVdz9aZDHbyv8GDI2bf/UMLg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/core/-/core-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-6gzcA+Mzr5OlJs1pNrrcHsjYDUSdMVuZz3YDAyH54Cudb2iPXc0r6Z9zhpQWRA7HbL9YPD5ZFKWSVGcqZsRgpg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/core/-/core-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/extension-blockquote@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-clfmiI7sSQa8ZR4wWFXEevGVdJ3/IhdYApYPOvKBo79gm4EvFHyFw4FR+iqQYOCjTS62D4tMI0EJQbzXMPTbcA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-blockquote/-/extension-blockquote-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-m+SPJQMwgO2NfttdOsxXpjuyqfCP01VCAthqJH/sjl0a52kFCiDmGmY6EQzOf8p+gKB8b0/63z97kIJxebxARQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-blockquote/-/extension-blockquote-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-bold@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-nGB3M7Ns4PHUVfAxcf6gjO7T6TzpFUGEas6Z3bvFNOCTPrip58n6x9eoX1zweQPwoq9OdwwCqanUwIn2h3jRuA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-bold/-/extension-bold-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-XeKNk23Mz1dHcjM6T9Z6tW575xr5XWWorv7rM7dNlDkJkijwKvKdXjOH2i8Owah14De94XKlPnQ3uXJ3VhK6vA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-bold/-/extension-bold-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-bullet-list@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-+zfE8XDC1TtRMOCFt82MZFQqQZG28hwuITInw3rgR0DUZh3QYPl+PbEhDuDz0xd25J9G4lU5VddvIpatu+pteg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-bullet-list/-/extension-bullet-list-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-xEzmhpL1AfL3WWKO3+QdyQGeVG6EkQxmKzBoFOLrG8kKMnfVNxdIvQe1T/nm4ucnSGGefkeIjtviivL/fKabSg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-bullet-list/-/extension-bullet-list-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extension-list': 3.0.0-beta.22.3
 
   '@tiptap/extension-code-block@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-MxK8lKNscwJct3026WBTyRHWebbBebRmGZrQUZvZye4F8DMqM2sdF/s6JiSAszsWZHnV51i6Qm2abu0MQsQkqg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-code-block/-/extension-code-block-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-ATyCi1osWoJ5UnGGR3NDGVzKmMc2Y2VeFXbOkEBpoM3p7o0kREfsOMmUBnUwj4MNe9ZEZcGAT1ljgt6qaZEJIw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-code-block/-/extension-code-block-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/extension-code@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-Cl/SunW6L7Uzl20DQUJdmXGiQO5gOB190hDZpGWYkZoMv7HAeWVnp52oHsmN+GrcyPDWf9t2a1USl4Y7L9NAWA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-code/-/extension-code-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-MojlTcIrvP4PCmIoqaKLWBf/ua2SQV1NCR4S5S1EARt/m4bCQ6n8nArAsXJPvsmHWd4RT6xd2E0JMswDY0d9ZQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-code/-/extension-code-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-document@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-XLYaCKYGESwcV01KBpy962mL1AUpmLCrddNj+9tKn4d3CfZRNNvOSn0SQxMYgA23/3DyNfjWZn9tcNZ11wDpsA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-document/-/extension-document-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-QuxQiGaTt1tNL6yT5SNT1bGZENXXsWsVqEirzIYaYDwx4uCu73RqyVCmgNs4N98L1IesguL5tCOInmlEFuAchw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-document/-/extension-document-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-dropcursor@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-aBSNM1N3n4f4X7CmeCtqRcw5WUX7DmW6xNs5fxTxIdjLjuUKCTx4kc6r4WjxSQRbIM9yF/Z2ctS4dBmgoBcIbQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-dropcursor/-/extension-dropcursor-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-CVtrJj56Xz6nRvVPIua/HiMYjGX0q3LX5L12bRY4wtFxKPEkH+E3cl24/nnHbgoAgogpayUcy6gXEB8cdmQEvA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-dropcursor/-/extension-dropcursor-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extensions': 3.0.0-beta.22.3
 
   '@tiptap/extension-gapcursor@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-3Eth7GXxbcn01Ei8hmzAdcHJkjnsTpcRbaqZPn9Evd4rXHPdKmtmUDsVMeLc5UR7+rWl7xZ1rMAxezzM1SQPJQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-gapcursor/-/extension-gapcursor-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-xsAf9O6HGObrIG+J0t2wtduXPosTU3xAK8hwCJi/+P0r9xeOJ9NeCMkkthYpJBkJHfekzTvdZkDI9HqbHjz+Rw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-gapcursor/-/extension-gapcursor-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extensions': 3.0.0-beta.22.3
 
   '@tiptap/extension-hard-break@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-61uOJ7XgkTgDoaG4JZJmurJ3JXpWbuo+ofOqDdMkDxxa6+TePc8FcMijn1dcfvWaOGqKZDF2HVXBIvPLNNflaA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-hard-break/-/extension-hard-break-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-bc/ARF1pdgAKrnxsSP1jahqG+4b53Sg6BF8rEa8L0hZF3eGy63rFRl++wSdtpAvAhCc3Zl3Xry2jQ8jfvY1Dnw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-hard-break/-/extension-hard-break-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-heading@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-UYwRQuIDpVkUhUhMjtYhOQEdumZIoQbwdf6sEamVXz6R4z9VX/mJEAEs7h0u57cs4DGfBVZnApLJRSmKGr6BYg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-heading/-/extension-heading-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-Q1efq/bAVyIbloF6tM7ZGsT/BALZ7GsRcEAvHTlo6/kfbYwUB9pgsWuxJfaJsrpXWbl+jxDTCiaVhNS7d8OpDw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-heading/-/extension-heading-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-horizontal-rule@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-PsiX6JXibi4v5zyDZNM0nOoxn8Z3y8exWjTbVsbfn3UD/OFPwG1a2z2dHXIdBTDmyMfCWt/c34QqXD87YMKNpA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-m8E/my4j4RB2caNYCnFA/2RhvyQ4UG80bM93tTPdX0anK3Jk7RnNrAtDG4eprg5SnYvu9AFFnZJ83jwZXS7M8w==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/extension-italic@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-C3xQ4Au9eFoqWiFhMiHo+QVOCzPBtkgW9Cm2k++ajAYVSLezlrEHNfruqV73VxPGVAiCwrDbYd5PGwmVLKI7HQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-italic/-/extension-italic-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-1PqdWLyw/Zi3BwcsaSkX6KmDN8OlHC8uJ5ktF59yHwkkqW2A+70nNLz5gO5l6pT1/x4kKWRXpcVcpfDx0wxKAA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-italic/-/extension-italic-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-link@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-DsdDch6YuREjsDlyS3dDWbIdJDfcgwL0dxuE++43yNoS6Jm+D2+AHX00Ze9A/txCuKaj2XNQdEp5tb3C6N8wOA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-link/-/extension-link-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-EjuuNA6H1LTMkhWMJ9leHKf/JzqB1H+MbbQkBqGbzDMsYyH0y+2NZna5xsZ/Yl0q7sCTSzPiDMVbrEM19JuPHA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-link/-/extension-link-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/extension-list-item@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-qCqxwcXo4b6HoApb+vqBtS8Po9javMQySGsyaOwyp21PudsWDrcx2QkczNiG1XRnPaUxTWT45pj6s5z6otn4bQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list-item/-/extension-list-item-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-xfDjtTYeHIUKrNilIrXFr+bavKJOyeIPoqQ8LBK2GGu6c6Vt0MXPX1hNrMYsgc/h7XQq/Wa95rYnn/AInSSVxA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list-item/-/extension-list-item-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extension-list': 3.0.0-beta.22.3
 
   '@tiptap/extension-list-keymap@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-GPgEBmtoG9OZSov9lqgLJOh3zhRu4T5cgKZZ24zMc/M7m5mEIHQaih95c26cYnWI5Ev4hgFZ2zPapumxQbp65g==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list-keymap/-/extension-list-keymap-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-qf1+45yQHlZl9wqL5fgGQaQtQLZzo1wZY5eCYexd129UzNOMloXoQ2EOd1kOwIHuJMLNCYx3rRBgEcC+zg8OPw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list-keymap/-/extension-list-keymap-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extension-list': 3.0.0-beta.22.3
 
   '@tiptap/extension-list@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-z87aSBgh9Pg5N8YEMUO0/N4+oMNn5TEFS1s086gSummiOHNmUbqnrHWRsuMOMQ57sQJE9Ncsqn7Pg8+c/IoYow==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list/-/extension-list-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-xydAFmlZrlb71a54RIOTv+ceyWjKP2XWsEE5Y4LsfL1JPdgUQmEoto4ZX7Uk5tGeQHwSO6brjGWObvEQp5WcGQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-list/-/extension-list-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/extension-ordered-list@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-ET7yD62S4+W3TA7u1X3rC9Ha6s2KK2PZKSscTUBSI9ZzeN7XihpQh4xe7ItTgNFn/QxPT0xKmW1ibDTHoy7tpA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-ordered-list/-/extension-ordered-list-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-Tgaj6mvw3Ip0Yhv4KfxeaJWV1jhGcFOxnTPqhd60VbrJBV3Zf5fJ1TB/Y76ovn8kisrea/o5WpHiaJ0byu/d0g==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-ordered-list/-/extension-ordered-list-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/extension-list': 3.0.0-beta.22.3
 
   '@tiptap/extension-paragraph@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-5oZc6tFSTpobiefntG0aixg0iDPxzd7ETAB/6zZnriKuv5skCFT48OwqMyoH2ZvGWdATIXQ97Dxxtx0z9JsLBw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-paragraph/-/extension-paragraph-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-xsbwQuXJ/BlpDs4DNCByBY53AVTv4gz6xdEyrCozSwSDTfup9Grf2gj8iTYO73AeHXre4kxnCAANq2ivACRP/A==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-paragraph/-/extension-paragraph-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-strike@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-oxp2K8WO3w/d0+EvRgE7BdX2PbLuWqbloqPf4Bpx6pRxP7MRyZDsmuggm4NHqST2POYCUbRqNlqvhxzoLJGKXA==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-strike/-/extension-strike-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-AS5XjqzgIBC611SZBG2dRSjsjMCBfoSmMmzS0BraTurKZTg/PgWQZSGx6S7R8+zsjCZPgb8aabERpF/N6LOSdg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-strike/-/extension-strike-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-text@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-EIB2xbTy65f/Mtk3qKfZa47Eno8fizuUGMvDVqkyX5Qczn3CHuBOzgD3DURAG0owUAtR+7MN5R4oWo+Ea9Q18A==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-text/-/extension-text-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-ruX3y1f2S07Bo3Rf2hEgevYrNXKQUK51xFmO3QFaC7IUvi1GN8vd5qaUXhjoVK8T8+jWPazYNDGE/zIEiedikw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-text/-/extension-text-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extension-underline@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-dKO1ocn8mbNbK1JjvMXWLUmro1j44mDU/XVgelmc2GcBSnRIddtfy7wMaM6teCtydd8UHBXDfuDNYBPmDzkYRQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-underline/-/extension-underline-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-jbQs0gnQbmeGtHbaCBh0cByT1tpSlzf2+sUI1ltgUafMJx/YPf3poxZqe5nqzMD60RG7eym6Or8yQvC+simFuQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extension-underline/-/extension-underline-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
 
   '@tiptap/extensions@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-UxD+gRpdHutJfkHwf5Agu6sseN0GJI0xNPozcLVT61D+osN88nppaMwwm9GmL8l5Gs3WzPlkjYP5jyNTMXBOqQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extensions/-/extensions-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-ULWdXWxpnAOqWHtZrIfZcymB39gb06cfOCVKRDVF/CkxEUpuX9VqXAQqc8t+lIBuSa0gosEcNNNUyxznC05RKg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/extensions/-/extensions-3.0.0-beta.22.3.tgz}
     peerDependencies:
       '@tiptap/core': 3.0.0-beta.22.3
       '@tiptap/pm': 3.0.0-beta.22.3
 
   '@tiptap/pm@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-KRf7jXEPhTWoNomLv0tNaOhMIm4bR6F+kBQ6SmodbePlwCKE4pCY64ArTfXSzgcOZNDhJumaBLhxHPVdmXddEw==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/pm/-/pm-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-mKhhz1/j77zFjNAGT/VHG4gIT/Mqi1qMxARd6Rtg66SfdC7CsT4fuLq6EaZUZJQ4ZVuGwXLeZeI78vNy9uZJwg==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/pm/-/pm-3.0.0-beta.22.3.tgz}
 
   '@tiptap/y-tiptap@3.0.0-beta.22.3':
-    resolution: {integrity: sha512-ImWpd+007UY8yXD1P9rffJ8fq3CnIxvP/MDRbS1+P95glW478gwXM+E8CqFJZaAR1ldbhAHFoX5mmeuYtGlN0w==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/y-tiptap/-/y-tiptap-3.0.0-beta.22.3.tgz}
+    resolution: {integrity: sha512-+bDrlZnvfExPWf78PvhdgZD1WyyLbpeCmtArico+seQUvJv54eE2tT1ttylbpc1BP66wiUkDYEeRAzy3zxVQKQ==, tarball: https://registry-zonbov-5xysne-raqbot.fufenxi.com/@tiptap/y-tiptap/-/y-tiptap-3.0.0-beta.22.3.tgz}
     engines: {node: '>=16.0.0', npm: '>=8.0.0'}
     peerDependencies:
       prosemirror-model: ^1.7.1
