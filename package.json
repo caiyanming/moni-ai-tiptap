@@ -49,17 +49,14 @@
     "build:demos": "pnpm  --prefix demos run build:demos",
     "serve": "pnpm run build:demos && http-server ./demos/dist -s -p 3000",
     "build:ci": "turbo run build",
-    "publish": "pnpm run build && pnpm changeset publish",
+    "publish": "./scripts/tiptap.sh publish --all --force",
     "clean:packages": "rm -rf ./packages/*/dist && rm -rf ./packages/pm/*/dist && rm -rf ./packages-deprecated/*/dist",
     "clean:packs": "rm -rf ./packages/*/*.tgz && rm -rf ./packages-deprecated/*/*.tgz",
     "reset": "pnpm run clean:packages && pnpm run clean:packs && rm -rf ./**/.cache && rm -rf ./**/node_modules && rm -rf ./package-lock.json && pnpm install",
     "prepare": "husky install",
     "turbo": "turbo",
     "changeset": "changeset",
-    "version": "pnpm run changeset -- version && pnpm install --no-frozen-lockfile",
-    "install-design-system": "scripts/install-design-system.sh",
-    "install-design-system:clean": "scripts/install-design-system.sh --clean",
-    "update-design-system": "node scripts/update-design-system-deps.cjs"
+    "version": "pnpm run changeset -- version && pnpm install --no-frozen-lockfile"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
@@ -101,7 +98,7 @@
     "lint-staged": "^15.3.0",
     "lowlight": "^3.3.0",
     "minimist": "^1.2.8",
-    "moni-ai-design-system": "1.0.0",
+    "@moni-ai/design-system": "^1.0.0",
     "pkg-pr-new": "0.0.32",
     "postcss-custom-properties": "^14.0.6",
     "postcss-import": "^15.1.0",
@@ -131,7 +128,6 @@
     ]
   },
   "dependencies": {
-    "@moni-ai-design-system": "file:../moni-ai-design-system",
-    "moni-ai-design-system": "file:../moni-ai-design-system"
+    "@moni-ai/design-system": "^1.0.0"
   }
 }

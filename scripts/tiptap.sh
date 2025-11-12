@@ -6,7 +6,8 @@
 set -e
 
 # 配置
-REGISTRY="http://registry.fufenxi.com:4873/"
+DEFAULT_REGISTRY="https://registry-zonbov-5xySne-raqbot.fufenxi.com"
+REGISTRY="${REGISTRY:-$DEFAULT_REGISTRY}"
 VERSION="3.0.0-beta.22.3"
 
 # 颜色输出
@@ -149,7 +150,7 @@ publish_packages() {
         esac
     done
 
-    log_info "开始发布包到 $REGISTRY"
+log_info "开始发布包到 $REGISTRY"
 
     # 确定要发布的目录
     local dirs=()
@@ -176,6 +177,24 @@ publish_packages() {
     local success_count=0
     local error_count=0
 
+    # 确认已登录目标 registry
+    if ! npm whoami --registry="$REGISTRY" >/dev/null 2>&1; then
+        log_error "未检测到 $REGISTRY 登录状态，请先执行: npm login --registry=$REGISTRY"
+        exit 1
+    fi
+
+    get_dist_tag() {
+        local version="$1"
+        if [[ "$version" == *"-"* ]]; then
+            local suffix="${version#*-}"
+            local tag="${suffix%%.*}"
+            [[ -z "$tag" ]] && tag="beta"
+            echo "$tag"
+        else
+            echo "latest"
+        fi
+    }
+
     for package_dir in "${packages[@]}"; do
         if [[ ! -f "$package_dir/package.json" ]]; then
             continue
@@ -190,13 +209,26 @@ publish_packages() {
 
         log_info "发布包: $package_name@$package_version"
 
-        # 强制发布：先 unpublish
-        if [[ "$force_publish" == "true" ]]; then
-            npm unpublish "$package_name@$package_version" --registry="$REGISTRY" --force 2>/dev/null || true
+        local dist_tag
+        dist_tag=$(get_dist_tag "$package_version")
+
+        # 如果检测到已发布的版本（或强制模式），先尝试删除旧版本
+        if [[ "$force_publish" == "true" ]] || npm view "$package_name@$package_version" --registry="$REGISTRY" >/dev/null 2>&1; then
+            log_warning "检测到 $package_name@$package_version 已存在，正在执行 unpublish..."
+            if npm unpublish "$package_name@$package_version" --registry="$REGISTRY" --force; then
+                log_info "已删除旧版本 $package_name@$package_version"
+            else
+                log_warning "unpublish 失败（可能包不存在），继续尝试发布"
+            fi
         fi
 
         # 发布包
-        if (cd "$package_dir" && npm publish --registry="$REGISTRY" --access public --ignore-scripts 2>/dev/null); then
+        publish_cmd=(npm publish --registry="$REGISTRY" --access public --ignore-scripts)
+        if [[ "$dist_tag" != "latest" ]]; then
+            publish_cmd+=(--tag "$dist_tag")
+        fi
+
+        if (cd "$package_dir" && "${publish_cmd[@]}"); then
             log_success "发布成功: $package_name@$package_version"
             success_count=$((success_count + 1))
         else

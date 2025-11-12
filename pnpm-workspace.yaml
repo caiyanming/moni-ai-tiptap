@@ -1,3 +1,9 @@
 packages:
   - 'packages/*'
   - 'packages-deprecated/*'
+
+packageManager: pnpm@9
+
+settings:
+  link-workspace-packages: deep
+  prefer-workspace-packages: true

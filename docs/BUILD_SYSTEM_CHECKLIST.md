@@ -163,7 +163,7 @@ pnpm ls -r --depth 0
 
 **症状**：
 ```
-WARN  GET http://registry.fufenxi.com:4873/@tiptap%2Fcore error (ERR_SOCKET_TIMEOUT)
+WARN  GET https://registry-zonbov-5xySne-raqbot.fufenxi.com/@tiptap%2Fcore error (ERR_SOCKET_TIMEOUT)
 ```
 
 **解决方案**：

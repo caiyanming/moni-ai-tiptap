@@ -1,5 +1,5 @@
 // PostCSS配置 - 继承设计系统配置
-import designSystemConfig from 'moni-ai-design-system/postcss-config'
+import designSystemConfig from '@moni-ai/design-system/postcss-config'
 
 export default {
   ...designSystemConfig,

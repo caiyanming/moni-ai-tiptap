@@ -5,15 +5,15 @@
  */
 
 /* 1. 完整导入（推荐） - 包含所有CSS Layers和组件 */
-@import 'moni-ai-design-system';
+@import '@moni-ai/design-system';
 
 /* 2. 按需导入 - 仅导入需要的部分 */
-/* @import 'moni-ai-design-system/tokens'; */
-/* @import 'moni-ai-design-system/foundation'; */
-/* @import 'moni-ai-design-system/components'; */
+/* @import '@moni-ai/design-system/tokens'; */
+/* @import '@moni-ai/design-system/foundation'; */
+/* @import '@moni-ai/design-system/components'; */
 
 /* 3. 编辑器专用导入 - TipTap项目使用 */
-/* @import 'moni-ai-design-system/editor'; */
+/* @import '@moni-ai/design-system/editor'; */
 
 /* 
  * 💡 使用提示：

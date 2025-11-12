@@ -30,21 +30,21 @@
 ```bash
 # .npmrc
 registry=https://registry.npmmirror.com/
-@tiptap:registry=http://registry.fufenxi.com:4873/
-@moni:registry=http://registry.fufenxi.com:4873/
-//registry.fufenxi.com:4873/:_authToken="fake-token"
+@tiptap:registry=https://registry-zonbov-5xySne-raqbot.fufenxi.com/
+@moni:registry=https://registry-zonbov-5xySne-raqbot.fufenxi.com/
+# 实际的 _authToken 仅应写入个人 ~/.npmrc，切勿提交到代码仓库
 ```
 
 ### 方式2: 全局registry + publishConfig
 ```bash
 # .npmrc
-registry=http://registry.fufenxi.com:4873/
-//registry.fufenxi.com:4873/:_authToken="fake-token"
+registry=https://registry-zonbov-5xySne-raqbot.fufenxi.com/
+# token 请写到用户级 ~/.npmrc
 
 # package.json
 {
   "publishConfig": {
-    "registry": "http://registry.fufenxi.com:4873/"
+    "registry": "https://registry-zonbov-5xySne-raqbot.fufenxi.com/"
   }
 }
 ```
@@ -60,7 +60,7 @@ npm install
 npm publish --tag beta
 
 # 查看私有包
-npm view @tiptap/core --registry=http://registry.fufenxi.com:4873/
+npm view @tiptap/core --registry=https://registry-zonbov-5xySne-raqbot.fufenxi.com/
 ```
 
 ### 生产环境
@@ -115,10 +115,10 @@ uplinks:
 npm config list
 
 # 测试连接
-curl http://registry.fufenxi.com:4873/
+curl https://registry-zonbov-5xySne-raqbot.fufenxi.com/
 
 # 查看包信息
-npm view package-name --registry=http://registry.fufenxi.com:4873/
+npm view package-name --registry=https://registry-zonbov-5xySne-raqbot.fufenxi.com/
 ```
 
 ## 安全建议
