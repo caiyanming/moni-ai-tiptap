@@ -23,8 +23,6 @@ describe('HiddenBlock Extension', () => {
       expect(firstNode?.attrs.moniBlockId).toBe(NULL_UUID)
       expect(firstNode?.attrs.hidden).toBe(true)
       expect(firstNode?.attrs.isInitialBlock).toBe(true)
-      expect(firstNode?.attrs.moniDragEnabled).toBe(false)
-
       editor.destroy()
     })
 
@@ -68,7 +66,7 @@ describe('HiddenBlock Extension', () => {
       const editor = new Editor({
         extensions: [Document, Paragraph, Text, HiddenBlock],
         content: `
-          <div data-hidden-block="true" data-id="${NULL_UUID}" data-moni-block-id="${NULL_UUID}" data-initial-block="true" data-moni-drag-enabled="false"></div>
+          <div data-hidden-block="true" data-id="${NULL_UUID}" data-moni-block-id="${NULL_UUID}" data-initial-block="true"></div>
           <p>Content</p>
         `,
       })
@@ -95,8 +93,6 @@ describe('HiddenBlock Extension', () => {
       expect(firstNode?.attrs.moniBlockId).toBe(NULL_UUID)
       expect(firstNode?.attrs.hidden).toBe(true)
       expect(firstNode?.attrs.isInitialBlock).toBe(true)
-      expect(firstNode?.attrs.moniDragEnabled).toBe(false)
-
       editor.destroy()
     })
   })
@@ -177,7 +173,6 @@ describe('HiddenBlock Extension', () => {
       expect(block.attrs.moniBlockId).toBe(NULL_UUID)
       expect(block.attrs.hidden).toBe(true)
       expect(block.attrs.isInitialBlock).toBe(true)
-      expect(block.attrs.moniDragEnabled).toBe(false)
     })
 
     it('filterHiddenBlocks should remove hidden blocks', () => {

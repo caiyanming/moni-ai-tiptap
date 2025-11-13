@@ -92,16 +92,6 @@ describe('DOM 属性命名规范测试', () => {
           name: 'moniParentId',
           attribute: { default: 'parent-456', rendered: true },
         },
-        {
-          type: 'paragraph',
-          name: 'moniDragEnabled',
-          attribute: { default: true, rendered: true },
-        },
-        {
-          type: 'paragraph',
-          name: 'moniStreamType',
-          attribute: { default: 'text', rendered: true },
-        },
       ]
 
       const renderedAttributes = getRenderedAttributes(paragraphNode, multipleProblematicAttributes)
@@ -111,13 +101,10 @@ describe('DOM 属性命名规范测试', () => {
       // 验证所有属性都正确转换为 kebab-case
       expect(renderedAttributes).toHaveProperty('data-moni-block-id', 'test-block-123')
       expect(renderedAttributes).toHaveProperty('data-moni-parent-id', null) // 从节点 attrs 获取
-      expect(renderedAttributes).toHaveProperty('data-moni-drag-enabled', true)
-      expect(renderedAttributes).toHaveProperty('data-moni-stream-type', 'text')
 
       // 验证没有驼峰命名的属性
       expect(renderedAttributes).not.toHaveProperty('moniBlockId')
       expect(renderedAttributes).not.toHaveProperty('moniParentId')
-      expect(renderedAttributes).not.toHaveProperty('moniDragEnabled')
       expect(renderedAttributes).not.toHaveProperty('moniStreamType')
     })
 
@@ -143,15 +130,6 @@ describe('DOM 属性命名规范测试', () => {
             renderHTML: attributes => ({ 'data-moni-parent-id': attributes.moniParentId }),
           },
         },
-        {
-          type: 'paragraph',
-          name: 'moniDragEnabled',
-          attribute: {
-            default: true,
-            rendered: true,
-            renderHTML: attributes => ({ 'data-moni-drag-enabled': attributes.moniDragEnabled.toString() }),
-          },
-        },
       ]
 
       const renderedAttributes = getRenderedAttributes(paragraphNode, multipleDataAttributes)
@@ -159,12 +137,10 @@ describe('DOM 属性命名规范测试', () => {
       // 所有属性都应该使用正确的 kebab-case 格式
       expect(renderedAttributes).toHaveProperty('data-moni-block-id')
       expect(renderedAttributes).toHaveProperty('data-moni-parent-id')
-      expect(renderedAttributes).toHaveProperty('data-moni-drag-enabled')
 
       // 不应该有驼峰命名的属性
       expect(renderedAttributes).not.toHaveProperty('moniBlockId')
       expect(renderedAttributes).not.toHaveProperty('moniParentId')
-      expect(renderedAttributes).not.toHaveProperty('moniDragEnabled')
     })
   })
 
@@ -174,7 +150,6 @@ describe('DOM 属性命名规范测试', () => {
       const attrs = {
         moniBlockId: 'test-block-123',
         moniParentId: 'parent-456',
-        moniDragEnabled: true,
       }
 
       // 模拟节点

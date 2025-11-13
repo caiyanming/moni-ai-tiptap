@@ -2,6 +2,8 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
 
 import type { Editor } from './Editor.js'
+import { getDragConfig } from './helpers/getDragConfig.js'
+import { getNodeAttr } from './helpers/nodeAttrs.js'
 
 export interface DropOperation {
   sourceBlockId: string
@@ -36,22 +38,20 @@ export class DragOperationManager {
 
     // Check nesting constraints
     if (operation.position === 'inside') {
-      const targetNestable = operation.targetNode.attrs?.['data-moni-nestable'] ?? false
-      if (!targetNestable) {
+      const targetConfig = getDragConfig(operation.targetNode)
+      if (!targetConfig.nestable) {
         return { valid: false, reason: 'Target does not support nesting' }
       }
 
-      const sourceCanNestIn = operation.sourceNode.attrs?.['data-moni-can-nest-in'] ?? []
-      const targetDragType = operation.targetNode.attrs?.['data-moni-drag-type'] ?? 'block'
+      const sourceConfig = getDragConfig(operation.sourceNode)
 
-      if (sourceCanNestIn.length > 0 && !sourceCanNestIn.includes(targetDragType)) {
+      if (sourceConfig.canNestIn.length > 0 && !sourceConfig.canNestIn.includes(targetConfig.dragType)) {
         return { valid: false, reason: 'Source cannot nest in target type' }
       }
 
-      const targetMaxLevel = operation.targetNode.attrs?.['data-moni-max-nest-level'] ?? 0
-      const currentLevel = operation.targetNode.attrs?.['data-moni-level'] ?? 0
+      const currentLevel = getNodeAttr<number>(operation.targetNode, 'moniLevel', 0)
 
-      if (currentLevel >= targetMaxLevel) {
+      if (targetConfig.maxNestLevel > 0 && currentLevel >= targetConfig.maxNestLevel) {
         return { valid: false, reason: 'Maximum nesting level reached' }
       }
     }
@@ -119,10 +119,13 @@ export class DragOperationManager {
     // Insert source node before target
     tr.insert(adjustedTargetPos, sourceNode)
 
+    const parentId = getNodeAttr<string | null>(operation.targetNode, 'moniParentId', null)
+    const level = getNodeAttr<number>(operation.targetNode, 'moniLevel', 0)
+
     // Update node attributes
     this.updateNodeAttributes(tr, adjustedTargetPos, {
-      'data-moni-parent-id': operation.targetNode.attrs?.['data-moni-parent-id'] ?? null,
-      'data-moni-level': operation.targetNode.attrs?.['data-moni-level'] ?? 0,
+      moniParentId: parentId,
+      moniLevel: level,
     })
   }
 
@@ -146,10 +149,13 @@ export class DragOperationManager {
     const insertPos = adjustedTargetPos + targetNode.nodeSize
     tr.insert(insertPos, sourceNode)
 
+    const parentId = getNodeAttr<string | null>(operation.targetNode, 'moniParentId', null)
+    const level = getNodeAttr<number>(operation.targetNode, 'moniLevel', 0)
+
     // Update node attributes
     this.updateNodeAttributes(tr, insertPos, {
-      'data-moni-parent-id': operation.targetNode.attrs?.['data-moni-parent-id'] ?? null,
-      'data-moni-level': operation.targetNode.attrs?.['data-moni-level'] ?? 0,
+      moniParentId: parentId,
+      moniLevel: level,
     })
   }
 
@@ -174,10 +180,11 @@ export class DragOperationManager {
     tr.insert(insertPos, sourceNode)
 
     // Update node attributes for nesting
-    const newLevel = (operation.targetNode.attrs?.['data-moni-level'] ?? 0) + 1
+    const targetLevel = getNodeAttr<number>(operation.targetNode, 'moniLevel', 0)
+    const newLevel = targetLevel + 1
     this.updateNodeAttributes(tr, insertPos, {
-      'data-moni-parent-id': operation.targetBlockId,
-      'data-moni-level': newLevel,
+      moniParentId: operation.targetBlockId,
+      moniLevel: newLevel,
     })
   }
 

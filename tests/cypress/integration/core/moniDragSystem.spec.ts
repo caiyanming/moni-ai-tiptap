@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 /* eslint-disable no-unused-expressions, @typescript-eslint/no-unused-expressions, no-void */
 
-import { Editor } from '@tiptap/core'
+import { Editor, getDragConfig } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
 import { BulletList, ListItem } from '@tiptap/extension-list'
 import { Paragraph } from '@tiptap/extension-paragraph'
@@ -61,24 +61,15 @@ describe('Moni Drag System', () => {
       const attributes = paragraphNodeType.spec.attrs || {}
 
       // Basic attributes
-      expect(attributes).to.have.property('data-moni-block-id')
-      expect(attributes).to.have.property('data-moni-parent-id')
+      expect(attributes).to.have.property('moniBlockId')
+      expect(attributes).to.have.property('moniParentId')
 
       // Hierarchical structure attributes
-      expect(attributes).to.have.property('data-moni-level')
-      expect(attributes).to.have.property('data-moni-depth')
-      expect(attributes).to.have.property('data-moni-index')
+      expect(attributes).to.have.property('moniLevel')
 
-      // Drag behavior attributes
-      expect(attributes).to.have.property('data-moni-drag-enabled')
-      expect(attributes).to.have.property('data-moni-drag-handle')
-      expect(attributes).to.have.property('data-moni-nestable')
-      expect(attributes).to.have.property('data-moni-drag-type')
-
-      // Drag constraints attributes
-      expect(attributes).to.have.property('data-moni-drop-targets')
-      expect(attributes).to.have.property('data-moni-max-nest-level')
-      expect(attributes).to.have.property('data-moni-can-nest-in')
+      const paragraphConfig = getDragConfig('paragraph')
+      expect(paragraphConfig.dragType).to.equal('block')
+      expect(paragraphConfig.nestable).to.be.false
 
       testEditor.destroy()
     })
@@ -96,11 +87,10 @@ describe('Moni Drag System', () => {
       })
 
       expect(paragraphNode).to.not.be.null
-      expect(paragraphNode.attrs['data-moni-drag-enabled']).to.be.true
-      expect(paragraphNode.attrs['data-moni-drag-handle']).to.be.true
-      expect(paragraphNode.attrs['data-moni-nestable']).to.be.false
-      expect(paragraphNode.attrs['data-moni-drag-type']).to.equal('block')
-      expect(paragraphNode.attrs['data-moni-level']).to.equal(0)
+      const paragraphConfig = getDragConfig(paragraphNode)
+      expect(paragraphConfig.dragType).to.equal('block')
+      expect(paragraphConfig.nestable).to.be.false
+      expect(paragraphNode.attrs.moniLevel).to.equal(0)
     })
 
     it('should have correct list item specific configurations', () => {
@@ -116,11 +106,11 @@ describe('Moni Drag System', () => {
       })
 
       expect(listItemNode).to.not.be.null
-      expect(listItemNode.attrs['data-moni-drag-type']).to.equal('list-item')
-      expect(listItemNode.attrs['data-moni-nestable']).to.be.true
-      expect(listItemNode.attrs['data-moni-can-nest-in']).to.deep.equal(['bulletList', 'orderedList', 'listItem'])
-      expect(listItemNode.attrs['data-moni-drop-targets']).to.deep.equal(['listItem', 'bulletList', 'orderedList'])
-      expect(listItemNode.attrs['data-moni-max-nest-level']).to.equal(6)
+      const listItemConfig = getDragConfig(listItemNode)
+      expect(listItemConfig.dragType).to.equal('list-item')
+      expect(listItemConfig.nestable).to.be.true
+      expect(listItemConfig.canNestIn).to.deep.equal(['list-item'])
+      expect(listItemConfig.maxNestLevel).to.equal(6)
     })
   })
 
@@ -348,15 +338,10 @@ describe('Moni Drag System', () => {
     })
 
     it('should handle drag start correctly', () => {
-      const mockNode = {
-        attrs: {
-          'data-moni-drag-type': 'block',
-          'data-moni-level': 0,
-          'data-moni-parent-id': null,
-        },
-      }
+      const node = editor.state.doc.nodeAt(0)!
+      const blockId = node.attrs.moniBlockId as string
 
-      moniDragPlugin.handleDragStart('block-1', mockNode)
+      moniDragPlugin.handleDragStart(blockId, node)
 
       // Check if drag state was set in plugin state
       const pluginState = moniDragPlugin.getPlugin().getState(editor.state)
@@ -365,15 +350,10 @@ describe('Moni Drag System', () => {
     })
 
     it('should handle drag end correctly', () => {
-      const mockNode = {
-        attrs: {
-          'data-moni-drag-type': 'block',
-          'data-moni-level': 0,
-          'data-moni-parent-id': null,
-        },
-      }
+      const node = editor.state.doc.nodeAt(0)!
+      const blockId = node.attrs.moniBlockId as string
 
-      moniDragPlugin.handleDragEnd('block-1', mockNode)
+      moniDragPlugin.handleDragEnd(blockId, node)
 
       // Check if drag state was cleared
       const pluginState = moniDragPlugin.getPlugin().getState(editor.state)

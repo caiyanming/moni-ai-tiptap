@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 /* eslint-disable no-unused-expressions, @typescript-eslint/no-unused-expressions, no-void */
 
-import { Editor } from '@tiptap/core'
+import { Editor, getDragConfig } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
@@ -52,9 +52,9 @@ describe('Drag Event Integration - Debug Current Issue', () => {
       element: container,
       extensions: [Document, Text, Paragraph],
       content: `
-        <p data-moni-block-id="test-block-001" data-moni-drag-enabled="true" data-moni-drag-handle="true" data-moni-level="0" data-moni-nestable="true" data-moni-drag-type="block">这是第一个段落，应该可以拖拽</p>
-        <p data-moni-block-id="test-block-002" data-moni-drag-enabled="true" data-moni-drag-handle="true" data-moni-level="0" data-moni-nestable="true" data-moni-drag-type="block">这是第二个段落，也应该可以拖拽</p>
-        <p data-moni-block-id="test-block-003" data-moni-drag-enabled="true" data-moni-drag-handle="true" data-moni-level="0" data-moni-nestable="true" data-moni-drag-type="block">这是第三个段落，测试拖拽功能</p>
+        <p data-moni-block-id="test-block-001" data-moni-level="0">这是第一个段落，应该可以拖拽</p>
+        <p data-moni-block-id="test-block-002" data-moni-level="0">这是第二个段落，也应该可以拖拽</p>
+        <p data-moni-block-id="test-block-003" data-moni-level="0">这是第三个段落，测试拖拽功能</p>
       `,
     })
 
@@ -80,59 +80,45 @@ describe('Drag Event Integration - Debug Current Issue', () => {
   })
 
   describe('DOM属性验证', () => {
-    it('should have all required moni attributes in rendered DOM', () => {
-      console.log('🔍 验证DOM属性...')
-      console.log('Editor DOM:', editor.view.dom.innerHTML)
+    it('should expose block ids in DOM and drag config via schema', () => {
+      const paragraphElements = editor.view.dom.querySelectorAll('p[data-moni-block-id]')
+      expect(paragraphElements.length).to.equal(3)
 
-      // 检查所有段落是否有正确的moni属性
-      const paragraphs = editor.view.dom.querySelectorAll('p')
-      console.log('找到段落数量:', paragraphs.length)
+      const documentBlocks: { id: string; dragType: string; nestable: boolean; level: number }[] = []
 
-      expect(paragraphs.length).to.equal(3)
+      editor.state.doc.descendants(node => {
+        if (node.type.name === 'paragraph') {
+          const config = getDragConfig(node)
+          documentBlocks.push({
+            id: node.attrs.moniBlockId,
+            dragType: config.dragType,
+            nestable: config.nestable,
+            level: node.attrs.moniLevel ?? 0,
+          })
+        }
+        return true
+      })
 
-      paragraphs.forEach((p, index) => {
-        const moniBlockId = p.getAttribute('data-moni-block-id')
-        const dragEnabled = p.getAttribute('data-moni-drag-enabled')
-        const dragHandle = p.getAttribute('data-moni-drag-handle')
-        const dragType = p.getAttribute('data-moni-drag-type')
-        const level = p.getAttribute('data-moni-level')
-        const nestable = p.getAttribute('data-moni-nestable')
-
-        console.log(`段落 ${index + 1} 属性:`, {
-          moniBlockId,
-          dragEnabled,
-          dragHandle,
-          dragType,
-          level,
-          nestable,
-          innerHTML: p.innerHTML,
-        })
-
-        // 验证所有必需属性存在
-        expect(moniBlockId).to.not.be.null
-        expect(dragEnabled).to.equal('true')
-        expect(dragHandle).to.equal('true')
-        expect(dragType).to.equal('block')
-        expect(level).to.equal('0')
-        expect(nestable).to.equal('true')
+      expect(documentBlocks).to.have.length(3)
+      documentBlocks.forEach(block => {
+        expect(block.dragType).to.equal('block')
+        expect(block.nestable).to.be.false
+        expect(block.level).to.equal(0)
       })
     })
 
     it('should have draggable elements configured correctly', () => {
-      const paragraphs = editor.view.dom.querySelectorAll('p[data-moni-drag-enabled="true"]')
+      const paragraphs = editor.view.dom.querySelectorAll('p[data-moni-block-id]')
 
       paragraphs.forEach(p => {
         const moniBlockId = p.getAttribute('data-moni-block-id')
-        const hasDragHandle = p.hasAttribute('data-moni-drag-handle')
 
         console.log('段落拖拽状态:', {
           moniBlockId,
-          hasDragHandle,
           tagName: p.tagName,
         })
 
         expect(moniBlockId).to.not.be.null
-        expect(hasDragHandle).to.be.true
       })
     })
   })

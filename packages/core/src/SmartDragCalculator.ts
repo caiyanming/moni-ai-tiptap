@@ -1,4 +1,8 @@
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
 import type { Editor } from './Editor.js'
+import { getDragConfig, type DragConfig } from './helpers/getDragConfig.js'
+import { getNodeAttr } from './helpers/nodeAttrs.js'
 
 // 拖拽类型枚举
 export enum DragType {
@@ -52,6 +56,12 @@ export interface CandidatePosition {
 }
 
 // 智能拖拽计算结果
+interface BlockInfo {
+  node: ProseMirrorNode
+  level: number
+  config: DragConfig
+}
+
 export interface SmartDragResult {
   bestCandidate: CandidatePosition | null
   allCandidates: CandidatePosition[]
@@ -111,6 +121,24 @@ export class SmartDragCalculator {
     this.cache.clear()
   }
 
+  private buildBlockInfoMap(): Map<string, BlockInfo> {
+    const map = new Map<string, BlockInfo>()
+
+    this.editor.view.state.doc.descendants(node => {
+      const blockId = node.attrs?.moniBlockId
+      if (blockId) {
+        map.set(blockId, {
+          node,
+          level: getNodeAttr<number>(node, 'moniLevel', 0),
+          config: getDragConfig(node),
+        })
+      }
+      return true
+    })
+
+    return map
+  }
+
   /**
    * 计算智能拖拽位置 - 核心算法
    */
@@ -141,6 +169,7 @@ export class SmartDragCalculator {
     const blockElements = Array.from(editorElement.querySelectorAll('[data-moni-block-id]'))
     const filteredElements = blockElements.filter(el => el.getAttribute('data-moni-block-id') !== draggedId)
 
+    const blockInfoMap = this.buildBlockInfoMap()
     const candidates: CandidatePosition[] = []
 
     // 遍历所有块元素生成候选位置
@@ -164,8 +193,9 @@ export class SmartDragCalculator {
         }
 
         const blockId = element.getAttribute('data-moni-block-id') || `block-${index}`
-        const nestingLevel = parseInt(element.getAttribute('data-moni-level') || '0', 10) || 0
-        const nestable = element.getAttribute('data-moni-nestable') === 'true'
+        const blockInfo = blockInfoMap.get(blockId)
+        const nestingLevel = blockInfo?.level ?? 0
+        const nestable = blockInfo?.config.nestable ?? false
 
         // 计算相对位置
         const relativeY = (clientY - rect.top) / rect.height

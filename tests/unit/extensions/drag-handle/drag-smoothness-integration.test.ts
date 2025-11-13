@@ -9,7 +9,7 @@ import { DragHandlePlugin } from '@tiptap/extension-drag-handle/drag-handle-plug
 import { DropPositionCalculator } from '@tiptap/extension-drag-handle/drop-position-calculator.js'
 import { Paragraph } from '@tiptap/extension-paragraph'
 import { Text } from '@tiptap/extension-text'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Helper function to mock getBoundingClientRect
 function mockGetBoundingClientRect(element: HTMLElement, rect: DOMRect) {

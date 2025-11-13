@@ -6,6 +6,8 @@ import { type DragHandleManagerOptions, DragHandleManager } from './DragHandleMa
 import { DragIndicatorManager } from './DragIndicatorManager.js'
 import { DragOperationManager } from './DragOperationManager.js'
 import type { Editor } from './Editor.js'
+import { getDragConfig } from './helpers/getDragConfig.js'
+import { getNodeAttr } from './helpers/nodeAttrs.js'
 
 export interface MoniDragPluginOptions extends Partial<DragHandleManagerOptions> {
   /**
@@ -211,15 +213,16 @@ export class MoniDragPlugin {
   }
 
   private handleDragStart(blockId: string, node: ProseMirrorNode) {
-    // Determine drag type from node type (configuration, not instance data)
-    const dragType = node.type.name === 'listItem' ? 'list-item' : 'block'
+    const dragConfig = getDragConfig(node)
+    const level = getNodeAttr<number>(node, 'moniLevel', 0)
+    const parentId = getNodeAttr<string | null>(node, 'moniParentId', null)
 
     // Set drag state in plugin
     const tr = this.editor.state.tr.setMeta('moni-drag-start', {
       moniBlockId: blockId,
-      dragType,
-      level: node.attrs?.moniLevel || 0,
-      moniParentId: node.attrs?.moniParentId || null,
+      dragType: dragConfig.dragType,
+      level,
+      moniParentId: parentId,
     })
 
     this.editor.view.dispatch(tr)

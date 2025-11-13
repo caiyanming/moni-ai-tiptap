@@ -20,6 +20,8 @@ export default defineConfig({
       '@tiptap/extension-drag-handle': resolve(__dirname, 'packages/extension-drag-handle/src'),
       '@tiptap/extension-drag-handle-react': resolve(__dirname, 'packages/extension-drag-handle-react/src'),
       '@tiptap/extension-nesting': resolve(__dirname, 'packages/extension-nesting/src'),
+      '@tiptap/extension-list': resolve(__dirname, 'packages/extension-list/src'),
+      '@tiptap/constants': resolve(__dirname, 'packages/constants/src'),
     },
   },
 })

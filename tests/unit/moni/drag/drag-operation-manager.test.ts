@@ -1,6 +1,7 @@
-import { type DropOperation, type Editor, DragOperationManager } from '@tiptap/core'
+import { type DropOperation, type Editor, DragOperationManager, defineDragConfig } from '@tiptap/core'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import type { Transaction } from '@tiptap/pm/state'
+import { DRAG_CONSTANTS } from '@tiptap/constants'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock ProseMirror node
@@ -10,23 +11,52 @@ const createMockNode = (
     parentId?: string | null
     level?: number
     nestable?: boolean
-    canNestIn?: string[]
-    dragType?: string
+    canNestIn?: (typeof DRAG_CONSTANTS.DRAG_TYPES)[keyof typeof DRAG_CONSTANTS.DRAG_TYPES][]
+    dragType?: (typeof DRAG_CONSTANTS.DRAG_TYPES)[keyof typeof DRAG_CONSTANTS.DRAG_TYPES]
     maxNestLevel?: number
+    nodeType?: string
   } = {},
 ): ProseMirrorNode => {
+  const needsCustomType =
+    options.nodeType === undefined &&
+    (options.nestable !== undefined || options.canNestIn !== undefined || options.dragType !== undefined || options.maxNestLevel !== undefined)
+  const typeName = options.nodeType ?? (needsCustomType ? `${blockId}-type` : 'paragraph')
+
+  const dragConfigOverrides: Record<string, any> = {}
+
+  if (options.nestable !== undefined) {
+    dragConfigOverrides.nestable = options.nestable
+  }
+  if (options.canNestIn !== undefined) {
+    dragConfigOverrides.canNestIn = options.canNestIn
+  }
+  if (options.dragType !== undefined) {
+    dragConfigOverrides.dragType = options.dragType
+  }
+  if (options.maxNestLevel !== undefined) {
+    dragConfigOverrides.maxNestLevel = options.maxNestLevel
+  }
+
+  if (Object.keys(dragConfigOverrides).length > 0) {
+    defineDragConfig(typeName, dragConfigOverrides)
+  }
+
   return {
     attrs: {
       moniBlockId: blockId,
       moniParentId: options.parentId ?? null,
-      'data-moni-level': options.level ?? 0,
-      'data-moni-nestable': options.nestable ?? false,
-      'data-moni-can-nest-in': options.canNestIn ?? [],
-      'data-moni-drag-type': options.dragType ?? 'block',
-      'data-moni-max-nest-level': options.maxNestLevel ?? 10,
+      moniLevel: options.level ?? 0,
     },
     nodeSize: 20, // Mock node size
-    type: { name: 'paragraph' },
+    type: {
+      name: typeName,
+      spec: {
+        attrs: {
+          moniLevel: { default: 0 },
+          moniParentId: { default: null },
+        },
+      },
+    },
   } as unknown as ProseMirrorNode
 }
 
@@ -151,8 +181,11 @@ describe('DragOperationManager', () => {
     })
 
     it('should check nesting constraints - source cannot nest in target type', () => {
-      const sourceNode = createMockNode('block-1', { canNestIn: ['list'] })
-      const targetNode = createMockNode('block-2', { nestable: true, dragType: 'paragraph' })
+      const sourceNode = createMockNode('block-1', { canNestIn: [DRAG_CONSTANTS.DRAG_TYPES.LIST_ITEM] })
+      const targetNode = createMockNode('block-2', {
+        nestable: true,
+        dragType: DRAG_CONSTANTS.DRAG_TYPES.BLOCK,
+      })
 
       const operation: DropOperation = {
         sourceBlockId: 'block-1',
@@ -209,8 +242,13 @@ describe('DragOperationManager', () => {
     })
 
     it('should allow nesting when source can nest in target type', () => {
-      const sourceNode = createMockNode('block-1', { canNestIn: ['list', 'paragraph'] })
-      const targetNode = createMockNode('block-2', { nestable: true, dragType: 'list' })
+      const sourceNode = createMockNode('block-1', {
+        canNestIn: [DRAG_CONSTANTS.DRAG_TYPES.LIST_ITEM, DRAG_CONSTANTS.DRAG_TYPES.BLOCK],
+      })
+      const targetNode = createMockNode('block-2', {
+        nestable: true,
+        dragType: DRAG_CONSTANTS.DRAG_TYPES.LIST_ITEM,
+      })
 
       const operation: DropOperation = {
         sourceBlockId: 'block-1',
@@ -445,8 +483,8 @@ describe('DragOperationManager', () => {
 
     it('should update node attributes correctly', () => {
       const attrs = {
-        'data-moni-parent-id': 'new-parent',
-        'data-moni-level': 2,
+        moniParentId: 'new-parent',
+        moniLevel: 2,
       }
 
       ;(dragOperationManager as any).updateNodeAttributes(mockTransaction, 0, attrs)

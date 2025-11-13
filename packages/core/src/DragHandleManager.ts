@@ -2,6 +2,8 @@ import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { NodeSelection } from '@tiptap/pm/state'
 
 import type { Editor } from './Editor.js'
+import { getDragConfig } from './helpers/getDragConfig.js'
+import { getNodeAttr } from './helpers/nodeAttrs.js'
 
 export interface DragHandleManagerOptions {
   /**
@@ -137,15 +139,19 @@ export class DragHandleManager {
 
     // Set drag data
     if (event.dataTransfer) {
+      const dragConfig = getDragConfig(this.currentNode)
+      const level = getNodeAttr<number>(this.currentNode, 'moniLevel', 0)
+      const parentId = getNodeAttr<string | null>(this.currentNode, 'moniParentId', null)
+
       event.dataTransfer.effectAllowed = 'move'
       event.dataTransfer.setData('text/plain', this.currentBlockId)
       event.dataTransfer.setData(
         'application/moni-block',
         JSON.stringify({
           moniBlockId: this.currentBlockId,
-          dragType: this.currentNode.attrs['data-moni-drag-type'] || 'block',
-          level: this.currentNode.attrs['data-moni-level'] || 0,
-          moniParentId: this.currentNode.attrs['data-moni-parent-id'] || null,
+          dragType: dragConfig.dragType,
+          level,
+          moniParentId: parentId,
         }),
       )
     }

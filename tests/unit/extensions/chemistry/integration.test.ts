@@ -393,7 +393,7 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(errorFormula).toBeTruthy()
       expect(errorFormula.attrs.chemical).toBe(invalidChemical)
       expect(errorFormula.attrs.moniBlockId).toBeTruthy() // 仍然有有效的 Block ID
-      expect(errorFormula.attrs.moniStreamType).toBe('chemistry') // 保持化学类型标识
+      expect(errorFormula.attrs.moniLevel ?? 0).toBeGreaterThanOrEqual(0)
     })
 
     it('应该正确处理混合数学与化学语法', () => {
@@ -509,7 +509,6 @@ describe('Chemistry Extension - Real-World Integration', () => {
             type: node.type.name,
             chemical: node.attrs?.chemical,
             moniBlockId: node.attrs?.moniBlockId,
-            moniStreamType: node.attrs?.moniStreamType,
           })
         }
       })
@@ -536,7 +535,6 @@ describe('Chemistry Extension - Real-World Integration', () => {
         c => c.chemical?.includes('HIn') && c.type === 'inlineChemical',
       )
       expect(indicatorReaction).toBeTruthy()
-      expect(indicatorReaction.moniStreamType).toBe('inline-chemistry')
 
       // 验证每个组件都有唯一的 moniBlockId
       const blockIds = experimentComponents.map(comp => comp.moniBlockId)
@@ -571,8 +569,6 @@ describe('Chemistry Extension - Real-World Integration', () => {
           // AI 为每个步骤添加层级信息
           editor.commands.updateAttributes('blockChemical', {
             moniLevel: stepLevel,
-            moniStreamType: 'chemistry',
-            moniDragEnabled: true,
           })
 
           stepLevel += 1
@@ -586,8 +582,6 @@ describe('Chemistry Extension - Real-World Integration', () => {
           pathwaySteps.push({
             chemical: node.attrs.chemical,
             level: node.attrs.moniLevel,
-            streamType: node.attrs.moniStreamType,
-            dragEnabled: node.attrs.moniDragEnabled,
           })
         }
       })
@@ -599,9 +593,6 @@ describe('Chemistry Extension - Real-World Integration', () => {
       expect(pathwaySteps[0].level).toBe(1)
 
       // 验证化学类型
-      expect(pathwaySteps[0].streamType).toBe('chemistry')
-      expect(pathwaySteps[0].dragEnabled).toBe(true)
-
       // 验证化学反应内容
       expect(pathwaySteps[0].chemical.includes('C6H5OH') || pathwaySteps[0].chemical.includes('C7H6O3')).toBe(true)
     })

@@ -1,5 +1,5 @@
 import { type ComputePositionConfig, computePosition } from '@floating-ui/dom'
-import type { Editor } from '@tiptap/core'
+import { getDragConfig, type Editor } from '@tiptap/core'
 import { isChangeOrigin } from '@tiptap/extension-collaboration'
 import type { Node } from '@tiptap/pm/model'
 import { type EditorState, type Transaction, Plugin, PluginKey } from '@tiptap/pm/state'
@@ -61,6 +61,20 @@ const getOuterDomNode = (view: EditorView, domNode: HTMLElement) => {
   }
 
   return tmpDomNode
+}
+
+const findNodeByBlockId = (doc: Node, blockId: string): Node | null => {
+  let result: Node | null = null
+
+  doc.descendants(node => {
+    if (node.attrs?.moniBlockId === blockId) {
+      result = node
+      return false
+    }
+    return true
+  })
+
+  return result
 }
 
 export interface DragHandlePluginProps {
@@ -137,6 +151,20 @@ export const DragHandlePlugin = ({
 
   // 🎯 FIX: 添加防抖隐藏功能，提升跨浏览器稳定性
   let hideTimer: number | null = null
+
+  const resolveDragConfigForElement = (elem: HTMLElement) => {
+    const blockId = elem.getAttribute('data-moni-block-id')
+    if (!blockId) {
+      return null
+    }
+
+    const node = findNodeByBlockId(editor.state.doc, blockId)
+    if (!node) {
+      return null
+    }
+
+    return getDragConfig(node)
+  }
 
   function hideHandle(immediate = false) {
     if (!element) {
@@ -814,7 +842,9 @@ export const DragHandlePlugin = ({
 
               if (blockElement && blockElement !== dragSourceElement) {
                 // 🎯 使用 AppFlowy 风格的现代化计算器
-                const result = DropPositionCalculator.calculate(event, blockElement)
+                const result = DropPositionCalculator.calculate(event, blockElement, {
+                  getDragConfigForElement: resolveDragConfigForElement,
+                })
 
                 // FIX: 不显示未实现的 'inside' 位置
                 if (result.dropPosition === 'inside') {
@@ -903,7 +933,9 @@ export const DragHandlePlugin = ({
             })
 
             if (blockElement && blockElement !== dragSourceElement) {
-              const result = DropPositionCalculator.calculate(event, blockElement)
+              const result = DropPositionCalculator.calculate(event, blockElement, {
+                getDragConfigForElement: resolveDragConfigForElement,
+              })
 
               // FIX: 完全跳过未实现的 'inside' 功能
               if (result.dropPosition === 'inside') {

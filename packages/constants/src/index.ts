@@ -11,7 +11,6 @@ export const BLOCK_CONSTANTS = {
 
   // Default block attributes
   DEFAULT_BLOCK_ATTRS: {
-    moniDragEnabled: true,
     moniLevel: 0,
   },
 
@@ -21,7 +20,6 @@ export const BLOCK_CONSTANTS = {
     moniBlockId: NULL_UUID,
     hidden: true,
     isInitialBlock: true,
-    moniDragEnabled: false,
   },
 } as const
 
@@ -57,12 +55,6 @@ export const DRAG_CONSTANTS = {
     LIST_ITEM: 'list-item',
     TABLE_ROW: 'table-row',
   },
-
-  DRAG_HANDLE_SELECTORS: {
-    BLOCK: '[data-moni-drag-handle="true"]',
-    ENABLED: '[data-moni-drag-enabled="true"]',
-    DISABLED: '[data-moni-drag-enabled="false"]',
-  },
 } as const
 
 // 🔥 Attribute constants for consistency across extensions
@@ -73,8 +65,6 @@ export const ATTR_CONSTANTS = {
   LEVEL: 'moniLevel',
 
   // Drag system
-  DRAG_ENABLED: 'moniDragEnabled',
-  DRAG_HANDLE: 'moniDragHandle',
   DRAG_TYPE: 'moniDragType',
   NESTABLE: 'moniNestable',
 

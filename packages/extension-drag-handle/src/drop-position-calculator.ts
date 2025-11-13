@@ -21,13 +21,25 @@ export interface DropCalculationResult {
   confidence: number // 0-1, algorithm confidence level
 }
 
+export interface DropCalculationContext {
+  /**
+   * Optional resolver that returns richer drag config information for an element.
+   * When not provided, the calculator falls back to legacy DOM datasets.
+   */
+  getDragConfigForElement?: (element: HTMLElement) => { nestable?: boolean } | null
+}
+
 export class DropPositionCalculator {
   // AppFlowy-inspired constants
   private static readonly LEFT_BOUNDARY_PX = 88
   private static readonly RIGHT_BOUNDARY_RATIO = 0.8 // 4/5
   private static readonly VERTICAL_SPLIT_RATIO = 0.25 // Keep existing for vertical calculation
 
-  static calculate(event: DragEvent, targetElement: HTMLElement): DropCalculationResult {
+  static calculate(
+    event: DragEvent,
+    targetElement: HTMLElement,
+    context?: DropCalculationContext,
+  ): DropCalculationResult {
     const rect = targetElement.getBoundingClientRect()
     const { clientX: x, clientY: y } = event
 
@@ -41,6 +53,7 @@ export class DropPositionCalculator {
       rect,
       horizontalPosition,
       targetElement,
+      context,
     )
 
     return {
@@ -80,13 +93,15 @@ export class DropPositionCalculator {
     rect: DOMRect,
     horizontalPosition: HorizontalPosition,
     targetElement: HTMLElement,
+    context?: DropCalculationContext,
   ): {
     dropPosition: DropPosition
     indicatorPosition: IndicatorPosition
     direction: IndicatorDirection
     confidence: number
   } {
-    const isNestable = targetElement.hasAttribute('data-moni-nestable')
+    const dragConfig = context?.getDragConfigForElement?.(targetElement)
+    const isNestable = dragConfig?.nestable ?? targetElement.hasAttribute('data-moni-nestable')
 
     // Vertical thresholds
     const topThreshold = rect.top + rect.height * this.VERTICAL_SPLIT_RATIO

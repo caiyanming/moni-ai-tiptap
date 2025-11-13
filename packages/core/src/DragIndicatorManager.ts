@@ -1,4 +1,7 @@
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
+
 import type { Editor } from './Editor.js'
+import { getDragConfig } from './helpers/getDragConfig.js'
 
 export interface DropTarget {
   moniBlockId: string
@@ -140,7 +143,9 @@ export class DragIndicatorManager {
     const x = event.clientX
 
     // Check if we're dragging over a nestable element
-    const nestable = targetElement.getAttribute('data-moni-nestable') === 'true'
+    const blockId = targetElement.getAttribute('data-moni-block-id')
+    const config = blockId ? this.getDragConfigForBlock(blockId) : null
+    const nestable = config?.nestable ?? false
     const leftIndentZone = rect.left + 40 // 40px indent zone on the left
 
     if (nestable && x < leftIndentZone) {
@@ -177,6 +182,29 @@ export class DragIndicatorManager {
 
   private findBlockElement(blockId: string): HTMLElement | null {
     return this.editor.view.dom.querySelector(`[data-moni-block-id="${blockId}"]`)
+  }
+
+  private findNodeByBlockId(blockId: string): ProseMirrorNode | null {
+    let result: ProseMirrorNode | null = null
+
+    this.editor.view.state.doc.descendants(node => {
+      const nodeBlockId = node.attrs?.moniBlockId
+      if (nodeBlockId === blockId) {
+        result = node
+        return false
+      }
+      return true
+    })
+
+    return result
+  }
+
+  private getDragConfigForBlock(blockId: string) {
+    const node = this.findNodeByBlockId(blockId)
+    if (!node) {
+      return null
+    }
+    return getDragConfig(node)
   }
 
   public destroy() {

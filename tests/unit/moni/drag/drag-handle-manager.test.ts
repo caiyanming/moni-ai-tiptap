@@ -50,9 +50,9 @@ const createMockEditor = () => {
     descendants: vi.fn((callback: (node: ProseMirrorNode, pos?: number) => boolean) => {
       // Mock document traversal with test nodes
       const testNodes = [
-        { attrs: { moniBlockId: 'block-1' }, type: { name: 'paragraph' }, nodeSize: 1 },
-        { attrs: { moniBlockId: 'block-2' }, type: { name: 'heading' }, nodeSize: 1 },
-        { attrs: { moniBlockId: 'block-3' }, type: { name: 'paragraph' }, nodeSize: 1 },
+        createTestNode({ moniBlockId: 'block-1' }, 'paragraph'),
+        createTestNode({ moniBlockId: 'block-2' }, 'heading'),
+        createTestNode({ moniBlockId: 'block-3' }, 'paragraph'),
       ]
 
       testNodes.forEach((node, index) => {
@@ -63,11 +63,7 @@ const createMockEditor = () => {
       })
     }),
     resolve: vi.fn((pos: number) => ({
-      node: {
-        nodeSize: 1,
-        type: { name: 'paragraph' },
-        attrs: {},
-      },
+      node: createTestNode(),
       pos,
       parent: mockDoc,
       index: 0,
@@ -88,7 +84,7 @@ const createMockEditor = () => {
     depth: 0,
     parent: mockDoc,
     parentOffset: 0,
-    node: vi.fn().mockReturnValue({ type: { name: 'paragraph' } }),
+    node: vi.fn().mockReturnValue(createTestNode()),
   })
 
   const mockView = {
@@ -155,6 +151,28 @@ const mockDragMethods = (manager: DragHandleManager) => {
   vi.spyOn(manager as any, 'selectNodeForDrag').mockImplementation(() => {
     // Do nothing - prevent NodeSelection.create issues
   })
+}
+
+const createTestNode = (attrs: Partial<ProseMirrorNode['attrs']> = {}, typeName = 'paragraph'): ProseMirrorNode => {
+  return {
+    attrs: {
+      moniBlockId: null,
+      moniParentId: null,
+      moniLevel: 0,
+      ...attrs,
+    },
+    nodeSize: 1,
+    type: {
+      name: typeName,
+      spec: {
+        attrs: {
+          moniBlockId: { default: null },
+          moniParentId: { default: null },
+          moniLevel: { default: 0 },
+        },
+      },
+    },
+  } as ProseMirrorNode
 }
 
 describe('DragHandleManager', () => {
@@ -541,13 +559,7 @@ describe('DragHandleManager', () => {
       vi.spyOn(dragHandleManager as any, 'findBlockElement').mockReturnValue(blockElement)
 
       // Mock findNodeByBlockId to return a proper node
-      const mockNode = {
-        attrs: {
-          'data-moni-drag-type': 'block',
-          'data-moni-level': 0,
-          'data-moni-parent-id': null,
-        },
-      }
+      const mockNode = createTestNode({ moniBlockId: 'block-1' })
       vi.spyOn(dragHandleManager, 'findNodeByBlockId').mockReturnValue(mockNode)
 
       // Mock selectNodeForDrag to prevent NodeSelection issues

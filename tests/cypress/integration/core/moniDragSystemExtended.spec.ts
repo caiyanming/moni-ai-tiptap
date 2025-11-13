@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 /* eslint-disable no-unused-expressions, @typescript-eslint/no-unused-expressions, no-void */
 
-import { Editor } from '@tiptap/core'
+import { Editor, getDragConfig } from '@tiptap/core'
 import { Document } from '@tiptap/extension-document'
 import { BulletList, ListItem } from '@tiptap/extension-list'
 import { Paragraph } from '@tiptap/extension-paragraph'
@@ -41,10 +41,10 @@ describe('Moni Drag System - Extended Tests', () => {
       element: container,
       extensions: [Document, Text, Paragraph, BulletList, ListItem],
       content: `
-        <p data-moni-block-id="root-1" data-moni-drag-enabled="true" data-moni-level="0">根段落 1</p>
-        <ul data-moni-block-id="list-1" data-moni-drag-enabled="true" data-moni-level="0">
-          <li data-moni-block-id="item-1-1" data-moni-parent-id="list-1" data-moni-level="1" data-moni-nestable="true">列表项 1.1</li>
-          <li data-moni-block-id="item-1-2" data-moni-parent-id="list-1" data-moni-level="1" data-moni-nestable="true">
+        <p data-moni-block-id="root-1" data-moni-level="0">根段落 1</p>
+        <ul data-moni-block-id="list-1" data-moni-level="0">
+          <li data-moni-block-id="item-1-1" data-moni-parent-id="list-1" data-moni-level="1">列表项 1.1</li>
+          <li data-moni-block-id="item-1-2" data-moni-parent-id="list-1" data-moni-level="1">
             列表项 1.2
             <ul data-moni-block-id="sublist-1" data-moni-parent-id="item-1-2" data-moni-level="2">
               <li data-moni-block-id="item-2-1" data-moni-parent-id="sublist-1" data-moni-level="2">嵌套列表项 2.1</li>
@@ -53,8 +53,8 @@ describe('Moni Drag System - Extended Tests', () => {
           </li>
           <li data-moni-block-id="item-1-3" data-moni-parent-id="list-1" data-moni-level="1">列表项 1.3</li>
         </ul>
-        <p data-moni-block-id="root-2" data-moni-drag-enabled="true" data-moni-level="0">根段落 2</p>
-        <p data-moni-block-id="root-3" data-moni-drag-enabled="true" data-moni-level="0">根段落 3</p>
+        <p data-moni-block-id="root-2" data-moni-level="0">根段落 2</p>
+        <p data-moni-block-id="root-3" data-moni-level="0">根段落 3</p>
       `,
     })
 
@@ -93,6 +93,26 @@ describe('Moni Drag System - Extended Tests', () => {
         } else {
           expect(moniParentId).to.be.null
         }
+      })
+
+      // 结合 schema 配置验证列表语义
+      const listItemConfigs: { id: string; dragType: string; nestable: boolean }[] = []
+      editor.state.doc.descendants(node => {
+        if (node.type.name === 'listItem') {
+          const config = getDragConfig(node)
+          listItemConfigs.push({
+            id: node.attrs.moniBlockId,
+            dragType: config.dragType,
+            nestable: config.nestable,
+          })
+        }
+        return true
+      })
+
+      expect(listItemConfigs.length).to.be.greaterThan(0)
+      listItemConfigs.forEach(config => {
+        expect(config.dragType).to.equal('list-item')
+        expect(config.nestable).to.be.true
       })
     })
 
@@ -308,9 +328,8 @@ describe('Moni Drag System - Extended Tests', () => {
         largeContent.push({
           type: 'paragraph',
           attrs: {
-            'data-moni-block-id': `perf-block-${i}`,
-            'data-moni-drag-enabled': 'true',
-            'data-moni-level': '0',
+            moniBlockId: `perf-block-${i}`,
+            moniLevel: 0,
           },
           content: [{ type: 'text', text: `Performance test paragraph ${i}` }],
         })
@@ -552,21 +571,9 @@ describe('Moni Drag System - Extended Tests', () => {
 
       editor.registerPlugin(plugin.getPlugin())
 
-      // 检查可拖拽元素是否有适当的ARIA属性
-      const draggableElements = editor.view.dom.querySelectorAll('[data-moni-drag-enabled="true"]')
-
-      draggableElements.forEach(element => {
-        // 验证基本的无障碍属性
-        const hasRole = element.hasAttribute('role') || element.hasAttribute('aria-describedby')
-        const isInteractive = element.hasAttribute('tabindex') || element.getAttribute('role') === 'button'
-
-        // 可拖拽元素应该是可交互的
-        // 注意：这里的期望可能需要根据实际实现调整
-        if (element.getAttribute('data-moni-drag-enabled') === 'true') {
-          // 元素应该以某种方式标明其可交互性
-          expect(hasRole || isInteractive || element.hasAttribute('draggable')).to.be.true
-        }
-      })
+      const handleElement = container.querySelector('.moni-drag-handle') as HTMLElement
+      expect(handleElement).to.not.be.null
+      expect(handleElement.draggable).to.be.true
 
       plugin.destroy()
     })
@@ -589,8 +596,8 @@ describe('Current Issue Debugging', () => {
       element: container,
       extensions: [Document, Text, Paragraph],
       content: `
-        <p data-moni-block-id="debug-block-1" data-moni-drag-enabled="true">Debug paragraph 1</p>
-        <p data-moni-block-id="debug-block-2" data-moni-drag-enabled="true">Debug paragraph 2</p>
+        <p data-moni-block-id="debug-block-1">Debug paragraph 1</p>
+        <p data-moni-block-id="debug-block-2">Debug paragraph 2</p>
       `,
     })
   })
@@ -611,14 +618,13 @@ describe('Current Issue Debugging', () => {
 
     elementsWithBlockId.forEach((el, index) => {
       const moniBlockId = el.getAttribute('data-moni-block-id')
-      const dragEnabled = el.getAttribute('data-moni-drag-enabled')
       const allAttrs = Array.from(el.attributes)
         .map(attr => `${attr.name}="${attr.value}"`)
         .join(' ')
 
       console.log(`元素 ${index + 1}:`, {
         moniBlockId,
-        dragEnabled,
+        draggable: el.getAttribute('draggable'),
         tagName: el.tagName,
         allAttrs,
       })

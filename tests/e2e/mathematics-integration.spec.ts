@@ -132,7 +132,6 @@ test.describe('Mathematics Extension - E2E Integration', () => {
         window.testEditor.insertBlockMath('\\displaystyle \\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}', {
           moniBlockId: 'gaussian-integral',
           moniStreamType: 'math',
-          moniDragEnabled: true,
           moniLevel: 1,
         })
       })
@@ -142,7 +141,6 @@ test.describe('Mathematics Extension - E2E Integration', () => {
       await expect(mathElement).toBeVisible()
       await expect(mathElement).toHaveAttribute('data-moni-block-id', 'gaussian-integral')
       await expect(mathElement).toHaveAttribute('data-moni-stream-type', 'math')
-      await expect(mathElement).toHaveAttribute('data-moni-drag-enabled', 'true')
       await expect(mathElement).toHaveAttribute('data-moni-level', '1')
     })
 
