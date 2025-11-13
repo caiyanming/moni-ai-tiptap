@@ -1,12 +1,15 @@
 import { mergeAttributes, Node } from '@tiptap/core'
+import type { Node as PMNode } from '@tiptap/pm/model'
 
 import { type ChartContainerElement, ChartRenderer } from './ChartRenderer.js'
 
 export interface MoniChartOptions {
   /**
    * Callback when chart is clicked
+   * @param node - The ProseMirror node representing the chart element
+   * @param pos - The position of the node within the document
    */
-  onClick?: (node: any, pos: number) => void
+  onClick?: (node: PMNode, pos: number) => void
 }
 
 export interface MoniChartAttributes {
