@@ -1,7 +1,7 @@
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 
 import type { Editor } from './Editor.js'
-import { getDragConfig, type DragConfig } from './helpers/getDragConfig.js'
+import { type DragConfig, getDragConfig } from './helpers/getDragConfig.js'
 import { getNodeAttr } from './helpers/nodeAttrs.js'
 
 // 拖拽类型枚举

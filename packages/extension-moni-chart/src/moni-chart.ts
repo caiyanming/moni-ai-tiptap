@@ -1,6 +1,6 @@
 import { mergeAttributes, Node } from '@tiptap/core'
 
-import { type ChartContainerElement,ChartRenderer } from './ChartRenderer.js'
+import { type ChartContainerElement, ChartRenderer } from './ChartRenderer.js'
 
 export interface MoniChartOptions {
   /**
