@@ -1,11 +1,6 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "../../",
-    "paths": {
-      "@tiptap/pm": ["packages/pm/dist", "packages/pm/src"],
-      "@tiptap/pm/*": ["packages/pm/*"],
-      "@tiptap/*": ["packages/*/dist", "packages/*/src", "packages-deprecated/*/dist", "packages-deprecated/*/src"]
-    }
+    "rootDir": "../../"
   }
 }
