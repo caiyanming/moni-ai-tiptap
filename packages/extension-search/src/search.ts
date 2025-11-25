@@ -37,6 +37,11 @@ declare module '@tiptap/core' {
       findNext: () => ReturnType
 
       /**
+       * Move the selection to the previous match, if any.
+       */
+      findPrevious: () => ReturnType
+
+      /**
        * Clear all search state and decorations.
        */
       clearSearch: () => ReturnType
@@ -163,6 +168,34 @@ export const Search = Extension.create<SearchOptions>({
           const tr = state.tr
             .setMeta(searchPluginKey, {
               currentIndex: nextIndex,
+            } satisfies Partial<SearchPluginState>)
+            .setSelection(TextSelection.create(state.doc, target.from))
+            .scrollIntoView()
+
+          dispatch(tr)
+          return true
+        },
+
+      findPrevious:
+        () =>
+        ({ state, dispatch }) => {
+          const pluginState = searchPluginKey.getState(state)
+
+          if (!pluginState || pluginState.results.length === 0) {
+            return false
+          }
+
+          const total = pluginState.results.length
+          const prevIndex = (pluginState.currentIndex - 1 + total) % total
+          const target = pluginState.results[prevIndex]
+
+          if (!dispatch) {
+            return true
+          }
+
+          const tr = state.tr
+            .setMeta(searchPluginKey, {
+              currentIndex: prevIndex,
             } satisfies Partial<SearchPluginState>)
             .setSelection(TextSelection.create(state.doc, target.from))
             .scrollIntoView()
