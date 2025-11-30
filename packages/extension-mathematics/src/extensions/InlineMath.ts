@@ -112,22 +112,8 @@ export const InlineMath = Node.create<InlineMathOptions>({
           }
         },
       },
-      // 🔥 特殊情况：InlineMath 需要 moniBlockId 以支持 Stream 更新
-      // 虽然 inline 节点通常不需要 blockId，但 MathStreamHandler 依赖它来定位和更新节点
-      // TODO: 未来应重命名为 moniNodeId 或使用 UniqueID Extension
-      moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id') || null,
-        renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'data-moni-block-id': attributes.moniBlockId }
-          }
-          return {}
-        },
-      },
-      // 🔥 其他运行时属性（拖拽/Stream 模式）已移除
-      // 现在通过 editor.storage.runtimeState 访问
-      // 参见：packages/core/src/extensions/runtime-state.ts
+      // 🔥 Inline 节点不再携带 moniBlockId
+      // 语义块 ID 只出现在块级语义节点上，行内公式作为语义块内部内容处理
     }
   },
 

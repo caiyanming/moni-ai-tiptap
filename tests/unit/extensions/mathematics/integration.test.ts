@@ -30,7 +30,8 @@ describe('Mathematics Extension - Real-World Integration', () => {
         // 🔥 UniqueID 扩展是 moni block 机制的核心
         UniqueID.configure({
           attributeName: 'moniBlockId',
-          types: ['paragraph', 'inlineMath', 'blockMath'],
+          // 仅为语义块节点生成 moniBlockId
+          types: ['paragraph', 'blockMath'],
           generateID: () => crypto.randomUUID(),
         }),
         InlineMath.configure({
@@ -143,10 +144,11 @@ describe('Mathematics Extension - Real-World Integration', () => {
       expect(blockLatexSet.has('E_{kinetic} + E_{potential} = E_{total}')).toBe(true)
       expect(blockLatexSet.has('E = mc^2')).toBe(true)
 
-      // ✅ 每个公式都有唯一的 moniBlockId
-      const blockIds = mathNodes.map(node => node.moniBlockId)
+      // ✅ 只有块级公式需要 moniBlockId，并且各自唯一
+      const blockIds = blockMathNodes.map(node => node.moniBlockId)
       const uniqueIds = new Set(blockIds)
-      expect(uniqueIds.size).toBe(3)
+      expect(blockIds.length).toBe(2)
+      expect(uniqueIds.size).toBe(2)
     })
 
     it('AI 应该能在复杂文档中精确定位和修改特定公式', () => {
@@ -335,11 +337,16 @@ describe('Mathematics Extension - Real-World Integration', () => {
       // 至少要有一种类型的公式
       expect(hasInlineMath || hasBlockMath).toBe(true)
 
-      // ✅ 验证每个数学节点都有有效的 moniBlockId
+      // ✅ 验证块级公式有 moniBlockId，行内公式没有（语义块 ID 只在块级）
       mathNodes.forEach(node => {
-        expect(node.moniBlockId).toBeTruthy()
-        expect(typeof node.moniBlockId).toBe('string')
-        expect(node.moniBlockId.length).toBeGreaterThan(0)
+        if (node.type === 'blockMath') {
+          expect(node.moniBlockId).toBeTruthy()
+          expect(typeof node.moniBlockId).toBe('string')
+          expect(node.moniBlockId.length).toBeGreaterThan(0)
+        } else {
+          expect(node.type).toBe('inlineMath')
+          expect(node.moniBlockId).toBeUndefined()
+        }
       })
     })
   })

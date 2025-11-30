@@ -80,6 +80,17 @@ export const Image = Node.create<ImageOptions>({
 
   addAttributes() {
     return {
+      // 🔥 语义块类型标识 - 对应后端定义的 moniBlockType
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type') || null,
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
       src: {
         default: null,
       },

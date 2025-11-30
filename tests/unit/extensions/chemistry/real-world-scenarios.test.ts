@@ -31,7 +31,8 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
         Text,
         UniqueID.configure({
           attributeName: 'moniBlockId',
-          types: ['paragraph', 'inlineChemical', 'blockChemical'],
+          // 仅为语义块节点生成 moniBlockId
+          types: ['paragraph', 'blockChemical'],
           generateID: () => crypto.randomUUID(),
         }),
         InlineChemical.configure({
@@ -82,7 +83,6 @@ describe('Chemistry Extension - Real-World Teaching Scenarios', () => {
           chemicalFormulas.push({
             type: node.type.name,
             chemical: node.attrs.chemical,
-            moniBlockId: node.attrs.moniBlockId,
           })
         }
       })

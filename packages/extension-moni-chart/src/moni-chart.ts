@@ -2,6 +2,7 @@ import { mergeAttributes, Node } from '@tiptap/core'
 import type { Node as PMNode } from '@tiptap/pm/model'
 
 import { type ChartContainerElement, ChartRenderer } from './ChartRenderer.js'
+import type { ChartComponent, ChartDataPoint, MoniChartConfig } from './types.js'
 
 export interface MoniChartOptions {
   /**
@@ -13,9 +14,9 @@ export interface MoniChartOptions {
 }
 
 export interface MoniChartAttributes {
-  component: string
-  data: any[]
-  config?: Record<string, any>
+  component: ChartComponent
+  data: ChartDataPoint[]
+  config?: MoniChartConfig
 }
 
 declare module '@tiptap/core' {
@@ -50,7 +51,7 @@ declare module '@tiptap/core' {
  * MoniChart Extension
  *
  * Renders chart visualizations (BarChart, LineChart, PieChart, etc.) in TipTap editor.
- * Compatible with backend ChartTool output format.
+ * Compatible with backend MoniChartPayload format (used by chat & ChartKit builder).
  *
  * @example
  * ```typescript
@@ -135,6 +136,16 @@ export const MoniChart = Node.create<MoniChartOptions>({
         renderHTML: attributes => {
           if (attributes.moniBlockId) {
             return { 'data-moni-block-id': attributes.moniBlockId }
+          }
+          return {}
+        },
+      },
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
           }
           return {}
         },

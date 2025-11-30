@@ -240,6 +240,16 @@ export const HierarchyNode = Node.create<HierarchyNodeOptions>({
           return {}
         },
       },
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
 
       moniParentId: {
         default: null,

@@ -27,7 +27,8 @@ describe('Chemistry Extension - Simplified Integration', () => {
         // 🔥 UniqueID 扩展是 moni block 机制的核心
         UniqueID.configure({
           attributeName: 'moniBlockId',
-          types: ['paragraph', 'inlineChemical', 'blockChemical'],
+          // 仅为语义块节点生成 moniBlockId
+          types: ['paragraph', 'blockChemical'],
           generateID: () => crypto.randomUUID(),
         }),
         InlineChemical.configure({
@@ -132,17 +133,13 @@ describe('Chemistry Extension - Simplified Integration', () => {
       `)
 
       // 🎯 AI 精确定位第二个行内公式（分解反应）
-      let targetNodeId: string = ''
       let foundCount = 0
 
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name === 'inlineChemical') {
           foundCount += 1
           if (foundCount === 2) {
-            // 第二个行内化学公式
-            targetNodeId = node.attrs.moniBlockId
-
-            // AI 更新为更具体的分解反应示例
+            // 第二个行内化学公式：更新为更具体的分解反应示例
             editor.commands.updateInlineChemical({
               pos,
               chemical: '\\ce{2H2O2 -> 2H2O + O2}',
@@ -158,18 +155,15 @@ describe('Chemistry Extension - Simplified Integration', () => {
         if (node.type.name === 'inlineChemical') {
           inlineChemicals.push({
             chemical: node.attrs.chemical,
-            moniBlockId: node.attrs.moniBlockId,
           })
         }
       })
 
       expect(inlineChemicals).toHaveLength(2)
 
-      const targetNode = inlineChemicals.find(n => n.moniBlockId === targetNodeId)
-      const otherNode = inlineChemicals.find(n => n.moniBlockId !== targetNodeId)
-
-      expect(targetNode.chemical).toBe('\\ce{2H2O2 -> 2H2O + O2}') // 更新后的
-      expect(otherNode.chemical).toBe('\\ce{A + B -> AB}') // 保持原样
+      // 第二个行内公式被更新，第一条保持原样
+      expect(inlineChemicals[1].chemical).toBe('\\ce{2H2O2 -> 2H2O + O2}') // 更新后的
+      expect(inlineChemicals[0].chemical).toBe('\\ce{A + B -> AB}') // 保持原样
     })
   })
 
@@ -191,7 +185,6 @@ describe('Chemistry Extension - Simplified Integration', () => {
 
       expect(chemicalNode).toBeTruthy()
       expect(chemicalNode.attrs.chemical).toBe('\\invalid{syntax}')
-      expect(chemicalNode.attrs.moniBlockId).toBeTruthy() // moni 属性仍然存在
     })
 
     it('应该正确处理空文档中的化学公式操作', () => {
@@ -325,17 +318,11 @@ describe('Chemistry Extension - Simplified Integration', () => {
         if (node.type.name === 'inlineChemical') {
           chemicalNodes.push({
             chemical: node.attrs.chemical,
-            moniBlockId: node.attrs.moniBlockId,
           })
         }
       })
 
       expect(chemicalNodes).toHaveLength(formulas.length)
-
-      // 验证每个公式都有唯一的 moniBlockId
-      const blockIds = chemicalNodes.map(n => n.moniBlockId)
-      const uniqueBlockIds = [...new Set(blockIds)]
-      expect(uniqueBlockIds).toHaveLength(formulas.length)
 
       // 验证公式内容正确
       formulas.forEach(formula => {

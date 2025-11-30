@@ -67,6 +67,17 @@ export const Blockquote = Node.create<BlockquoteOptions>({
           return {}
         },
       },
+      // 🔥 语义块类型标识 - 对应后端定义的 moniBlockType
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type') || null,
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
       // 🔥 父级关系属性（持久化）
       moniParentId: {
         default: null,

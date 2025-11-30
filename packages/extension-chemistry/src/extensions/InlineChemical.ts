@@ -77,43 +77,8 @@ export const InlineChemical = Node.create<InlineChemicalOptions>({
           }
         },
       },
-      // 🔥 核心块标识属性 - 对应 Notion 的 inline equation
-      moniBlockId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-block-id'),
-        renderHTML: attributes => {
-          if (attributes.moniBlockId) {
-            return { 'data-moni-block-id': attributes.moniBlockId }
-          }
-          return {}
-        },
-      },
-      moniParentId: {
-        default: null,
-        parseHTML: element => element.getAttribute('data-moni-parent-id'),
-        renderHTML: attributes => {
-          if (attributes.moniParentId) {
-            return { 'data-moni-parent-id': attributes.moniParentId }
-          }
-          return {}
-        },
-      },
-      moniLevel: {
-        default: 0,
-        parseHTML: element => {
-          const level = element.getAttribute('data-moni-level')
-          return level ? parseInt(level, 10) : 0
-        },
-        renderHTML: attributes => {
-          if (attributes.moniLevel !== undefined && attributes.moniLevel !== 0) {
-            return { 'data-moni-level': attributes.moniLevel.toString() }
-          }
-          return {}
-        },
-      },
-      // 🔥 拖拽/Stream 等运行时属性已移除
-      // 现在通过 editor.storage.runtimeState 访问
-      // 参见：packages/core/src/extensions/runtime-state.ts
+      // 🔥 Inline 节点不再携带 moniBlockId / moniParentId / moniLevel
+      // 语义块 ID 统一由块级语义节点承载，行内化学式只作为块内部内容
     }
   },
 

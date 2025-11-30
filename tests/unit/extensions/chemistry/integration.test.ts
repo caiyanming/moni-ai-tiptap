@@ -36,7 +36,8 @@ describe('Chemistry Extension - Real-World Integration', () => {
         // 🔥 UniqueID 扩展是 moni block 机制的核心
         UniqueID.configure({
           attributeName: 'moniBlockId',
-          types: ['paragraph', 'inlineChemical', 'blockChemical'],
+          // 仅为语义块节点生成 moniBlockId
+          types: ['paragraph', 'blockChemical'],
           generateID: () => crypto.randomUUID(),
         }),
         InlineChemical.configure({
@@ -536,10 +537,10 @@ describe('Chemistry Extension - Real-World Integration', () => {
       )
       expect(indicatorReaction).toBeTruthy()
 
-      // 验证每个组件都有唯一的 moniBlockId
-      const blockIds = experimentComponents.map(comp => comp.moniBlockId)
+      // 验证每个块级组件（blockChemical）都有唯一的 moniBlockId
+      const blockIds = experimentComponents.filter(comp => comp.type === 'blockChemical').map(comp => comp.moniBlockId)
       const uniqueIds = new Set(blockIds)
-      expect(uniqueIds.size).toBe(experimentComponents.length)
+      expect(blockIds.length).toBe(uniqueIds.size)
     })
 
     it('有机化学合成路径的层次结构验证', () => {

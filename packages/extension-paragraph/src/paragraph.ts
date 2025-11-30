@@ -56,6 +56,18 @@ export const Paragraph = Node.create<ParagraphOptions>({
           return {}
         },
       },
+      // 🔥 语义块类型标识 - 对应后端定义的 moniBlockType
+      // 例如：explanation_block / single_choice_question / wrong_question_entry 等
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type') || null,
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
 
       // 🔥 父级关系属性（持久化）
       moniParentId: {

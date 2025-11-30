@@ -118,6 +118,16 @@ export const BlockMath = Node.create<BlockMathOptions>({
           return {}
         },
       },
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type') || null,
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
 
       // 🔥 父级关系属性（持久化）
       moniParentId: {

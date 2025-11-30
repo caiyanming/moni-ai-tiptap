@@ -119,6 +119,17 @@ export const CodeBlock = Node.create<CodeBlockOptions>({
           return {}
         },
       },
+      // 🔥 语义块类型标识 - 对应后端定义的 moniBlockType
+      moniBlockType: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-moni-block-type'),
+        renderHTML: attributes => {
+          if (attributes.moniBlockType) {
+            return { 'data-moni-block-type': attributes.moniBlockType }
+          }
+          return {}
+        },
+      },
       moniParentId: {
         default: null,
         parseHTML: element => element.getAttribute('data-moni-parent-id'),
