@@ -67,11 +67,7 @@ export class ChartRenderer {
   /**
    * Generate ECharts option based on component type
    */
-  private generateOption(
-    component: ChartComponent,
-    data: unknown,
-    config?: MoniChartConfig,
-  ): echarts.EChartsOption {
+  private generateOption(component: ChartComponent, data: unknown, config?: MoniChartConfig): echarts.EChartsOption {
     switch (component) {
       case 'BarChart':
         return this.generateBarChartOption(data, config)
@@ -164,10 +160,7 @@ export class ChartRenderer {
 
     // 区间带：使用 markArea 表达（仅作用于第一条 series）
     if (config?.bands && series.length) {
-      const areas = config.bands.map(band => [
-        { yAxis: band.from },
-        { yAxis: band.to, name: band.label },
-      ])
+      const areas = config.bands.map(band => [{ yAxis: band.from }, { yAxis: band.to, name: band.label }])
       ;(series[0] as any).markArea = {
         silent: true,
         itemStyle: {
@@ -521,12 +514,10 @@ export class ChartRenderer {
         itemStyle =
           highlightMode === 'max'
             ? {
-                color: (params: { dataIndex: number }) =>
-                  params.dataIndex === maxIndex ? '#ef4444' : undefined,
+                color: (params: { dataIndex: number }) => (params.dataIndex === maxIndex ? '#ef4444' : undefined),
               }
             : {
-                color: (params: { dataIndex: number }) =>
-                  params.dataIndex === minIndex ? '#ef4444' : undefined,
+                color: (params: { dataIndex: number }) => (params.dataIndex === minIndex ? '#ef4444' : undefined),
               }
       }
 
@@ -564,7 +555,7 @@ export class ChartRenderer {
             : undefined,
         })
       }
-    }
+    })
 
     return { categories, series, allValues }
   }
