@@ -503,7 +503,9 @@ export class ChartRenderer {
         return null
       })
 
-      let itemStyle: echarts.SeriesOption['itemStyle'] | undefined
+      // Use the bar-series-specific itemStyle type instead of the generic SeriesOption union,
+      // which does not guarantee an itemStyle property on every series kind.
+      let itemStyle: echarts.BarSeriesOption['itemStyle']
       if (highlightMode && values.length) {
         const numericValues = values.filter((v): v is number => typeof v === 'number')
         const max = Math.max(...numericValues)
@@ -514,10 +516,10 @@ export class ChartRenderer {
         itemStyle =
           highlightMode === 'max'
             ? {
-                color: (params: { dataIndex: number }) => (params.dataIndex === maxIndex ? '#ef4444' : undefined),
+                color: params => (params.dataIndex === maxIndex ? '#ef4444' : params.color || '#3b82f6'),
               }
             : {
-                color: (params: { dataIndex: number }) => (params.dataIndex === minIndex ? '#ef4444' : undefined),
+                color: params => (params.dataIndex === minIndex ? '#ef4444' : params.color || '#3b82f6'),
               }
       }
 
