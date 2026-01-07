@@ -39,7 +39,9 @@ describe('DocumentStyleExtension', () => {
     })
 
     // Wait for lifecycle methods to complete
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise(resolve => {
+      setTimeout(() => resolve(), 10)
+    })
   })
 
   describe('初始化', () => {
@@ -257,7 +259,7 @@ describe('DocumentStyleExtension', () => {
       // 执行样式操作
       editor.commands.applyStylePreset('moni-default')
 
-      // 这里我们主要测试缓存机制的存在，具体的缓存逻辑在 StreamStyleIntelligence 中
+      // 这里主要测试缓存机制存在
       expect(extension.storage.styleCache).toBeDefined()
     })
 

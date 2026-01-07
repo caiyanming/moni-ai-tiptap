@@ -18,7 +18,6 @@
 - `MoniGlobalStyleAttributes` - 全局样式属性
 - `CSSVariableMap` - CSS 变量映射表
 - `StylePropagationOptions` - 样式传播选项
-- `StreamStyleConfig` - AI 流式操作样式配置
 
 ### 2. DocumentStyleExtension - 文档级样式管理
 
@@ -41,21 +40,7 @@
 - ✅ 支持 Inter 字体族和四度音阶 (1.25) 字体缩放
 - ✅ 完整的语义样式定义 (title, heading1-6, paragraph, blockquote, etc.)
 
-### 3. StreamStyleIntelligence Extension - AI 流式操作样式协调
-
-**位置**: `packages/extension-stream-style/`
-
-**核心功能**:
-
-- ✅ AI 内容自动样式应用 (`insertContentWithDocumentStyle`)
-- ✅ 智能内容类型推断 (`inferContentType`)
-- ✅ 现有内容样式更新 (`applyDocumentStyleToContent`)
-- ✅ 与 Block Stream 操作系统无缝集成
-- ✅ 样式推荐系统 (`getRecommendedStyle`)
-- ✅ 性能优化缓存 (`styleCache`, `inferenceCache`)
-- ✅ 支持父级样式继承和优先级控制
-
-### 4. InlineDiff 系列扩展增强
+### 3. InlineDiff 系列扩展增强
 
 **已增强的扩展**:
 
@@ -84,8 +69,6 @@
 ```
 DocumentStyleExtension (文档级)
     ↓ CSS变量注入 + 样式传播
-StreamStyleIntelligence (AI协调层)
-    ↓ 内容类型推断 + 自动样式应用
 InlineDiff Extensions (块级)
     ↓ 属性存储 + 行内样式渲染
 HTML Elements (最终渲染)
@@ -97,8 +80,7 @@ HTML Elements (最终渲染)
 2. **CSS 变量计算** → `presetToCSSVariables()`
 3. **变量注入 DOM** → `document.documentElement.style.setProperty()`
 4. **样式传播所有块** → Transaction 批量更新节点属性
-5. **AI 内容协调** → StreamStyleIntelligence 自动应用样式
-6. **行内样式渲染** → 各扩展的 `renderHTML()` 方法
+5. **行内样式渲染** → 各扩展的 `renderHTML()` 方法
 
 ### 性能优化机制
 
@@ -106,7 +88,6 @@ HTML Elements (最终渲染)
 - ✅ **样式缓存系统** - 缓存计算结果，避免重复计算
 - ✅ **防抖更新机制** - 批量样式更新，避免频繁 DOM 操作
 - ✅ **增量样式传播** - 只更新变化的属性，不全量替换
-- ✅ **智能推断缓存** - 缓存内容类型推断结果
 
 ## 🎨 使用示例
 
@@ -115,7 +96,6 @@ HTML Elements (最终渲染)
 ```typescript
 import { Editor } from '@tiptap/core'
 import { DocumentStyleExtension } from '@tiptap/extension-document-style'
-import { StreamStyleIntelligence } from '@tiptap/extension-stream-style'
 
 const editor = new Editor({
   extensions: [
@@ -123,13 +103,6 @@ const editor = new Editor({
       defaultPreset: MoniDefaultStylePreset,
       autoInjectCSS: true,
       enableCache: true,
-    }),
-    StreamStyleIntelligence.configure({
-      config: {
-        autoApplyDocumentStyle: true,
-        inheritParentStyle: true,
-        stylePriority: 'document',
-      },
     }),
     // ... 其他扩展
   ],
@@ -141,8 +114,6 @@ editor.commands.applyStylePreset('moni-default')
 // 设置全局字体
 editor.commands.setDocumentFont('Arial, sans-serif')
 
-// AI 内容自动应用样式
-editor.commands.insertContentWithDocumentStyle(aiGeneratedContent)
 ```
 
 ### 自定义样式预设
@@ -212,12 +183,6 @@ packages/
 │   │   └── index.ts                 # 入口文件
 │   ├── package.json
 │   └── tsup.config.ts
-├── extension-stream-style/          # ✅ 新包：AI流式样式协调
-│   ├── src/
-│   │   ├── stream-style.ts          # 主扩展实现
-│   │   └── index.ts                 # 入口文件
-│   ├── package.json
-│   └── tsup.config.ts
 ├── extension-paragraph/src/
 │   └── paragraph.ts                 # ✅ 增强：添加全局样式支持
 └── extension-heading/src/
@@ -245,9 +210,8 @@ packages/
 本次实现成功为 moni-ai-tiptap Fork 添加了完整的全局样式系统，实现了：
 
 1. **Microsoft Word 级别的文档样式管理** - 支持样式预设、全局字体设置、语义样式
-2. **AI Native 设计理念** - AI 生成内容自动应用文档样式，无需手动调整
-3. **高性能架构** - CSS 变量 + 样式缓存 + 防抖更新，确保流畅体验
-4. **完全向后兼容** - 与现有 Moni Block、InlineDiff、Block Stream 系统无缝集成
-5. **可扩展架构** - 通用样式混入，便于后续扩展其他节点类型
+2. **高性能架构** - CSS 变量 + 样式缓存 + 防抖更新，确保流畅体验
+3. **完全向后兼容** - 与现有 Moni Block、InlineDiff、Block Stream 系统无缝集成
+4. **可扩展架构** - 通用样式混入，便于后续扩展其他节点类型
 
 这套系统为 MoniAI 智能教育协作平台提供了强大的样式管理基础，让教师能够像使用 Word 一样管理文档样式，同时享受 AI 协作的便利。

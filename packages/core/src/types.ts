@@ -763,20 +763,6 @@ export interface StylePropagationOptions {
   batchSize?: number
 }
 
-/**
- * AI 流式操作样式配置
- */
-export interface StreamStyleConfig {
-  /** 是否自动应用文档样式到 AI 生成内容 */
-  autoApplyDocumentStyle: boolean
-  /** 是否在插入时继承父级样式 */
-  inheritParentStyle: boolean
-  /** 样式应用优先级 */
-  stylePriority: 'document' | 'parent' | 'content'
-  /** 是否缓存样式计算结果 */
-  enableStyleCache: boolean
-}
-
 export type Content = HTMLContent | JSONContent | JSONContent[] | null
 
 export type CommandProps = {
