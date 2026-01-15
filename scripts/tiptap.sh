@@ -8,7 +8,7 @@ set -e
 # 配置
 DEFAULT_REGISTRY="https://registry-zonbov-5xySne-raqbot.fufenxi.com"
 REGISTRY="${REGISTRY:-$DEFAULT_REGISTRY}"
-VERSION="3.0.0-beta.22.3"
+VERSION="3.0.0-beta.22.4"
 
 # 颜色输出
 RED='\033[0;31m'

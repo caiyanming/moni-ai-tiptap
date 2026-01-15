@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/constants",
   "description": "Shared constants and utilities for TipTap extensions",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",

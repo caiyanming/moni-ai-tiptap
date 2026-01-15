@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-nesting",
   "description": "nesting extension for tiptap - block-level nesting management",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -38,8 +38,8 @@
     "@tiptap/pm": "workspace:*"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.3",
-    "@tiptap/pm": "3.0.0-beta.22.3"
+    "@tiptap/core": "3.0.0-beta.22.4",
+    "@tiptap/pm": "3.0.0-beta.22.4"
   },
   "repository": {
     "type": "git",

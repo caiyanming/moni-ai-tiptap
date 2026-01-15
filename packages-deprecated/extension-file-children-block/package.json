@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-file-children-block",
   "description": "File children block extension for TipTap - AI anchor and sub-document manager",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -46,8 +46,8 @@
     "@vitest/ui": "^2.0.0"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.3",
-    "@tiptap/pm": "3.0.0-beta.22.3"
+    "@tiptap/core": "3.0.0-beta.22.4",
+    "@tiptap/pm": "3.0.0-beta.22.4"
   },
   "repository": {
     "type": "git",

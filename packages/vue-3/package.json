@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/vue-3",
   "description": "Vue components for tiptap",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -48,8 +48,8 @@
     "@tiptap/extension-floating-menu": "workspace:*"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.3",
-    "@tiptap/pm": "3.0.0-beta.22.3",
+    "@tiptap/core": "3.0.0-beta.22.4",
+    "@tiptap/pm": "3.0.0-beta.22.4",
     "vue": "^3.0.0",
     "@floating-ui/dom": "^1.0.0"
   },

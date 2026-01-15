@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/html",
   "description": "utility package to render tiptap JSON as HTML",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "homepage": "https://tiptap.dev",
   "keywords": [
     "tiptap",
@@ -44,8 +44,8 @@
     "happy-dom": "^18.0.1"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.3",
-    "@tiptap/pm": "3.0.0-beta.22.3"
+    "@tiptap/core": "3.0.0-beta.22.4",
+    "@tiptap/pm": "3.0.0-beta.22.4"
   },
   "repository": {
     "type": "git",

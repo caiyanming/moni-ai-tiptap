@@ -1,7 +1,7 @@
 {
   "name": "@tiptap/extension-moni-chart",
   "description": "chart visualization extension for tiptap",
-  "version": "3.0.0-beta.22.3",
+  "version": "3.0.0-beta.22.4",
   "keywords": [
     "tiptap",
     "tiptap extension",
@@ -44,8 +44,8 @@
     "echarts": "^5.5.0"
   },
   "peerDependencies": {
-    "@tiptap/core": "3.0.0-beta.22.3",
-    "@tiptap/pm": "3.0.0-beta.22.3",
+    "@tiptap/core": "3.0.0-beta.22.4",
+    "@tiptap/pm": "3.0.0-beta.22.4",
     "echarts": "^5.5.0"
   },
   "peerDependenciesMeta": {
