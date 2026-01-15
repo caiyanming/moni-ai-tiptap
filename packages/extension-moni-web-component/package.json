@@ -1,0 +1,47 @@
+{
+  "name": "@tiptap/extension-moni-web-component",
+  "description": "web component container extension for tiptap",
+  "version": "3.0.0-beta.22.3",
+  "keywords": [
+    "tiptap",
+    "tiptap extension",
+    "web component",
+    "moni"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "devDependencies": {
+    "@tiptap/core": "workspace:*",
+    "@tiptap/pm": "workspace:*"
+  },
+  "peerDependencies": {
+    "@tiptap/core": "3.0.0-beta.22.3",
+    "@tiptap/pm": "3.0.0-beta.22.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ueberdosis/tiptap",
+    "directory": "packages/extension-moni-web-component"
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "prettier ./src/ --check && eslint --cache --quiet --no-error-on-unmatched-pattern ./src/"
+  }
+}
