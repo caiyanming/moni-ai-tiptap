@@ -69,7 +69,7 @@ export function addGlobalStyleAttributes() {
 
     /**
      * 全局字体族 - 覆盖文档默认字体
-     * 通过 DocumentStyleExtension 设置和管理
+     * 由文档样式系统设置和管理
      */
     moniGlobalFontFamily: {
       default: null,
@@ -84,7 +84,7 @@ export function addGlobalStyleAttributes() {
 
     /**
      * 全局字体大小 - 覆盖文档默认字体大小
-     * 通过 DocumentStyleExtension 设置和管理
+     * 由文档样式系统设置和管理
      */
     moniGlobalFontSize: {
       default: null,
