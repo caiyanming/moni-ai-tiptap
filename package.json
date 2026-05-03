@@ -98,7 +98,6 @@
     "lint-staged": "^15.3.0",
     "lowlight": "^3.3.0",
     "minimist": "^1.2.8",
-    "@moni-ai/design-system": "^1.0.0",
     "pkg-pr-new": "0.0.32",
     "postcss-custom-properties": "^14.0.6",
     "postcss-import": "^15.1.0",
@@ -126,8 +125,5 @@
       "prettier --write",
       "eslint --fix --quiet --no-error-on-unmatched-pattern"
     ]
-  },
-  "dependencies": {
-    "@moni-ai/design-system": "^1.0.0"
   }
 }
